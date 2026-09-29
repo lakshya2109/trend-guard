@@ -15,6 +15,8 @@ signal:
   w_donchian: 0.5
   w_tsmom: 0.5
   smooth_bars: 3
+  mode: hourly                         # hourly | daily | blend (Section 11.3 sweep)
+  lookbacks_d: [5, 10, 20, 30, 60, 90] # used by daily/blend modes, on daily closes
 vol:
   halflife_h: 48
   vol_floor_ann: 0.15

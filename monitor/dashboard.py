@@ -173,9 +173,7 @@ def main() -> None:
     st.subheader("Current multipliers")
     mults = decision.get("multipliers", {})
     if mults:
-        mult_df = pd.DataFrame(
-            [{"overlay": k, "multiplier": v[0], "reason": v[1]} for k, v in mults.items()]
-        )
+        mult_df = pd.DataFrame([{"overlay": k, "multiplier": v[0], "reason": v[1]} for k, v in mults.items()])
         st.dataframe(mult_df)
     else:
         st.write("no decision logged yet")

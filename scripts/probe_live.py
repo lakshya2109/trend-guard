@@ -87,8 +87,7 @@ def probe_shorts(client: RoostooClient) -> None:
         [
             "## Shorts probe",
             f"- open: id={opened.id} entry={opened.entry_price} fee={opened.open_fee}",
-            f"- close: pnl={closed.realized_pnl} fee={closed.close_fee} "
-            f"fully_closed={closed.fully_closed}",
+            f"- close: pnl={closed.realized_pnl} fee={closed.close_fee} fully_closed={closed.fully_closed}",
         ]
     )
 
@@ -103,8 +102,7 @@ def probe_cancel(client: RoostooClient) -> None:
     _append(
         [
             "## Cancel probe",
-            f"- order_id: {order.order_id}, canceled_list: {canceled}, "
-            f"worked: {order.order_id in canceled}",
+            f"- order_id: {order.order_id}, canceled_list: {canceled}, worked: {order.order_id in canceled}",
         ]
     )
 

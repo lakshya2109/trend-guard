@@ -9,10 +9,28 @@ from pathlib import Path
 
 # standard LogRecord attributes to exclude when flattening `extra={...}` fields into JSON
 _RESERVED = {
-    "name", "msg", "args", "levelname", "levelno", "pathname", "filename",
-    "module", "exc_info", "exc_text", "stack_info", "lineno", "funcName",
-    "created", "msecs", "relativeCreated", "thread", "threadName",
-    "processName", "process", "message", "taskName",
+    "name",
+    "msg",
+    "args",
+    "levelname",
+    "levelno",
+    "pathname",
+    "filename",
+    "module",
+    "exc_info",
+    "exc_text",
+    "stack_info",
+    "lineno",
+    "funcName",
+    "created",
+    "msecs",
+    "relativeCreated",
+    "thread",
+    "threadName",
+    "processName",
+    "process",
+    "message",
+    "taskName",
 }
 
 

@@ -38,6 +38,7 @@ echo "== python venv =="
 sudo -u "$SERVICE_USER" python3.11 -m venv "$APP_DIR/.venv"
 sudo -u "$SERVICE_USER" "$APP_DIR/.venv/bin/pip" install --upgrade pip
 sudo -u "$SERVICE_USER" "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.txt"
+sudo -u "$SERVICE_USER" "$APP_DIR/.venv/bin/pip" install -e "$APP_DIR"
 
 echo "== secrets file (fill in manually after this script, then chmod 600) =="
 sudo mkdir -p /etc/trend-guard

@@ -35,6 +35,10 @@ class SignalConfig(BaseModel):
     w_donchian: float = 0.5
     w_tsmom: float = 0.5
     smooth_bars: int = 3
+    # "hourly": ensemble on 1h closes over lookbacks_h. "daily": the paper-style ensemble on daily
+    # closes over lookbacks_d. "blend": mean of the two (BUILD_SPEC Section 11.3 sweep).
+    mode: Literal["hourly", "daily", "blend"] = "hourly"
+    lookbacks_d: list[int] = Field(default_factory=lambda: [5, 10, 20, 30, 60, 90])
 
 
 class VolConfig(BaseModel):

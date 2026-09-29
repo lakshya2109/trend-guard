@@ -4,10 +4,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
-data/
-logs/
+/data/
+/logs/
 state/*.db
-reports/
+/reports/
 .pytest_cache/
 .ruff_cache/
 .DS_Store
