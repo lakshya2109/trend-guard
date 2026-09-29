@@ -118,11 +118,14 @@ def _read_csv_from_zip(raw: bytes, columns: list[str]) -> pd.DataFrame:
 
 
 def _normalize_ts(col: pd.Series) -> pd.Series:
-    """Detect ms vs microsecond epoch by magnitude and return UTC datetime64[ns]."""
+    """Detect ms vs microsecond epoch PER ROW and return UTC datetimes.
+
+    Binance switched spot files to microseconds in Jan 2025, so a concatenated multi-month column
+    mixes both units; deciding the unit from one sample silently drops half the history.
+    """
     col = col.astype("int64")
-    sample = abs(int(col.iloc[0])) if len(col) else 0
-    unit = "us" if sample > _MICROSECOND_THRESHOLD else "ms"
-    return pd.to_datetime(col, unit=unit, utc=True)
+    ms = col.where(col.abs() <= _MICROSECOND_THRESHOLD, col // 1000)
+    return pd.to_datetime(ms, unit="ms", utc=True)
 
 
 def _dedupe_sort(df: pd.DataFrame, ts_col: str) -> pd.DataFrame:
@@ -171,6 +174,7 @@ def download_klines_1h(
     df = pd.concat(frames, ignore_index=True)
     df = _dedupe_sort(df, "open_time")
     df["open_time"] = _normalize_ts(df["open_time"])
+    df = _dedupe_sort(df, "open_time")  # re-sort: raw ints of mixed units don't sort chronologically
     start_ts = pd.Timestamp(start, tz="UTC")
     end_ts = pd.Timestamp(end, tz="UTC") + timedelta(days=1)
     df = df[(df["open_time"] >= start_ts) & (df["open_time"] < end_ts)]

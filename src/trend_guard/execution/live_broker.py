@@ -115,9 +115,16 @@ def _short_close_ack_from_result(result: ShortCloseResult) -> ShortCloseAck:
 class LiveBroker:
     """Broker implementation backed by a real RoostooClient. See module docstring."""
 
-    def __init__(self, client: RoostooClient, rules: dict[str, TradingRule]):
+    def __init__(self, client: RoostooClient, rules: dict[str, TradingRule], allow_live_orders: bool = False):
         self.client = client
         self.rules = rules
+        # second, code-level gate (the CLI checks ALLOW_LIVE_ORDERS too): every order-creating
+        # method refuses unless this is True, so no code path can place a live order by accident
+        self.allow_live_orders = allow_live_orders
+
+    def _require_live(self) -> None:
+        if not self.allow_live_orders:
+            raise PermissionError("live orders disabled: set ALLOW_LIVE_ORDERS=1 to trade")
 
     def _rule(self, pair: str) -> TradingRule:
         try:
@@ -218,6 +225,7 @@ class LiveBroker:
 
     # --- orders -----------------------------------------------------------------
     def place_limit(self, pair: str, side: str, qty: Decimal, price: Decimal) -> OrderAck:
+        self._require_live()
         rule = self._rule(pair)
         q = rule.clamp_qty(qty)
         p = rule.clamp_price(price)
@@ -227,6 +235,7 @@ class LiveBroker:
         return _order_ack_from_detail(detail)
 
     def place_market(self, pair: str, side: str, qty: Decimal) -> OrderAck:
+        self._require_live()
         rule = self._rule(pair)
         q = rule.clamp_qty(qty)
         # MARKET orders carry no price param; use the current mid purely as a MiniOrder pre-check.
@@ -238,6 +247,7 @@ class LiveBroker:
         return _order_ack_from_detail(detail)
 
     def cancel(self, order_id: str) -> None:
+        self._require_live()
         self.client.cancel_order(order_id=order_id)
 
     def query(self, order_id: str) -> OrderStatus:
@@ -256,9 +266,11 @@ class LiveBroker:
 
     # --- shorts: collateral/qty are already USD-denominated, no TradingRule rounding needed ---
     def short_open(self, pair: str, collateral: Decimal) -> ShortAck:
+        self._require_live()
         result = self.client.short_open(pair, collateral)
         return _short_ack_from_result(result)
 
     def short_close(self, pair: str, pct: Decimal) -> ShortCloseAck:
+        self._require_live()
         result = self.client.short_close(pair, close_pct=pct)
         return _short_close_ack_from_result(result)

@@ -132,3 +132,26 @@ def compute_spread(snapshots: pd.DataFrame) -> pd.Series:
     mid = (snapshots["max_bid"] + snapshots["min_ask"]) / 2
     spread = (snapshots["min_ask"] - snapshots["max_bid"]) / mid
     return spread.where(mid != 0)
+
+
+def main() -> None:
+    """Entry point for deploy/recorder.service: `python -m trend_guard.data.ticker_recorder`."""
+    from trend_guard.config import load_env, load_strategy_config
+    from trend_guard.logging_setup import setup_logging
+    from trend_guard.roostoo.ratelimit import RateLimiter
+
+    setup_logging(categories=("api", "recorder"))
+    env = load_env()
+    cfg = load_strategy_config()
+    client = RoostooClient(
+        env.roostoo_base_url,
+        env.roostoo_api_key,
+        env.roostoo_secret_key,
+        rate_limiter=RateLimiter(cfg.execution.requests_per_min),
+    )
+    client.sync_clock()
+    run_forever(client, poll_s=cfg.execution.ticker_poll_s)
+
+
+if __name__ == "__main__":
+    main()

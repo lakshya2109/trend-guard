@@ -225,3 +225,15 @@ def test_download_open_interest_basic(tmp_path: Path):
 
     assert len(df) == 1
     assert "sum_open_interest" in df.columns
+
+
+def test_normalize_ts_handles_mixed_ms_and_us_in_one_column():
+    """Regression: Dec-2024 (ms) and Jan-2025 (us) files concatenated into one column."""
+    from trend_guard.data.binance_vision import _normalize_ts
+
+    col = pd.Series([1735689600000 - 3_600_000, 1735689600000 * 1000])  # 2024-12-31 23:00 ms, 2025-01-01 us
+    out = _normalize_ts(col)
+    assert list(out) == [
+        pd.Timestamp("2024-12-31 23:00", tz="UTC"),
+        pd.Timestamp("2025-01-01 00:00", tz="UTC"),
+    ]
