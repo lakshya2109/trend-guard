@@ -1,0 +1,1 @@
+Go through BUILD_SPEC.md Section 17 compliance checklist item by item against the current code. For each item report PASS/FAIL with file and line evidence. Also confirm CI is green and the working tree is clean.

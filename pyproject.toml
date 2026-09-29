@@ -1,0 +1,15 @@
+[project]
+name = "trend-guard"
+version = "0.1.0"
+description = "Autonomous vol-targeted long/short trend bot for the Roostoo Quant Hackathon"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
