@@ -1,0 +1,13 @@
+# Roostoo pair -> Binance / yfinance symbol overrides. See BUILD_SPEC.md Section 5.1.
+# The exact bStock pair strings must be read from /v3/exchangeInfo at runtime; this file only maps them.
+overrides:        # roostoo_pair: binance_symbol, only needed when it differs from COIN+USDT
+  "PEPE/USD": "PEPEUSDT"
+asset_class:      # anything not listed here is treated as plain crypto
+  "PAXG/USD": gold
+bstocks:          # roostoo_pair: yfinance ticker of the underlying (enabled only when universe.bstocks_enabled)
+  "NVDA/USD": NVDA
+  "MSFT/USD": MSFT
+  "GOOGL/USD": GOOGL
+  "META/USD": META
+crypto_beta_stocks: ["COIN/USD", "MSTR/USD", "CRCL/USD"]   # treated as crypto for regime purposes
+stablecoins: ["USDT/USD", "USDC/USD", "FDUSD/USD", "DAI/USD"]

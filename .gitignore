@@ -12,3 +12,4 @@ reports/
 .ruff_cache/
 .DS_Store
 .claude/settings.local.json
+*.egg-info/

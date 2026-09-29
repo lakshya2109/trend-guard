@@ -1,0 +1,71 @@
+# TREND-GUARD default strategy config. Every threshold used by strategy/risk code is read from
+# here via src/trend_guard/config.py -- never hardcode a number in code. See BUILD_SPEC.md Section 12.
+competition:
+  start_utc: "2026-10-03T16:00:00Z"    # 4 Oct 00:00 HKT; TODO confirm exact start with organizers (BUILD_SPEC 16.3)
+  end_utc:   "2026-10-17T15:59:59Z"
+  risk_scale: 1.0                      # 0.1 for the 3 Oct live dry run, per BUILD_SPEC Section 7
+universe:
+  max_crypto: 25
+  max_spread_pct: 0.0015
+  min_history_days: 180
+  majors: ["SOL/USD", "BNB/USD", "XRP/USD", "DOGE/USD", "ADA/USD", "AVAX/USD", "LINK/USD", "SUI/USD"]
+  bstocks_enabled: false               # flip after prep checks (BUILD_SPEC Section 9 / 15)
+signal:
+  lookbacks_h: [24, 48, 96, 168, 336, 504]
+  w_donchian: 0.5
+  w_tsmom: 0.5
+  smooth_bars: 3
+vol:
+  halflife_h: 48
+  vol_floor_ann: 0.15
+regime:
+  index_size: 10
+  "on":  {mkt: 0.20, breadth: 0.55}   # quoted: bare on/off parse as booleans under YAML 1.1
+  "off": {mkt: -0.20, breadth: 0.40}
+  hysteresis: 0.10
+  budgets:
+    RISK_ON:  {long: 1.0, short: 0.25, long_entry_min: 0.10, short_entry_max: -0.50}
+    NEUTRAL:  {long: 0.5, short: 0.50, long_entry_min: 0.20, short_entry_max: -0.30}
+    RISK_OFF: {long: 0.0, short: 1.00, long_entry_min: 1.01, short_entry_max: -0.30}
+diversifiers:
+  entry_min: 0.10
+  allow_short: false
+portfolio:
+  sigma_asset_target: 0.15
+  sigma_portfolio_target: 0.30
+  cov_halflife_h: 72
+  shrink: 0.30
+  k_max: 3.0
+  gross_max: 0.98
+  caps: {btc_eth: 0.25, major: 0.12, other: 0.06, bstock: 0.08, bstock_sleeve: 0.25, paxg: 0.20, short_total: 0.50}
+risk:
+  dd_max: 0.05
+  dd_floor: 0.25
+  daily_brake: {soft: -0.008, hard: -0.015}
+  event: {pre_min: 30, post_min: 60, mult: 0.5}
+  endgame: {from_day: 11, min_return: 0.04, sigma_cut: 0.35}
+  crowding: {enabled: true, funding_z: 2.0, oi_chg_24h: 0.10, mult: 0.6}
+  tournament: {enabled: false, buffer: 0.01, above_mult: 0.8, below_mult: 1.15}
+  news_llm: {enabled: false}
+protective:
+  atr_mult: 2.5
+  shock_z: 2.5
+  squeeze_prior_drop: -0.08
+  cooldown_h: 6
+execution:
+  rebalance_minute: 3
+  deadband: 0.02
+  min_hold_h: 3
+  limit_reprice_s: 60
+  limit_max_tries: 4
+  ticker_poll_s: 30
+  requests_per_min: 30
+  min_order_gap_s: 1.0
+backtest:
+  start: "2024-01-01"
+  half_spread: 0.0003
+  slippage_bps: 2
+  maker_fee: 0.0005
+  taker_fee: 0.0010
+  short_fee: 0.0010
+  window_days: 14
