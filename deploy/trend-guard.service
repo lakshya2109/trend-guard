@@ -1,0 +1,22 @@
+[Unit]
+Description=trend-guard live trading bot
+After=network-online.target chronyd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trendguard
+Group=trendguard
+WorkingDirectory=/opt/trend-guard
+EnvironmentFile=/etc/trend-guard/env
+ExecStart=/opt/trend-guard/.venv/bin/python -m trend_guard.main --mode live --config config/strategy.yaml
+Restart=always
+RestartSec=10
+# HALT file (/etc/trend-guard/HALT) is checked inside the loop, not via systemd -- this only
+# restarts the process itself if it crashes.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=trend-guard
+
+[Install]
+WantedBy=multi-user.target

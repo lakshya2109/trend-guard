@@ -1,0 +1,20 @@
+[Unit]
+Description=trend-guard Roostoo ticker recorder
+After=network-online.target chronyd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trendguard
+Group=trendguard
+WorkingDirectory=/opt/trend-guard
+EnvironmentFile=/etc/trend-guard/env
+ExecStart=/opt/trend-guard/.venv/bin/python -m trend_guard.data.ticker_recorder
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=trend-guard-recorder
+
+[Install]
+WantedBy=multi-user.target
