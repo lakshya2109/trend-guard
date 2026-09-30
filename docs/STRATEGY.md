@@ -162,6 +162,22 @@ kept for confirmation.
    The last row is the clearest example of why 2026 was held out: tuned on all data at once it
    would have been adopted.
 
+8. **Third round (pre-launch report ideas, none adopted).** Nine pre-declared variants on the live
+   2x blend. Rule: median score up in both 2024-25 and 2026, share of fortnights above -1% down by at
+   most 2 points, and the worst fortnight no worse.
+
+   | Variant | Score 2024-25 / 2026 (base 0.057 / 0.191) | Worst | Why rejected |
+   |---|---|---|---|
+   | Trend: smooth entry ramp instead of the 0.25/0.40 thresholds (4 ramp widths) | 0.059-0.075 / 0.175-0.203 | -9.0% to -10.0% (base -8.5%) | 2026 up in only 2 of 4 widths; mean return unchanged; loss tail fatter in all 4 (P(< -5%) 3.5% -> 4.6-4.8%) |
+   | Wider no-trade band (skip resizes < 40% of target or 1.5% of equity) | 0.070 / 0.161 | -7.7% | turnover -11%, but 2026 falls: the momentum signal decays too fast to trade late |
+   | Shorts held at most 21 days, then a 7-day ban | 0.058 / 0.191 | -8.5% | no effect: shorts rarely last that long |
+   | No shorts in the least liquid third | 0.065 / 0.185 | -8.5% | 2026 lower |
+   | Momentum lookbacks 3/7/14 + 7/14/21 days (drop 30) | 0.052 / 0.210 | -8.1% | 2024-25 lower |
+   | "CTREND-lite": rank on t-stat momentum + Bollinger, CCI, MACD | 0.056 / 0.126 | -9.1% | worse everywhere |
+
+   A per-short cap does nothing here (shorts are already equal-weight, 1/6 of the short side each).
+   Funding-rate filters were not tested: the bar cache has no futures funding history.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
