@@ -239,6 +239,19 @@ kept for confirmation.
     hindsight selection flatters stocks, and most variants lose at token prices after listing.
     Crypto-only stays.
 
+    **Crash cushion** (`research/bstocks_crash_cushion.py`, `bstocks_crash_robustness.py`). Over the 17
+    sharp BTC drops of 2024-26 (average -12.5% in 72 hours) the book lost 1.9% on average, MSFT /
+    GOOGL / META 1.8%, all listed stocks 4.1%, COIN / MSTR 10.0%: "stable" stocks do not cushion
+    this book, but COIN / MSTR are a usable crash short. A crash-only hedge (short COIN + MSTR worth
+    a share of net long crypto while BTC's 72-hour return is below a trigger, checked at 00/12 UTC)
+    at a -5% or -6% trigger improves crash windows at every size (BTC -6% / 75%: crash-window median
+    -2.08% -> -1.38%, worst -8.1% -> -7.2%, above -1% 69% -> 71%) with normal windows almost
+    unchanged (+1.60% -> +1.56%) and the all-window score unchanged (0.095), but trims the median
+    score in 2024-25 (0.063 -> 0.061) and 2026 (0.204 -> 0.197), so it fails round 8's rule; -8% and
+    -10% triggers fire too late to help. No crash occurred after the tokens listed, so it is untested
+    at real token prices, and it needs /v6 shorts on stock pairs to be confirmed. Candidate insurance,
+    not adopted by the rule.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
