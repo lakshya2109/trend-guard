@@ -252,6 +252,18 @@ kept for confirmation.
     at real token prices, and it needs /v6 shorts on stock pairs to be confirmed. Candidate insurance,
     not adopted by the rule.
 
+    **Improved and shipped behind a switch (off).** A 32-variant grid (`research/bstocks_crash_walkforward.py`:
+    trigger x check frequency x minimum hold x basket), selected on 2024-25 only with a rule fixed in
+    advance, picked: on when BTC is down > 6% over 72h **or** > 4% over 24h, checked at 00/12 UTC only,
+    off as soon as a check finds no crash, COIN + MSTR, 75% of net long crypto. Hourly checks and
+    24-hour minimum holds were worse (whipsaw); adding CRCL added nothing. On unseen 2026: crash-window
+    mean +0.16% -> +0.83%, crash-window worst -4.2% -> -2.5%, normal median unchanged (+2.30%), above
+    -1% 78% -> 80%, score 0.204 -> 0.203. Through the live code path (`book.crash_hedge` in
+    `book_weights`, `research/bstocks_crash_final.py`): all windows 0.095 -> 0.103, median +1.13% ->
+    +1.21%, above -1% 69% -> 72%, worst -8.1% -> -7.5%; still ahead at 3x slippage (0.055 -> 0.061).
+    Switched off in `config/strategy.yaml` until /v6 shorts on stock pairs are confirmed on the account;
+    with it off the book is byte-for-byte main's.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;

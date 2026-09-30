@@ -144,6 +144,10 @@ class Engine:
         info = self.client.exchange_info()
         self.rules.update(parse_trading_rules(info))
         self.pairs = tradable_pairs(info, self.symbols)
+        hedge = self.cfg.book.crash_hedge
+        if hedge.enabled and self.shorts_enabled:  # crash-hedge instruments are stock tokens, outside the crypto universe
+            listed = info.get("TradePairs") or {}
+            self.pairs += [p for p in hedge.instruments if listed.get(p, {}).get("CanTrade") and p not in self.pairs]
         self.last_universe_day = self.clock.now().strftime("%Y-%m-%d")
         log.info("universe", extra={"pairs": len(self.pairs)})
 
