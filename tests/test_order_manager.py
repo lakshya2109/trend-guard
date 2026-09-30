@@ -37,59 +37,57 @@ def exposure(cash="100000", long_qty=None, shorts=None, prices=None) -> Exposure
     )
 
 
-def test_deadband_skips_small_changes():
+def plan(targets, exp, act_all=True, prev=None, rules=None):
+    return plan_orders(targets, exp, CFG, act_all, prev or {}, rules)
+
+
+def test_small_resize_is_skipped_but_open_goes_through():
     exp = exposure(cash="90000", long_qty={"BTC/USD": "0.2"})  # 10k long = 10% of equity
-    assert plan_orders({"BTC/USD": 0.11}, exp, CFG, NOW, {}) == []  # 1% change < 2% deadband
+    assert plan({"BTC/USD": 0.11}, exp) == []  # 1% < max(1%, 25% x 11%)
+    assert plan({"BTC/USD": 0.14}, exp)[0].action == "BUY"  # 4% > 3.5%
+    assert plan({"BTC/USD": 0.10, "ETH/USD": 0.005}, exposure())[1].action == "BUY"  # opens always
+
+
+def test_unchanged_target_outside_decision_hour_is_left_to_ride():
+    exp = exposure(cash="90000", long_qty={"BTC/USD": "0.2"})
+    assert plan({"BTC/USD": 0.20}, exp, act_all=False, prev={"BTC/USD": 0.20}) == []
+    assert plan({"BTC/USD": 0.20}, exp, act_all=False, prev={"BTC/USD": 0.15})[0].action == "BUY"
 
 
 def test_buy_when_target_above_current():
-    plans = plan_orders({"BTC/USD": 0.10}, exposure(), CFG, NOW, {})
+    plans = plan({"BTC/USD": 0.10}, exposure())
     assert len(plans) == 1 and plans[0].action == "BUY"
     assert abs(plans[0].notional - D("10000")) < D("1")
 
 
 def test_reductions_come_before_additions():
     exp = exposure(cash="80000", long_qty={"BTC/USD": "0.4"})  # 20k BTC long
-    plans = plan_orders({"BTC/USD": 0.0, "ETH/USD": 0.15}, exp, CFG, NOW, {})
+    plans = plan({"BTC/USD": 0.0, "ETH/USD": 0.15}, exp)
     assert [p.action for p in plans] == ["SELL", "BUY"]
     assert plans[0].reducing and not plans[1].reducing
 
 
-def test_min_hold_blocks_non_exit_changes_but_not_full_exits():
+def test_sign_flip_closes_at_market_then_opens_in_same_cycle():
     exp = exposure(cash="80000", long_qty={"BTC/USD": "0.4"})
-    recent = {"BTC/USD": NOW - timedelta(hours=1)}
-    assert plan_orders({"BTC/USD": 0.10}, exp, CFG, NOW, recent) == []  # partial trim blocked
-    exit_plans = plan_orders({"BTC/USD": 0.0}, exp, CFG, NOW, recent)
-    assert exit_plans[0].action == "SELL" and exit_plans[0].qty == D("0.4")
-
-
-def test_urgent_bypasses_min_hold():
-    exp = exposure(cash="80000", long_qty={"BTC/USD": "0.4"})
-    recent = {"BTC/USD": NOW - timedelta(hours=1)}
-    plans = plan_orders({"BTC/USD": 0.10}, exp, CFG, NOW, recent, urgent_pairs=frozenset({"BTC/USD"}))
-    assert plans and plans[0].urgent
-
-
-def test_sign_flip_closes_first_and_opens_nothing_this_cycle():
-    exp = exposure(cash="80000", long_qty={"BTC/USD": "0.4"})
-    plans = plan_orders({"BTC/USD": -0.10}, exp, CFG, NOW, {})
-    assert [p.action for p in plans] == ["SELL"]
+    plans = plan({"BTC/USD": -0.10}, exp)
+    assert [(p.action, p.urgent) for p in plans] == [("SELL", True), ("SHORT_OPEN", False)]
     exp2 = exposure(cash="90000", shorts={"BTC/USD": "10000"})
-    plans2 = plan_orders({"BTC/USD": 0.10}, exp2, CFG, NOW, {})
-    assert [(p.action, p.close_pct) for p in plans2] == [("SHORT_CLOSE", D(100))]
+    plans2 = plan({"BTC/USD": 0.10}, exp2)
+    assert [(p.action, p.close_pct) for p in plans2][0] == ("SHORT_CLOSE", D(100))
+    assert plans2[1].action == "BUY"
 
 
 def test_short_open_and_partial_close_pct():
-    plans = plan_orders({"BTC/USD": -0.10}, exposure(), CFG, NOW, {})
+    plans = plan({"BTC/USD": -0.10}, exposure())
     assert plans[0].action == "SHORT_OPEN" and plans[0].collateral == D("10000.00")
     exp = exposure(cash="80000", shorts={"BTC/USD": "20000"})
-    plans = plan_orders({"BTC/USD": -0.10}, exp, CFG, NOW, {})
+    plans = plan({"BTC/USD": -0.10}, exp)
     assert plans[0].action == "SHORT_CLOSE" and plans[0].close_pct == D("50.00")
 
 
 def test_additions_never_exceed_cash_no_leverage():
     exp = exposure(cash="5000", long_qty={"ETH/USD": "47.5"})  # 95k ETH, only 5k cash
-    plans = plan_orders({"ETH/USD": 0.95, "BTC/USD": 0.30}, exp, CFG, NOW, {})
+    plans = plan({"ETH/USD": 0.95, "BTC/USD": 0.30}, exp)
     spend = sum((p.notional for p in plans if not p.reducing), D(0))
     assert spend <= D("5000")
 
@@ -98,13 +96,12 @@ def test_mini_order_drops_tiny_orders():
     rules = {
         "BTC/USD": TradingRule(pair="BTC/USD", price_precision=2, amount_precision=6, mini_order=D("5000"))
     }
-    exp = exposure(cash="100000")
-    assert plan_orders({"BTC/USD": 0.03}, exp, CFG, NOW, {}, rules) == []  # $3k < $5k MiniOrder
+    assert plan({"BTC/USD": 0.03}, exposure(), rules=rules) == []  # $3k < $5k MiniOrder
 
 
 def test_quantities_are_rounded_to_amount_precision():
     rules = {"ETH/USD": TradingRule(pair="ETH/USD", price_precision=2, amount_precision=2, mini_order=D("1"))}
-    plans = plan_orders({"ETH/USD": 0.1234567}, exposure(), CFG, NOW, {}, rules)
+    plans = plan({"ETH/USD": 0.1234567}, exposure(), rules=rules)
     assert plans[0].qty == plans[0].qty.quantize(D("0.01"))
 
 

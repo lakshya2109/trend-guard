@@ -75,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.once:
         engine.startup()
-        engine.hourly_cycle()
+        engine.hourly_cycle(force_act=True)
         return 0
     engine.run_forever()
     return 0

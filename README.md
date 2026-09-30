@@ -1,186 +1,161 @@
 # trend-guard
 
-**TREND-GUARD: a vol-targeted long/short trend ensemble with a drawdown governor.**
+**A low-volatility trend book plus a long/short momentum book, built for the Roostoo contest score.**
 
-An autonomous trading bot for the Roostoo HK vs AU vs IN Quant Trading Hackathon (live 4 to 17 Oct 2026).
-It runs unattended on EC2, trades the Roostoo mock exchange through its REST API, and every trade
-traces back to a logged decision and a git commit.
+An autonomous trading bot for the Roostoo HK vs AU vs IN Quant Trading Hackathon (Oct 2026). It
+runs unattended on EC2, trades the Roostoo mock exchange through its REST API (spot and `/v6`
+shorts), and ties every trade to a logged decision and a git commit.
 
 ## 1. Overview
 
-Every hour, on closed 1-hour bars, the bot scores each liquid Roostoo pair with a **trend ensemble**
-(Donchian channel position + volatility-normalised momentum, averaged over six lookbacks from 1 to 21
-days). A **market regime** (index trend plus breadth) decides how much long and short risk is
-allowed. Positions are sized by **inverse volatility**, scaled jointly to a **30% portfolio volatility
-target** using a shrunk covariance matrix, and capped per asset and per sleeve. **Risk overlays**
-then only ever shrink the book: a drawdown governor, a daily loss brake, macro-event de-risking, an
-end-game lock-in, and a derivatives crowding filter. A 60-second protective loop runs trailing stops
-and a shock/squeeze filter. Orders go out **maker-first** (limit at the touch, repriced, then market),
-and shorts use Roostoo's `/v6` short endpoints.
+Two sleeves on one account, summed per pair:
+
+- **Trend (70% of capital)**: long-only, holds liquid crypto (including PAXG gold) that is in a
+  clear 1-8 week uptrend, weighted by trend strength over volatility and scaled to a low
+  0.4%/day book volatility. Rebalanced daily at 12:00 UTC.
+- **Momentum (30%)**: once a day, long the 6 strongest and short the 6 weakest liquid coins on
+  risk-adjusted 3-30 day momentum, resized hourly to 1.5%/day volatility.
+
+Both sleeves are **ensembles of four parameter sets**, because at a 14-day horizon any single
+parameter choice is mostly noise. Execution is maker-first, and positions are resized only when
+the change can pay for its own trading cost.
 
 ## 2. Why this design
 
-In short: crypto trends at 1-to-4-week horizons, volatility scaling is what makes trend-following
-work, and the competition's composite score (`0.4 Sortino + 0.3 Sharpe + 0.3 Calmar`) punishes red
-days and drawdown far more than it rewards raw return. So the design targets a smooth, positively
-skewed equity curve rather than maximum return. See [`docs/STRATEGY.md`](docs/STRATEGY.md) for the
-research behind every component (Zarattini et al. 2025, Moskowitz et al. 2012, Barroso & Santa-Clara
-2015, Daniel & Moskowitz 2016, Grossman & Zhou 1993, Schmeling et al. 2026, and others).
+The composite `0.4 Sortino + 0.3 Sharpe + 0.3 Calmar` over about 14 daily returns barely depends on
+book size, punishes a single bad day, and is quickly eaten by fees. So the book diversifies two
+return streams that do not lose on the same days, runs at modest volatility, and trades little.
+The full research log (what was tried, what failed and why) is in
+[`docs/STRATEGY.md`](docs/STRATEGY.md).
 
-## 3. Architecture
+## 3. Results
+
+Every 14-day window starting daily at 12:00 UTC from Feb 2024 to Sep 2026, each starting flat in
+$100k, 0.10% fee + 5 bps slippage on every trade, contest score on daily marks. This is the same
+protocol, data and costs as the team's `roostoo-last-supper` harness, whose published figures are
+shown for comparison.
+
+| 2026 (258 windows) | Score | Median fortnight | Above -1% | Positive | Worst | Turnover / fortnight |
+|---|---|---|---|---|---|---|
+| **trend-guard v2** | **0.159** | +0.72% | **85%** | 68% | **-2.2%** | **2.1x** |
+| Team combined 70/30 | 0.131 | +0.91% | 84% | 69% | -2.2% | 3.1x |
+| BTC buy and hold | -0.007 | -0.35% | 55% | 48% | -18.3% | |
+
+| All 944 windows | Score | Median fortnight | Above -1% | Positive | Worst |
+|---|---|---|---|---|---|
+| **trend-guard v2** | **0.076** | +0.45% | **76%** | **59%** | **-4.3%** |
+| Team combined 70/30 | 0.059 | +0.46% | 75% | 59% | -4.8% |
+
+The edge is real but moderate. v2 wins 56% of individual windows, and a bootstrap puts the
+probability that its median score is higher at 77% over all windows (57% on 2026 alone, which is
+only about 18 independent fortnights). Reproduce with
+`python scripts/download_history.py && python backtest/run_backtest.py`.
+
+## 4. Architecture
 
 ```mermaid
 flowchart LR
-    subgraph data[Data]
-      BV[Binance Vision history] --> BARS[closed 1h bars]
-      BL[Binance live klines] --> BARS
-      RT[Roostoo tickers] --> REC[ticker recorder]
-      FD[funding / OI] --> CROWD[crowding inputs]
-    end
-    subgraph pure[Pure strategy + risk, shared by backtest and live]
-      BARS --> SIG[signals: Donchian + TSMOM ensemble]
-      SIG --> REG[regime + gates]
-      REG --> PORT[inverse-vol sizing, vol target, caps]
-      PORT --> OVL[overlays: DD, brake, event, endgame, crowding]
-      CROWD --> OVL
-      OVL --> PLAN[plan_orders: deadband, min-hold, no leverage]
-    end
-    PLAN --> EXE[maker-first executor]
-    EXE --> LB[LiveBroker to Roostoo API]
-    PLAN --> SB[SimBroker for paper and backtest]
-    LB --> DB[(SQLite state)]
-    DB --> DASH[Streamlit dashboard, read-only]
+    RX[Roostoo exchangeInfo] --> U[universe: tradable crypto pairs]
+    U --> C[Binance 1h klines, incremental cache]
+    C --> B[strategy/book.py: trend + momentum ensembles]
+    B --> K[x risk_scale x breaker]
+    K --> P[plan_orders: contest trade rule, no-leverage budget]
+    P --> E[maker-first executor: reprice, escalate, reconcile]
+    E --> L[LiveBroker: Roostoo v3 spot + v6 shorts]
+    P --> S[SimBroker: paper mode]
+    L --> DB[(SQLite: orders, equity, decisions)]
+    DB --> D[Streamlit dashboard, read-only]
+    C --> R[backtest/contest.py: every 14-day window]
+    B --> R
 ```
 
-| Module | Role |
+| Path | Role |
 |---|---|
-| `src/trend_guard/roostoo/` | REST client: HMAC signing (unit-tested against the docs' vector), clock sync, GET-only retries, typed responses, precision rules, rate limiter |
-| `src/trend_guard/data/` | Binance Vision history, live klines, funding/OI with a Bybit fallback, Roostoo ticker recorder, universe eligibility |
-| `src/trend_guard/strategy/` | `signals.py` ensemble, `regime.py` state machine and gates, `portfolio.py` sizing, `pipeline.py` the single `decide()` both engines call |
-| `src/trend_guard/risk/` | `overlays.py`, `protective.py` (stops, shock filter), `news_llm.py` (optional veto, off) |
-| `src/trend_guard/execution/` | `Broker` protocol, `LiveBroker`, `SimBroker`, `order_manager.py` (pure planner + live executor) |
-| `src/trend_guard/state/` | SQLite schema and store |
+| `src/trend_guard/strategy/book.py` | the strategy: pure functions of the price panel, shared by backtest and live |
+| `src/trend_guard/execution/order_manager.py` | targets to orders (the contest trade rule), maker-first executor, ambiguous-order reconciliation |
+| `src/trend_guard/execution/{broker,live_broker,sim_broker}.py` | one Broker protocol, live Roostoo and simulated implementations |
+| `src/trend_guard/roostoo/` | signed REST client (HMAC tested against the documented vector), precision rules, rate limiter |
+| `src/trend_guard/data/binance_live.py` | Binance klines with host fallback and an incremental parquet cache |
+| `src/trend_guard/risk/breaker.py` | catastrophe circuit breaker |
 | `src/trend_guard/engine.py`, `main.py` | 60 s loop, hourly cycle, CLI |
-| `backtest/` | event-driven backtest, rolling windows, PBO, report |
+| `backtest/contest.py`, `run_backtest.py`, `sweep.py`, `pbo.py` | contest replay, reports, the design search and its overfitting check |
 | `monitor/dashboard.py` | read-only Streamlit dashboard |
 | `deploy/` | systemd units, EC2 setup, logrotate |
 
-## 4. Rule compliance
+## 5. Rule compliance
 
 | Competition rule | Where it is enforced |
 |---|---|
-| No leverage | `order_manager.plan_orders` spends only free cash plus immediate proceeds (`CASH_BUFFER`); `portfolio.enforce_gross` caps long notional + short collateral at 98% of equity; the backtest tracks minimum free cash |
-| Spot / 1x long and short only | longs via `/v3/place_order`; shorts only via `/v6/short_open` sized by collateral (loss capped at collateral by the exchange) |
-| No HFT, market making or arbitrage | decisions only on **closed hourly bars** (`binance_live.drop_unclosed_bar`, `pipeline.asset_signal` is causal); one side per pair per order; the 60 s loop only manages risk exits, never opens new positions |
-| No manual trading or manual API calls | every order comes from `engine.Engine`; `scripts/probe_live.py` is gated and runs only through committed code; `.claude/settings.json` denies live mode to the coding assistant |
+| No leverage | `book_weights` asserts sleeve shares sum to <= 1 and each sleeve caps its gross; `plan_orders` spends only free cash plus immediate proceeds, minus a cash buffer |
+| Spot and 1x shorts only | longs via `/v3/place_order`; shorts only via `/v6/short_open` sized by collateral (loss capped at collateral by the exchange) |
+| No HFT, market making or arbitrage | decisions only on closed hourly Binance bars; one directional order per pair per cycle; no quotes on both sides |
+| No manual trading or API calls | every order comes from `engine.Engine`; `scripts/probe_live.py` is gated and runs only through committed code; `.claude/settings.json` denies live mode to the coding assistant |
 | No accidental live orders | `main.py` refuses live mode unless `ALLOW_LIVE_ORDERS=1` and keys exist; `LiveBroker._require_live` refuses every order method independently |
-| Never blind-retry an order | `RoostooClient._post` never retries order-creating calls; ambiguous outcomes raise `OrderStateUnknownError`, which `OrderExecutor._send` reconciles via `query_order` and `match_unknown_order` (Section 8.3) |
-| At least 8 active trading days | the strategy rebalances hourly; `engine.tick` warns at 18:00 UTC if no fill has happened that day (it never fakes trades) |
-| Trade log integrity / commit traceability | `logs/fills/*.csv` rows carry the commit hash; every hourly decision is stored in SQLite and `logs/decisions/*.jsonl` with signals, weights, multipliers and planned orders; startup logs the commit and config hash |
-| Shorts may be disabled | `ShortsDisabledError` turns the short sleeve off permanently for the session (`engine._execute`) |
+| Never blind-retry an order | `RoostooClient._post` never retries order-creating calls; ambiguous outcomes raise `OrderStateUnknownError` and are reconciled via `query_order` (`match_unknown_order`) |
+| At least 8 active days | the book rebalances daily at 00:00 and 12:00 UTC; the engine warns at 18:00 UTC if nothing traded (it never fakes trades) |
+| Trade-log integrity | every fill in `logs/fills/*.csv` carries the commit hash; every hourly decision is stored in SQLite and `logs/decisions/*.jsonl` |
+| Shorts may be disabled | `ShortsDisabledError` switches the book to long-only for the session |
 
-## 5. Risk management
+## 6. Risk management
 
-All thresholds live in [`config/strategy.yaml`](config/strategy.yaml).
+- Low volatility targets: 0.4%/day for the trend sleeve and 1.5%/day for the momentum sleeve (about
+  0.6%/day for the whole book).
+- Caps: 50% per trend name; momentum gross at most 0.9x of its capital; account gross at most 1x.
+- Liquidity and history filters: at least $2M/day and 14 days (trend), $5M/day and 30 days
+  (momentum); stablecoins, tokenized stocks and pairs without a Binance feed are never traded.
+- A catastrophe breaker halves every target at a 10% drawdown. Tighter drawdown brakes were tested
+  and lowered the score by selling dips before rebounds.
+- A HALT file (`/etc/trend-guard/HALT`) cancels resting orders and idles the bot.
 
-| Layer | Rule | Default |
-|---|---|---|
-| Per-asset caps | abs(weight) <= cap | BTC/ETH 25%, majors 12%, others 6%, bStock 8%, PAXG 20% |
-| Sleeve caps | total short collateral; bStock sleeve | 50%; 25% |
-| Gross | long notional + short collateral | <= 98% of equity |
-| Vol target | scale the book to target portfolio vol, shrunk EWMA covariance | 30% annualised, k <= 3 |
-| Drawdown governor | `mult = clip(1 - DD/dd_max, floor, 1)` | dd_max 5%, floor 0.25 |
-| Daily brake | P&L since 00:00 UTC | < -0.8%: half risk; < -1.5%: reductions only until next UTC day |
-| Event overlay | around scheduled US macro releases (`config/events.yaml`) | 0.5x from 30 min before to 60 min after (CPI, 14 Oct 12:30 UTC) |
-| End-game lock-in | from day 11, if return >= 4% | vol target x0.65 |
-| Crowding filter | Binance/Bybit funding z-score + open interest change | 0.6x on crowded longs; block new shorts after capitulation |
-| Trailing stop | max(best - 2.5 ATR(24h), ratcheted Donchian mid) | 6 h no re-entry after a stop |
-| Shock / squeeze | BTC 15-min z-score beyond 2.5 | cut crypto longs 50% / cover 50% of shorts after a -8% 3-day fall |
-| Kill switch | `HALT` file | cancels our resting orders and idles |
+## 7. Execution
 
-## 6. Execution
+Every hour at HH:03 UTC (after the Binance candle closes), the bot:
+1. tops up the Binance bar cache;
+2. computes the book's targets;
+3. applies the contest trade rule;
+4. places orders: closes first, then maker limits at the touch, repriced every 60 s and sent at
+   market after 4 tries.
 
-- Hourly at minute 3, `plan_orders` diffs targets against an exchange-reconciled snapshot (the
-  exchange is the source of truth): a 2% deadband, a 3 h minimum hold except for exits and risk
-  moves, reductions before additions, and a sign flip closes first and opens the other side next
-  cycle.
-- **Longs are maker-first:** a limit at the touch (one tick inside if the spread is wider than two
-  ticks), repriced every 60 s, and after four tries the residual goes to market. Risk exits go
-  straight to market.
-- **Shorts:** `/v6/short_open` at market (a limit short earns no fee discount) and
-  `/v6/short_close` by percentage.
-- Every quantity and price is truncated to the pair's precision, and orders below `MiniOrder` are
-  dropped. Role and commission are recorded from every response rather than assumed.
-
-## 7. Backtest methodology and results
-
-`python backtest/run_backtest.py --config config/strategy.yaml [--grid]`
-
-- **Data:** Binance spot 1-hour klines (Binance Vision), June 2023 to September 2026, for about 28 pairs
-  that Roostoo lists, mapped `COIN/USD -> COINUSDT`.
-- **Same code as live:** `pipeline.decide` and `plan_orders` drive `SimBroker`.
-- **Fills (Section 11.2):** a decision at bar *t*'s close places a maker limit at `close*(1 -/+ 3 bp)`.
-  It fills at 5 bp if bar *t+1* trades through it; otherwise it fills at bar *t+1*'s close plus 2 bp
-  slippage at the 10 bp taker fee. Stops fill at the stop price, or at the open if price gapped
-  through, with a taker fee. Shorts pay 10 bp each side.
-- **Evaluation:** every 14-day window (1-day step) from 2024-01-01, under three composite definitions
-  (daily raw, daily annualised, hourly), plus stress windows. The baselines are BTC buy-and-hold,
-  equal-weight top-10 hold, cash, and long-only and no-overlay ablations.
-- **Selection:** maximise the 25th-percentile composite, subject to a median 14-day return of at
-  least 2%, a median red-day share of at most 30%, and a 95th-percentile MDD of at most 5%. The grid
-  has 29 configs, and PBO is computed by CSCV with 16 partitions.
-
-Results: see [`docs/BACKTEST.md`](docs/BACKTEST.md) (generated from `reports/`).
+Shorts open and close at market via `/v6`. Quantities and prices follow each pair's precision and
+MiniOrder. Role and commission come from every exchange response. The exchange is the source of
+truth: positions are re-read every cycle.
 
 ## 8. How to run
 
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt -r requirements-dev.txt && pip install -e .
-cp .env.example .env                                        # add keys for live mode only
+cp .env.example .env                                        # keys are only needed for live mode
 
-pytest -q && ruff check .                                   # tests + lint
-python scripts/download_history.py --start 2023-06-01       # history for the backtest
-python backtest/run_backtest.py --config config/strategy.yaml
-python -m trend_guard.main --mode paper                     # live prices, simulated fills, no keys needed
-python -m trend_guard.main --mode paper --once              # one hourly cycle, then exit
-ALLOW_LIVE_ORDERS=1 python -m trend_guard.main --mode live  # real orders (human-operated)
+pytest -q && ruff check .
+python scripts/download_history.py                          # hourly bars for every Roostoo crypto pair
+python backtest/run_backtest.py                             # contest replay -> reports/<ts>/summary.md
+python backtest/sweep.py                                    # the 36-variant design search + PBO
+python -m trend_guard.main --mode paper --once              # one hourly cycle on live prices, simulated fills
+python -m trend_guard.main --mode paper                     # run paper trading
+ALLOW_LIVE_ORDERS=1 python -m trend_guard.main --mode live  # real orders (operated by a human)
 streamlit run monitor/dashboard.py --server.address 127.0.0.1
 ```
 
 ## 9. Deployment
 
-On EC2 (Ubuntu, UTC, chrony), the bot runs as two systemd services: `trend-guard` (the bot) and
-`trend-guard-recorder` (the ticker recorder), each with `Restart=always`. Secrets live in
-`/etc/trend-guard/env` (mode 600). The repo is cloned with a read-only deploy key, and each deploy
-is a tagged commit. See [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
+On EC2 (Ubuntu, UTC, chrony), the bot runs as a systemd service with `Restart=always`. Secrets
+live in `/etc/trend-guard/env` (mode 600), the repo is cloned with a read-only deploy key, and
+every deploy is a tagged commit. See [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
 
 ## 10. Logs and audit trail
 
 | Artifact | Contents |
 |---|---|
 | `logs/api/*.jsonl` | every request: path, params (never secrets), success, error |
-| `logs/decisions/*.jsonl` + `decisions` table | every hourly cycle: signals, regime, raw and final weights, each multiplier with its reason, planned orders, commit |
+| `logs/decisions/*.jsonl` + `decisions` table | every hourly cycle: targets, gross/net, multiplier, planned orders, commit |
 | `logs/fills/*.csv` | every fill with role, fee, reason and commit hash |
-| `orders` table | every order and its status, including `UNKNOWN` ones awaiting reconciliation |
-| `equity` table | equity snapshot every minute |
+| `orders`, `equity` tables | every order and its status (including `UNKNOWN`), equity every minute |
 
-Each fill links to a decision (`cycle_id`), each decision links to a commit, and each commit's
-strategy changes carry a `strat:` message with a one-line rationale.
+## 11. Limitations
 
-## 11. Limitations and honest caveats
-
-- **Over 14 days, the market path dominates.** Even a Sharpe-1.5 strategy has a wide spread of
-  14-day outcomes. The design limits the left tail; it cannot guarantee a positive window.
-- **Backtest vs live:** the backtest uses Binance prices while live valuation uses Roostoo's ticker
-  (the basis is logged hourly, and assets whose basis exceeds 0.5% are excluded). The shock filter
-  uses hourly rather than 15-minute returns. There is no historical Roostoo spread, so the
-  universe's spread filter only applies live. Crowding is neutral in the backtest (no funding/OI
-  history was loaded) and whenever the venues are unreachable.
-- **Maker fill assumptions** are unverified until the prep-window probes run (`scripts/probe_live.py`).
-  If limits don't book as maker, switch to market orders and raise the deadband (BUILD_SPEC Section 15).
-- **Organizer unknowns:** the exact scoring sampling and annualisation are unpublished (so all three
-  definitions are reported), and so is whether shorts are enabled for competition accounts. The
-  tournament overlay (reading the leaderboard) stays off until organizers approve.
-- **Survivorship:** the universe is today's Roostoo listings, so the backtest excludes coins that
-  were delisted.
+See [`docs/STRATEGY.md`](docs/STRATEGY.md) section 5. The short version:
+- The edge over the team book is moderate and statistically weak on 2026 alone.
+- In sharp selloffs the book is positive less than half the time.
+- Backtest fills assume the hourly close plus 5 bps.
+- The universe carries survivorship bias.

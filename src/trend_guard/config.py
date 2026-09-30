@@ -1,4 +1,4 @@
-"""Typed config loading: config/strategy.yaml, config/events.yaml, config/symbols.yaml, and env.
+"""Typed config loading: config/strategy.yaml, config/symbols.yaml, and env.
 
 Every threshold used by strategy/risk code must be read through StrategyConfig. No magic numbers
 in code (BUILD_SPEC.md Section 0.5).
@@ -22,167 +22,96 @@ class CompetitionConfig(BaseModel):
     risk_scale: float = 1.0
 
 
-class UniverseConfig(BaseModel):
-    max_crypto: int = 25
-    max_spread_pct: float = 0.0015
-    min_history_days: int = 180
-    majors: list[str] = Field(default_factory=list)
-    bstocks_enabled: bool = False
+class TrendConfig(BaseModel):
+    """Long-only time-series trend sleeve (strategy/book.py). Members = lookback_sets x min_scores."""
+
+    lookback_sets: list[list[int]] = Field(default_factory=lambda: [[168, 336, 720], [168, 336, 720, 1440]])
+    min_scores: list[float] = Field(default_factory=lambda: [0.25, 0.4])
+    score_cap: float = 2.0  # t-stat clipped to +-cap then scaled to [-1, 1]
+    vol_window_h: int = 168  # rolling window for the hourly volatility estimate
+    target_vol_daily: float = 0.004  # book volatility target, per day
+    max_weight: float = 0.5
+    min_weight: float = 0.01  # positions smaller than this cannot pay their round-trip cost
+    gross_cap: float = 1.0
+    cov_hours: int = 168  # trailing window for the covariance used by the vol target
+    rebalance_hour_utc: int = 12
+    min_liquidity_usd: float = 2e6  # trailing 7-day mean daily quote volume
+    min_age_h: int = 336
+    exclude: list[str] = Field(default_factory=list)
 
 
-class SignalConfig(BaseModel):
-    lookbacks_h: list[int]
-    w_donchian: float = 0.5
-    w_tsmom: float = 0.5
-    smooth_bars: int = 3
-    # "hourly": ensemble on 1h closes over lookbacks_h. "daily": the paper-style ensemble on daily
-    # closes over lookbacks_d. "blend": mean of the two (BUILD_SPEC Section 11.3 sweep).
-    mode: Literal["hourly", "daily", "blend"] = "hourly"
-    lookbacks_d: list[int] = Field(default_factory=lambda: [5, 10, 20, 30, 60, 90])
+class MomentumConfig(BaseModel):
+    """Cross-sectional long/short momentum sleeve (strategy/book.py). Members = lookback_sets x skips."""
+
+    lookback_sets: list[list[int]] = Field(default_factory=lambda: [[72, 168, 336], [168, 336, 720]])
+    skips: list[int] = Field(default_factory=lambda: [0, 12])  # hours of the latest move to ignore
+    k: int = 6  # names per side
+    buffer: int = 12  # a holding is kept while ranked within this many from its end
+    short_share: float = 0.4  # share of gross in the short leg when both legs exist
+    target_vol_daily: float = 0.015
+    avg_corr: float = 0.7  # constant-correlation risk model
+    gross_cap: float = 0.9
+    select_hour_utc: int = 0
+    ewma_lambda: float = 0.99
+    min_liquidity_usd: float = 5e6
+    min_age_h: int = 720
+    exclude: list[str] = Field(default_factory=lambda: ["PAXG/USD"])
 
 
-class VolConfig(BaseModel):
-    halflife_h: int = 48
-    vol_floor_ann: float = 0.15
+class BookConfig(BaseModel):
+    """Capital split between the two sleeves; shares must sum to <= 1 (no leverage)."""
+
+    trend_share: float = 0.7
+    momentum_share: float = 0.3
+    allow_short: bool = True
+    trend: TrendConfig = Field(default_factory=TrendConfig)
+    momentum: MomentumConfig = Field(default_factory=MomentumConfig)
 
 
-class RegimeThreshold(BaseModel):
-    mkt: float
-    breadth: float
+class BreakerConfig(BaseModel):
+    """Catastrophe circuit breaker on account drawdown (a safety net, not a trading rule: tighter
+    drawdown brakes lowered the score in backtests by selling dips before rebounds)."""
 
-
-class RegimeBudget(BaseModel):
-    long: float
-    short: float
-    long_entry_min: float
-    short_entry_max: float
-
-
-class RegimeConfig(BaseModel):
-    index_size: int = 10
-    on: RegimeThreshold
-    off: RegimeThreshold
-    hysteresis: float = 0.10
-    budgets: dict[str, RegimeBudget]
-    # per-asset entry/exit band: when True, an open position is kept while its signal stays on the
-    # same side of zero, even after it falls back inside the entry threshold (False = spec default:
-    # entry and exit share one threshold)
-    hold_to_zero: bool = False
-
-
-class DiversifiersConfig(BaseModel):
-    entry_min: float = 0.10
-    allow_short: bool = False
-
-
-class PortfolioCaps(BaseModel):
-    btc_eth: float = 0.25
-    major: float = 0.12
-    other: float = 0.06
-    bstock: float = 0.08
-    bstock_sleeve: float = 0.25
-    paxg: float = 0.20
-    short_total: float = 0.50
-
-
-class PortfolioConfig(BaseModel):
-    sigma_asset_target: float = 0.15
-    sigma_portfolio_target: float = 0.30
-    cov_halflife_h: int = 72
-    shrink: float = 0.30
-    k_max: float = 3.0
-    gross_max: float = 0.98
-    caps: PortfolioCaps
-
-
-class DailyBrakeConfig(BaseModel):
-    soft: float
-    hard: float
-
-
-class EventOverlayConfig(BaseModel):
-    pre_min: int = 30
-    post_min: int = 60
-    mult: float = 0.5
-
-
-class EndgameConfig(BaseModel):
-    from_day: int
-    min_return: float
-    sigma_cut: float
-
-
-class CrowdingConfig(BaseModel):
-    enabled: bool = True
-    funding_z: float = 2.0
-    oi_chg_24h: float = 0.10
-    mult: float = 0.6
-
-
-class TournamentConfig(BaseModel):
-    enabled: bool = False
-    buffer: float = 0.01
-    above_mult: float = 0.8
-    below_mult: float = 1.15
-
-
-class NewsLLMConfig(BaseModel):
-    enabled: bool = False
-
-
-class RiskConfig(BaseModel):
-    dd_max: float = 0.05
-    dd_floor: float = 0.25
-    daily_brake: DailyBrakeConfig
-    event: EventOverlayConfig
-    endgame: EndgameConfig
-    crowding: CrowdingConfig
-    tournament: TournamentConfig
-    news_llm: NewsLLMConfig
-
-
-class ProtectiveConfig(BaseModel):
-    atr_mult: float = 2.5
-    atr_bar_h: int = 1  # bar size the ATR is measured on (1 = hourly bars, spec default; 24 = daily)
-    atr_window: int = 24  # number of those bars averaged
-    shock_z: float = 2.5
-    squeeze_prior_drop: float = -0.08
-    cooldown_h: int = 6
+    dd_level: float = 0.10
+    dd_mult: float = 0.5
+    dd_recover: float = 0.05
 
 
 class ExecutionConfig(BaseModel):
-    rebalance_minute: int = 3
-    deadband: float = 0.02
-    min_hold_h: int = 3
+    rebalance_minute: int = 3  # run the hourly cycle 3 minutes after the Binance candle closes
+    decision_hours_utc: list[int] = Field(default_factory=lambda: [0, 12])  # also rebalance drift here
+    min_trade_weight: float = 0.01  # skip resizes smaller than this share of equity...
+    min_trade_frac: float = 0.25  # ...or smaller than this fraction of the target (opens/closes always)
+    cash_buffer: float = 0.005  # keep this share of equity in cash for fees
     limit_reprice_s: int = 60
     limit_max_tries: int = 4
     ticker_poll_s: int = 30
     requests_per_min: int = 30
     min_order_gap_s: float = 1.0
+    history_hours: int = 2400  # hourly bars loaded per pair for the live signals (100 days)
 
 
 class BacktestConfig(BaseModel):
-    start: str = "2024-01-01"
-    half_spread: float = 0.0003
-    slippage_bps: float = 2
+    first_window: str = "2024-02-15"  # windows start daily at window_hour_utc between these dates
+    last_window: str = "2026-09-15"
+    window_hour_utc: int = 12
+    window_days: int = 14
+    fee: float = 0.001  # taker fee per side (also the flat short fee)
+    slippage: float = 0.0005  # per side, on every fill
+    capital: float = 100_000.0
+    # SimBroker (paper mode) fee model
     maker_fee: float = 0.0005
     taker_fee: float = 0.0010
     short_fee: float = 0.0010
-    window_days: int = 14
+    slippage_bps: float = 5
 
 
 class StrategyConfig(BaseModel):
     """Root config model loaded from config/strategy.yaml."""
 
     competition: CompetitionConfig
-    universe: UniverseConfig
-    signal: SignalConfig
-    vol: VolConfig
-    regime: RegimeConfig
-    diversifiers: DiversifiersConfig
-    portfolio: PortfolioConfig
-    risk: RiskConfig
-    protective: ProtectiveConfig
+    book: BookConfig
+    breaker: BreakerConfig
     execution: ExecutionConfig
     backtest: BacktestConfig
 
@@ -198,26 +127,9 @@ def config_hash(path: str | Path = "config/strategy.yaml") -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:12]
 
 
-class EventItem(BaseModel):
-    name: str
-    utc: str
-
-
-def load_events(path: str | Path = "config/events.yaml") -> list[EventItem]:
-    """Load the scheduled macro event calendar. Returns [] if the file is missing or empty."""
-    p = Path(path)
-    if not p.exists():
-        return []
-    raw = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-    return [EventItem.model_validate(e) for e in raw.get("events", []) or []]
-
-
 class SymbolsConfig(BaseModel):
-    overrides: dict[str, str] = Field(default_factory=dict)
-    asset_class: dict[str, str] = Field(default_factory=dict)
-    bstocks: dict[str, str] = Field(default_factory=dict)
-    crypto_beta_stocks: list[str] = Field(default_factory=list)
-    stablecoins: list[str] = Field(default_factory=list)
+    overrides: dict[str, str] = Field(default_factory=dict)  # roostoo pair -> binance symbol
+    excluded: list[str] = Field(default_factory=list)  # never traded: stablecoins, no Binance feed
 
 
 def load_symbols(path: str | Path = "config/symbols.yaml") -> SymbolsConfig:
@@ -233,7 +145,6 @@ class EnvConfig(BaseModel):
     roostoo_base_url: str = "https://mock-api.roostoo.com"
     allow_live_orders: bool = False
     bot_mode: Literal["paper", "live"] = "paper"
-    anthropic_api_key: str = ""
 
 
 def load_env(dotenv_path: str | Path | None = None) -> EnvConfig:
@@ -246,5 +157,4 @@ def load_env(dotenv_path: str | Path | None = None) -> EnvConfig:
         roostoo_base_url=os.environ.get("ROOSTOO_BASE_URL", "https://mock-api.roostoo.com"),
         allow_live_orders=os.environ.get("ALLOW_LIVE_ORDERS", "0") == "1",
         bot_mode=os.environ.get("BOT_MODE", "paper"),  # type: ignore[arg-type]
-        anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", ""),
     )

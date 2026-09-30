@@ -1,73 +1,71 @@
-# TREND-GUARD default strategy config. Every threshold used by strategy/risk code is read from
-# here via src/trend_guard/config.py -- never hardcode a number in code. See BUILD_SPEC.md Section 12.
+# trend-guard v2: every parameter the bot uses. The live engine and the backtest read this same file,
+# so a change here is a reviewed `strat:` commit, never a manual action. Evidence for each value is in
+# docs/STRATEGY.md ("Research log") and reproducible with `python backtest/sweep.py`.
 competition:
-  start_utc: "2026-10-03T16:00:00Z"    # 4 Oct 00:00 HKT; TODO confirm exact start with organizers (BUILD_SPEC 16.3)
+  start_utc: "2026-10-03T16:00:00Z"    # TODO confirm with organizers (a teammate's config says 1 Oct 00:00 HKT)
   end_utc:   "2026-10-17T15:59:59Z"
-  risk_scale: 1.0                      # 0.1 for the 3 Oct live dry run, per BUILD_SPEC Section 7
-universe:
-  max_crypto: 25
-  max_spread_pct: 0.0015
-  min_history_days: 180
-  majors: ["SOL/USD", "BNB/USD", "XRP/USD", "DOGE/USD", "ADA/USD", "AVAX/USD", "LINK/USD", "SUI/USD"]
-  bstocks_enabled: false               # flip after prep checks (BUILD_SPEC Section 9 / 15)
-signal:
-  lookbacks_h: [24, 48, 96, 168, 336, 504]
-  w_donchian: 0.5
-  w_tsmom: 0.5
-  smooth_bars: 3
-  mode: hourly                         # hourly | daily | blend (Section 11.3 sweep)
-  lookbacks_d: [5, 10, 20, 30, 60, 90] # used by daily/blend modes, on daily closes
-vol:
-  halflife_h: 48
-  vol_floor_ann: 0.15
-regime:
-  index_size: 10
-  "on":  {mkt: 0.20, breadth: 0.55}   # quoted: bare on/off parse as booleans under YAML 1.1
-  "off": {mkt: -0.20, breadth: 0.40}
-  hysteresis: 0.10
-  budgets:
-    RISK_ON:  {long: 1.0, short: 0.25, long_entry_min: 0.10, short_entry_max: -0.50}
-    NEUTRAL:  {long: 0.5, short: 0.50, long_entry_min: 0.20, short_entry_max: -0.30}
-    RISK_OFF: {long: 0.0, short: 1.00, long_entry_min: 1.01, short_entry_max: -0.30}
-diversifiers:
-  entry_min: 0.10
-  allow_short: false
-portfolio:
-  sigma_asset_target: 0.15
-  sigma_portfolio_target: 0.30
-  cov_halflife_h: 72
-  shrink: 0.30
-  k_max: 3.0
-  gross_max: 0.98
-  caps: {btc_eth: 0.25, major: 0.12, other: 0.06, bstock: 0.08, bstock_sleeve: 0.25, paxg: 0.20, short_total: 0.50}
-risk:
-  dd_max: 0.05
-  dd_floor: 0.25
-  daily_brake: {soft: -0.008, hard: -0.015}
-  event: {pre_min: 30, post_min: 60, mult: 0.5}
-  endgame: {from_day: 11, min_return: 0.04, sigma_cut: 0.35}
-  crowding: {enabled: true, funding_z: 2.0, oi_chg_24h: 0.10, mult: 0.6}
-  tournament: {enabled: false, buffer: 0.01, above_mult: 0.8, below_mult: 1.15}
-  news_llm: {enabled: false}
-protective:
-  atr_mult: 2.5
-  shock_z: 2.5
-  squeeze_prior_drop: -0.08
-  cooldown_h: 6
+  risk_scale: 1.0                      # multiplies every target; 0.1 for a live dry run
+
+book:
+  trend_share: 0.7                     # capital in the low-vol trend sleeve
+  momentum_share: 0.3                  # capital in the long/short momentum sleeve (shares sum <= 1: no leverage)
+  allow_short: true                    # set false if /v6 shorts are disabled for the account
+  trend:
+    lookback_sets: [[168, 336, 720], [168, 336, 720, 1440]]   # 7/14/30 and 7/14/30/60 days
+    min_scores: [0.25, 0.4]            # members average over both entry thresholds
+    score_cap: 2.0
+    vol_window_h: 168
+    target_vol_daily: 0.004            # low on purpose: the score is scale-free, qualifying (> -1%) is not
+    max_weight: 0.5
+    min_weight: 0.01                   # a position under 1% cannot earn back its 0.3% round trip
+    gross_cap: 1.0
+    cov_hours: 168
+    rebalance_hour_utc: 12
+    min_liquidity_usd: 2000000
+    min_age_h: 336
+    exclude: []
+  momentum:
+    lookback_sets: [[72, 168, 336], [168, 336, 720]]          # 3/7/14 and 7/14/30 days
+    skips: [0, 12]                     # members with and without skipping the latest 12h
+    k: 6
+    buffer: 12
+    short_share: 0.4
+    target_vol_daily: 0.015
+    avg_corr: 0.7
+    gross_cap: 0.9
+    select_hour_utc: 0
+    ewma_lambda: 0.99
+    min_liquidity_usd: 5000000
+    min_age_h: 720
+    exclude: ["PAXG/USD"]              # gold is not crypto momentum
+
+breaker:                               # catastrophe circuit breaker only; tighter brakes hurt the score
+  dd_level: 0.10
+  dd_mult: 0.5
+  dd_recover: 0.05
+
 execution:
   rebalance_minute: 3
-  deadband: 0.02
-  min_hold_h: 3
+  decision_hours_utc: [0, 12]
+  min_trade_weight: 0.01
+  min_trade_frac: 0.25
+  cash_buffer: 0.005
   limit_reprice_s: 60
   limit_max_tries: 4
   ticker_poll_s: 30
   requests_per_min: 30
   min_order_gap_s: 1.0
+  history_hours: 2400
+
 backtest:
-  start: "2024-01-01"
-  half_spread: 0.0003
-  slippage_bps: 2
+  first_window: "2024-02-15"
+  last_window: "2026-09-15"
+  window_hour_utc: 12
+  window_days: 14
+  fee: 0.001
+  slippage: 0.0005
+  capital: 100000
   maker_fee: 0.0005
   taker_fee: 0.0010
   short_fee: 0.0010
-  window_days: 14
+  slippage_bps: 5

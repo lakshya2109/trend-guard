@@ -17,7 +17,7 @@ trend_guard = ["state/schema.sql"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-extend-exclude = ["docs/vendor"]
+extend-exclude = ["docs/vendor", "*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

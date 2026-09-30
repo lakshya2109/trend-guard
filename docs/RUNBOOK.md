@@ -18,9 +18,14 @@ BUILD_SPEC.md for the full spec; this is the day-to-day "how do I..." reference.
 3. Fill in `/etc/trend-guard/env` with real `ROOSTOO_API_KEY` / `ROOSTOO_SECRET_KEY`. Leave
    `ALLOW_LIVE_ORDERS=0` until you have deliberately decided to go live.
 4. Verify read-only access: `sudo -u trendguard /opt/trend-guard/.venv/bin/python scripts/smoke_readonly.py`
-5. Start the ticker recorder (safe, read-only, should run from day 1):
+5. Download the hourly bar history the strategy needs (public Binance data, a few minutes):
+   `sudo -u trendguard /opt/trend-guard/.venv/bin/python scripts/download_history.py`
+   The engine tops this cache up every hour afterwards.
+6. Dry-run one hourly cycle in paper mode (live prices, simulated fills, no orders):
+   `sudo -u trendguard /opt/trend-guard/.venv/bin/python -m trend_guard.main --mode paper --once`
+7. Start the ticker recorder (safe, read-only, useful as an audit of Roostoo prices):
    `sudo systemctl start trend-guard-recorder`
-6. Only when ready to trade: set `ALLOW_LIVE_ORDERS=1` in `/etc/trend-guard/env`, then
+8. Only when ready to trade: set `ALLOW_LIVE_ORDERS=1` in `/etc/trend-guard/env`, then
    `sudo systemctl start trend-guard`.
 
 ## Redeploying a new version
@@ -67,7 +72,7 @@ publicly. Reach it via an SSH tunnel:
 ```bash
 ssh -L 8501:localhost:8501 ubuntu@<ec2-host>
 # then open http://localhost:8501 on your own machine
-# on the EC2 host, run: streamlit run monitor/dashboard.py --server.address 127.0.0.1
+# on the EC2 host, run: TREND_GUARD_DB=state/live.db streamlit run monitor/dashboard.py --server.address 127.0.0.1
 ```
 
 ## Going public before 14 Oct
@@ -91,6 +96,8 @@ ssh -L 8501:localhost:8501 ubuntu@<ec2-host>
 - **No fills for a full UTC day**: the engine logs a warning at 18:00 UTC (BUILD_SPEC.md Section
   8.4). Two days in a row -> raise it and consider lowering the deadband via a `strat:` commit
   with a one-line rationale. Never add fake trades.
-- **fapi.binance.com blocked (US region)**: `binance_live.probe_fapi_access()` should have
-  already fallen back to Bybit public endpoints or disabled the crowding overlay; confirm via the
-  dashboard's multiplier panel and `logs/decisions/*.jsonl`.
+- **Binance klines unreachable from the host**: the engine logs `bars unavailable` per pair and
+  trades only the pairs it has fresh data for; `data-api.binance.vision` is tried before
+  `api.binance.com`. If every pair fails, the cycle is skipped (no trades on stale data).
+- **Breaker engaged** (`breaker.mult` 0.5 in the decisions log): the account is 10% below its peak.
+  It releases automatically once the drawdown recovers inside 5%.

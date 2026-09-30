@@ -1,4 +1,4 @@
-"""Tests for trend_guard.data.binance_live. No live network calls -- HTTP mocked with `responses`."""
+"""Binance REST klines + cache. HTTP is mocked with `responses`; no live network."""
 
 from __future__ import annotations
 
@@ -6,214 +6,87 @@ from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 import responses
-from responses import registries
 
 from trend_guard.data import binance_live as bl
 
-
-def _kline_row(open_time_ms: int) -> list:
-    return [
-        open_time_ms,
-        "100.0",
-        "101.0",
-        "99.0",
-        "100.5",
-        "10.0",
-        open_time_ms + 3_599_999,
-        "1000.0",
-        5,
-        "4.0",
-        "400.0",
-        "0",
-    ]
+T0 = datetime(2024, 1, 1, tzinfo=UTC)
+MS = 3_600_000
+URL = bl.HOSTS[0] + "/api/v3/klines"
+FALLBACK = bl.HOSTS[1] + "/api/v3/klines"
 
 
-# --- drop_unclosed_bar: pure, no I/O -----------------------------------------------------------
+def kline(open_ms: int, close: float = 100.5) -> list:
+    return [open_ms, "100", "101", "99", str(close), "10", open_ms + MS - 1, "1005", 5, "5", "500", "0"]
 
 
-def test_drop_unclosed_bar_keeps_only_closed():
-    idx = pd.date_range("2024-01-01 00:00", periods=3, freq="1h", tz="UTC")
-    df = pd.DataFrame({"close": [1, 2, 3]}, index=idx)
-    now = datetime(2024, 1, 1, 2, 30, tzinfo=UTC)  # bar at hour 2 (closes at 3:00) hasn't closed yet
-
-    out = bl.drop_unclosed_bar(df, now, timedelta(hours=1))
-
-    assert len(out) == 2
-    assert idx[2] not in out.index
-
-
-def test_drop_unclosed_bar_naive_now_treated_as_utc():
-    idx = pd.date_range("2024-01-01 00:00", periods=2, freq="1h", tz="UTC")
-    df = pd.DataFrame({"close": [1, 2]}, index=idx)
-    now = datetime(2024, 1, 1, 1, 30)  # naive, should be treated as UTC
-    out = bl.drop_unclosed_bar(df, now, timedelta(hours=1))
-    assert len(out) == 1
-
-
-# --- fetch_recent_klines_1h: mirror + fallback + closed-bar filtering --------------------------
+def ms(dt: datetime) -> int:
+    return int(dt.timestamp() * 1000)
 
 
 @responses.activate
-def test_fetch_recent_klines_uses_data_api_and_drops_forming_bar():
-    rows = [_kline_row(1704067200000), _kline_row(1704070800000)]  # 00:00 and 01:00 UTC
-    responses.add(responses.GET, bl._DATA_API_KLINES, json=rows, status=200)
-
-    now = datetime(2024, 1, 1, 1, 30, tzinfo=UTC)  # bar at 01:00 (closes 02:00) not yet closed
-    df = bl.fetch_recent_klines_1h("BTCUSDT", now)
-
-    assert len(df) == 1
-    assert df.index[0] == pd.Timestamp("2024-01-01 00:00", tz="UTC")
-
-
-@responses.activate(registry=registries.OrderedRegistry)
-def test_fetch_recent_klines_falls_back_to_api_binance_com_on_failure():
-    responses.add(responses.GET, bl._DATA_API_KLINES, status=500)
-    rows = [_kline_row(1704067200000)]
-    responses.add(responses.GET, bl._SPOT_FALLBACK_KLINES, json=rows, status=200)
-
-    now = datetime(2024, 1, 1, 2, 0, tzinfo=UTC)
-    df = bl.fetch_recent_klines_1h("BTCUSDT", now)
-
-    assert len(df) == 1
+def test_fetch_klines_drops_the_forming_bar():
+    responses.add(responses.GET, URL, json=[kline(ms(T0)), kline(ms(T0) + MS)])
+    now = T0 + timedelta(hours=1, minutes=30)  # the 01:00 bar closes at 02:00: still forming
+    df = bl.fetch_klines("BTCUSDT", T0, now)
+    assert list(df.index) == [pd.Timestamp(T0)]
+    assert list(df.columns) == bl.BAR_COLS and df["quote_volume"].iloc[0] == 1005.0
 
 
 @responses.activate
-def test_fetch_recent_klines_both_sources_fail_returns_empty():
-    responses.add(responses.GET, bl._DATA_API_KLINES, status=500)
-    responses.add(responses.GET, bl._SPOT_FALLBACK_KLINES, status=500)
-
-    df = bl.fetch_recent_klines_1h("BTCUSDT", datetime(2024, 1, 1, tzinfo=UTC))
-
-    assert df.empty
-
-
-# --- probe_fapi_access ---------------------------------------------------------------------------
+def test_fetch_klines_paginates_until_a_short_batch(monkeypatch):
+    monkeypatch.setattr(bl, "_LIMIT", 2)
+    responses.add(responses.GET, URL, json=[kline(ms(T0)), kline(ms(T0) + MS)])
+    responses.add(responses.GET, URL, json=[kline(ms(T0) + 2 * MS)])
+    df = bl.fetch_klines("BTCUSDT", T0, T0 + timedelta(hours=10))
+    assert len(df) == 3 and len(responses.calls) == 2
+    assert "startTime=" + str(ms(T0) + 2 * MS) in responses.calls[1].request.url
 
 
 @responses.activate
-def test_probe_fapi_access_true_on_200():
-    responses.add(responses.GET, bl._FAPI_PING, json={}, status=200)
-    assert bl.probe_fapi_access() is True
+def test_fetch_klines_falls_back_to_second_host(monkeypatch):
+    monkeypatch.setattr(bl.time, "sleep", lambda s: None)
+    for _ in range(3):
+        responses.add(responses.GET, URL, status=500)
+    responses.add(responses.GET, FALLBACK, json=[kline(ms(T0))])
+    assert len(bl.fetch_klines("BTCUSDT", T0, T0 + timedelta(hours=5))) == 1
 
 
 @responses.activate
-def test_probe_fapi_access_false_on_connection_error():
-    import requests
-
-    responses.add(responses.GET, bl._FAPI_PING, body=requests.ConnectionError("blocked"))
-    assert bl.probe_fapi_access() is False
-
-
-# --- fetch_funding: fapi-blocked falls back to Bybit --------------------------------------------
+def test_unknown_symbol_returns_empty():
+    responses.add(responses.GET, URL, status=400, json={"code": -1121, "msg": "Invalid symbol."})
+    assert bl.fetch_klines("NOPEUSDT", T0, T0 + timedelta(hours=5)).empty
 
 
 @responses.activate
-def test_fetch_funding_uses_fapi_when_available():
-    responses.add(
-        responses.GET,
-        bl._FAPI_FUNDING,
-        json=[{"symbol": "BTCUSDT", "fundingTime": 1704067200000, "fundingRate": "0.0001"}],
-        status=200,
+def test_update_cache_only_fetches_new_bars(tmp_path):
+    responses.add(responses.GET, URL, json=[kline(ms(T0)), kline(ms(T0) + MS)])
+    first = bl.update_cache("BTCUSDT", tmp_path, T0, T0 + timedelta(hours=2))
+    assert len(first) == 2
+    responses.add(responses.GET, URL, json=[kline(ms(T0) + 2 * MS)])
+    second = bl.update_cache("BTCUSDT", tmp_path, T0, T0 + timedelta(hours=3))
+    assert len(second) == 3
+    assert "startTime=" + str(ms(T0) + 2 * MS) in responses.calls[-1].request.url
+    assert len(bl.load_cache(tmp_path, ["BTCUSDT", "MISSING"])["BTCUSDT"]) == 3
+
+
+def test_check_continuity_fills_short_gaps_and_flags_long_ones():
+    idx = pd.date_range(T0, periods=10, freq="1h", tz="UTC")
+    df = pd.DataFrame({"close": range(10)}, index=idx, dtype=float)
+    filled, stale = bl.check_continuity(df.drop(idx[[3, 4]]))
+    assert not stale and filled.loc[idx[4], "close"] == 2.0
+    _, stale = bl.check_continuity(df.drop(idx[[3, 4, 5]]))
+    assert stale
+
+
+def test_panel_aligns_pairs_on_one_hourly_grid():
+    a = pd.DataFrame(
+        {"close": [1.0, 2.0], "quote_volume": [5.0, 6.0]},
+        index=pd.date_range(T0, periods=2, freq="1h", tz="UTC"),
     )
-    df = bl.fetch_funding("BTCUSDT", fapi_available=True)
-    assert len(df) == 1
-    assert df["funding_rate"].iloc[0] == 0.0001
-
-
-@responses.activate
-def test_fetch_funding_falls_back_to_bybit_when_fapi_blocked():
-    bybit_payload = {
-        "result": {
-            "list": [
-                {"fundingRateTimestamp": "1704067200000", "fundingRate": "0.0002"},
-            ]
-        }
-    }
-    responses.add(responses.GET, bl._BYBIT_FUNDING, json=bybit_payload, status=200)
-
-    df = bl.fetch_funding("BTCUSDT", fapi_available=False)
-
-    assert len(df) == 1
-    assert df["funding_rate"].iloc[0] == 0.0002
-
-
-@responses.activate
-def test_fetch_funding_fapi_request_fails_falls_back_to_bybit():
-    responses.add(responses.GET, bl._FAPI_FUNDING, status=403)
-    bybit_payload = {"result": {"list": [{"fundingRateTimestamp": "1704067200000", "fundingRate": "0.0003"}]}}
-    responses.add(responses.GET, bl._BYBIT_FUNDING, json=bybit_payload, status=200)
-
-    df = bl.fetch_funding("BTCUSDT", fapi_available=True)
-
-    assert len(df) == 1
-    assert df["funding_rate"].iloc[0] == 0.0003
-
-
-@responses.activate
-def test_fetch_funding_never_raises_on_total_failure():
-    responses.add(responses.GET, bl._FAPI_FUNDING, status=500)
-    responses.add(responses.GET, bl._BYBIT_FUNDING, status=500)
-
-    df = bl.fetch_funding("BTCUSDT", fapi_available=True)
-
-    assert df.empty
-
-
-# --- fetch_open_interest: same fapi/Bybit pattern ------------------------------------------------
-
-
-@responses.activate
-def test_fetch_open_interest_uses_fapi_when_available():
-    responses.add(
-        responses.GET,
-        bl._FAPI_OI,
-        json=[{"symbol": "BTCUSDT", "sumOpenInterest": "1000.5", "timestamp": 1704067200000}],
-        status=200,
+    b = pd.DataFrame(
+        {"close": [3.0], "quote_volume": [7.0]},
+        index=pd.date_range(T0 + timedelta(hours=1), periods=1, freq="1h", tz="UTC"),
     )
-    df = bl.fetch_open_interest("BTCUSDT", fapi_available=True)
-    assert len(df) == 1
-    assert df["open_interest"].iloc[0] == 1000.5
-
-
-@responses.activate
-def test_fetch_open_interest_falls_back_to_bybit_when_fapi_blocked():
-    bybit_payload = {"result": {"list": [{"timestamp": "1704067200000", "openInterest": "2000.0"}]}}
-    responses.add(responses.GET, bl._BYBIT_OI, json=bybit_payload, status=200)
-
-    df = bl.fetch_open_interest("BTCUSDT", fapi_available=False)
-
-    assert len(df) == 1
-    assert df["open_interest"].iloc[0] == 2000.0
-
-
-# --- check_continuity: forward-fill <=2 gaps, mark stale beyond that ----------------------------
-
-
-def test_check_continuity_fills_short_gap_not_stale():
-    idx = pd.date_range("2024-01-01 00:00", periods=5, freq="1h", tz="UTC")
-    keep = idx[[0, 1, 4]]  # missing hours 2, 3 (a 2-bar gap)
-    df = pd.DataFrame({"close": [1.0, 2.0, 5.0]}, index=keep)
-
-    out, is_stale = bl.check_continuity(df, freq="1h", max_fill=2)
-
-    assert is_stale is False
-    assert len(out) == 5
-    assert out.loc[idx[2], "close"] == 2.0  # forward-filled from hour 1
-    assert out.loc[idx[3], "close"] == 2.0
-
-
-def test_check_continuity_marks_stale_beyond_max_fill():
-    idx = pd.date_range("2024-01-01 00:00", periods=6, freq="1h", tz="UTC")
-    keep = idx[[0, 1, 5]]  # missing hours 2, 3, 4 (a 3-bar gap) -- beyond max_fill=2
-    df = pd.DataFrame({"close": [1.0, 2.0, 6.0]}, index=keep)
-
-    out, is_stale = bl.check_continuity(df, freq="1h", max_fill=2)
-
-    assert is_stale is True
-
-
-def test_check_continuity_empty_frame_is_stale():
-    df = pd.DataFrame(columns=["close"])
-    out, is_stale = bl.check_continuity(df)
-    assert is_stale is True
-    assert out.empty
+    close, qv = bl.panel({"AUSDT": a, "BUSDT": b}, {"AUSDT": "A/USD", "BUSDT": "B/USD"})
+    assert list(close.columns) == ["A/USD", "B/USD"] and len(close) == 2
+    assert pd.isna(close.iloc[0]["B/USD"]) and qv.iloc[1]["B/USD"] == 7.0

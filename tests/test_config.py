@@ -1,48 +1,50 @@
-"""Config loading tests: the committed config/*.yaml files must parse into the typed models."""
+"""Config loading: the committed config/*.yaml files must parse into the typed models."""
 
-from trend_guard.config import (
-    config_hash,
-    load_env,
-    load_events,
-    load_strategy_config,
-    load_symbols,
-)
+from trend_guard.config import config_hash, load_env, load_strategy_config, load_symbols
 
 
-def test_load_strategy_config_from_repo_default():
+def test_strategy_config_matches_research_design():
     cfg = load_strategy_config("config/strategy.yaml")
-    assert cfg.signal.lookbacks_h == [24, 48, 96, 168, 336, 504]
-    assert cfg.regime.budgets["RISK_ON"].long == 1.0
-    assert cfg.portfolio.caps.btc_eth == 0.25
-    assert cfg.risk.dd_max == 0.05
+    b = cfg.book
+    assert b.trend_share + b.momentum_share <= 1.0  # no leverage by construction
+    assert b.trend.lookback_sets == [[168, 336, 720], [168, 336, 720, 1440]]
+    assert b.momentum.lookback_sets == [[72, 168, 336], [168, 336, 720]]
+    assert b.momentum.skips == [0, 12]
+    assert "PAXG/USD" in b.momentum.exclude
+    assert cfg.execution.decision_hours_utc == [0, 12]
+    assert cfg.backtest.fee + cfg.backtest.slippage == 0.0015
 
 
 def test_config_hash_is_stable():
-    h1 = config_hash("config/strategy.yaml")
-    h2 = config_hash("config/strategy.yaml")
-    assert h1 == h2
-    assert len(h1) == 12
+    assert config_hash("config/strategy.yaml") == config_hash("config/strategy.yaml")
+    assert len(config_hash("config/strategy.yaml")) == 12
 
 
-def test_load_events_from_repo_default():
-    events = load_events("config/events.yaml")
-    assert len(events) == 1
-    assert events[0].name.startswith("CPI")
+def test_symbols_exclude_stablecoins_and_delisted_feeds():
+    s = load_symbols("config/symbols.yaml")
+    assert "USDT/USD" in s.excluded and "TON/USD" in s.excluded
 
 
-def test_load_events_missing_file_returns_empty():
-    assert load_events("config/does_not_exist.yaml") == []
-
-
-def test_load_symbols_from_repo_default():
-    symbols = load_symbols("config/symbols.yaml")
-    assert symbols.bstocks["NVDA/USD"] == "NVDA"
-    assert "USDT/USD" in symbols.stablecoins
-
-
-def test_load_env_defaults_paper_mode(monkeypatch):
+def test_load_env_defaults_to_paper_and_no_live_orders(monkeypatch):
     monkeypatch.delenv("ALLOW_LIVE_ORDERS", raising=False)
     monkeypatch.delenv("BOT_MODE", raising=False)
     env = load_env(dotenv_path="does_not_exist.env")
     assert env.allow_live_orders is False
     assert env.bot_mode == "paper"
+
+
+def test_universe_keeps_tradable_crypto_only():
+    from trend_guard.universe import binance_symbol, tradable_pairs
+
+    info = {
+        "TradePairs": {
+            "BTC/USD": {"CanTrade": True, "AssetType": "crypto"},
+            "NVDAB/USD": {"CanTrade": True, "AssetType": "stock"},
+            "USDT/USD": {"CanTrade": True, "AssetType": "crypto"},
+            "OLD/USD": {"CanTrade": False, "AssetType": "crypto"},
+            "PAXG/USD": {"CanTrade": True},
+        }
+    }
+    s = load_symbols("config/symbols.yaml")
+    assert tradable_pairs(info, s) == ["BTC/USD", "PAXG/USD"]
+    assert binance_symbol("BTC/USD", s) == "BTCUSDT"

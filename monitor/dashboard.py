@@ -6,15 +6,9 @@ Never open this port publicly; reach it via an SSH tunnel.
 This reads the DB directly with sqlite3 rather than importing trend_guard.state.store, so the
 dashboard has zero write path into the bot's state -- it is structurally read-only.
 
-`decisions.json` (written by the engine each hourly cycle) is expected to have this shape:
-{
-  "regime": "RISK_ON" | "NEUTRAL" | "RISK_OFF",
-  "signals": {"BTC/USD": 0.42, ...},
-  "weights_raw": {"BTC/USD": 0.18, ...},
-  "weights_final": {"BTC/USD": 0.15, ...},
-  "targets_notional": {"BTC/USD": 15000.0, ...},
-  "multipliers": {"dd_governor": [1.0, "..."], "daily_brake": [0.5, "..."], ...},
-}
+`decisions.json` (written by the engine each hourly cycle, see engine.hourly_cycle) contains:
+  weights_final {pair: weight}, gross, net, multiplier (risk_scale x breaker), breaker {peak, mult},
+  act_all (decision hour), orders_planned [...], equity, commit.
 """
 
 from __future__ import annotations
@@ -28,7 +22,6 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from trend_guard.config import load_symbols
 from trend_guard.metrics import all_definitions
 
 DB_PATH = os.environ.get("TREND_GUARD_DB", "state/live.db")  # paper mode writes state/paper.db
@@ -69,24 +62,18 @@ def _latest_decision(conn: sqlite3.Connection) -> dict:
         return {}
 
 
-def _exposure_by_sleeve(decision: dict) -> pd.DataFrame:
-    symbols = load_symbols()
+def _exposure_by_side(decision: dict) -> pd.DataFrame:
+    """Gross long, gross short and PAXG (gold) exposure from the latest decision's final weights."""
     weights = decision.get("weights_final", {})
-    rows = []
+    buckets = {"Crypto long": 0.0, "Crypto short": 0.0, "PAXG (gold)": 0.0}
     for pair, w in weights.items():
-        if pair in symbols.bstocks:
-            sleeve = "bStocks"
-        elif "PAXG" in pair:
-            sleeve = "PAXG"
+        if pair == "PAXG/USD":
+            buckets["PAXG (gold)"] += abs(w)
         elif w >= 0:
-            sleeve = "Crypto long"
+            buckets["Crypto long"] += w
         else:
-            sleeve = "Crypto short"
-        rows.append({"sleeve": sleeve, "pair": pair, "weight": w})
-    if not rows:
-        return pd.DataFrame(columns=["sleeve", "weight"])
-    df = pd.DataFrame(rows)
-    return df.groupby("sleeve")["weight"].apply(lambda s: s.abs().sum()).reset_index()
+            buckets["Crypto short"] += -w
+    return pd.DataFrame({"sleeve": list(buckets), "weight": list(buckets.values())})
 
 
 def _api_error_rate(logs_dir: Path, hours: int = 24) -> float:
@@ -124,7 +111,7 @@ def main() -> None:
         latest = equity_df.iloc[-1]
         col1.metric("Equity", f"${latest['equity']:,.0f}")
         col2.metric("Drawdown", f"{latest['dd']:.2%}")
-        col3.metric("Regime", decision.get("regime", "n/a"))
+        col3.metric("Gross / net", f"{decision.get('gross', 0):.0%} / {decision.get('net', 0):+.0%}")
     else:
         st.info("No equity snapshots yet -- the bot has not run a cycle.")
 
@@ -163,18 +150,21 @@ def main() -> None:
     if not kv_df.empty:
         st.caption(f"start: {dict(zip(kv_df['k'], kv_df['v'], strict=False))}")
 
-    st.subheader("Exposure by sleeve")
-    exposure_df = _exposure_by_sleeve(decision)
+    st.subheader("Exposure")
+    exposure_df = _exposure_by_side(decision)
     if not exposure_df.empty:
         st.bar_chart(exposure_df.set_index("sleeve"))
     else:
         st.write("no decision logged yet")
 
-    st.subheader("Current multipliers")
-    mults = decision.get("multipliers", {})
-    if mults:
-        mult_df = pd.DataFrame([{"overlay": k, "multiplier": v[0], "reason": v[1]} for k, v in mults.items()])
-        st.dataframe(mult_df)
+    st.subheader("Risk multiplier")
+    if decision:
+        st.write(
+            f"risk_scale x breaker = {decision.get('multiplier', 1.0):.2f}; breaker {decision.get('breaker')}"
+        )
+        planned = decision.get("orders_planned", [])
+        if planned:
+            st.dataframe(pd.DataFrame(planned))
     else:
         st.write("no decision logged yet")
 

@@ -2,8 +2,8 @@
 
 Two layers:
   * `plan_orders` is PURE: given target weights and an Exposure snapshot it returns the ordered list
-    of PlannedOrders. The backtest engine and the live engine call exactly this function, so the
-    deadband, min-hold, sign-flip, no-leverage and MiniOrder rules are identical in both.
+    of PlannedOrders, applying the same act/skip rule the contest replay scores (backtest/contest.py)
+    plus the live-only no-leverage cash budget, sign-flip sequencing and MiniOrder rounding.
   * `OrderExecutor` (live/paper only) turns plans into broker calls with maker-first pricing,
     reprices resting limits every `limit_reprice_s`, escalates to MARKET after `limit_max_tries`,
     and reconciles ambiguous sends via `match_unknown_order` instead of ever resubmitting blindly.
@@ -40,17 +40,12 @@ class PlannedOrder:
     pair: str
     action: Action
     reducing: bool  # True when it shrinks exposure (sells of longs, short closes)
-    urgent: bool  # risk exit: straight to MARKET, bypasses min-hold
+    urgent: bool  # straight to MARKET (sign-flip closes that must free cash this cycle)
     qty: Decimal = ZERO  # coin qty for BUY/SELL
     collateral: Decimal = ZERO  # USD for SHORT_OPEN
     close_pct: Decimal = ZERO  # (0, 100] for SHORT_CLOSE
     notional: Decimal = ZERO  # USD size, for logging and cash budgeting
     reason: str = ""
-
-
-def _held_too_briefly(pair: str, last_trade: dict[str, datetime], now: datetime, min_hold_h: int) -> bool:
-    t = last_trade.get(pair)
-    return t is not None and now - t < timedelta(hours=min_hold_h)
 
 
 def _round_qty(pair: str, qty: Decimal, rules: dict[str, TradingRule] | None) -> Decimal:
@@ -71,26 +66,25 @@ def plan_orders(
     target_w: dict[str, float],
     exp: Exposure,
     exec_cfg: ExecutionConfig,
-    now: datetime,
-    last_trade: dict[str, datetime],
+    act_all: bool,
+    prev_target: dict[str, float],
     rules: dict[str, TradingRule] | None = None,
-    urgent_pairs: frozenset[str] = frozenset(),
 ) -> list[PlannedOrder]:
-    """Diff targets against the current book and return orders, reductions first.
+    """Diff targets against the exchange snapshot and return orders: closes first, then additions.
 
-    Rules (Section 8.2):
-      - |target - current| < deadband * equity with matching signs -> skip.
-      - A pair traded less than `min_hold_h` ago is left alone unless the move is urgent or takes the
-        position fully to zero (exits are always allowed: holding a position the strategy no longer
-        wants is itself a risk).
-      - Sign flips close fully this cycle; the other side opens on a later cycle.
-      - Additions are scaled so long notional + short collateral never exceeds cash on hand (no
-        leverage): budget = free cash + proceeds of immediate reductions (short closes, urgent sells).
+    The same trade rule the contest replay scores (backtest/contest.py):
+      - a pair is acted on when `act_all` (decision hour / startup) or when its target moved;
+      - a resize smaller than max(min_trade_weight, min_trade_frac x |target|) is skipped, opens and
+        closes always go through;
+      - a sign flip closes the old side at MARKET (urgent) and opens the new side in the same cycle;
+      - additions are scaled so they never spend more than free cash plus the proceeds of this
+        cycle's immediate (market) reductions, minus a cash buffer: no leverage, ever.
     """
     equity = exp.equity
     if equity <= 0:
         return []
-    deadband = Decimal(str(exec_cfg.deadband)) * equity
+    min_w = Decimal(str(exec_cfg.min_trade_weight))
+    min_frac = Decimal(str(exec_cfg.min_trade_frac))
     pairs = set(target_w) | set(exp.long_qty) | set(exp.short_collateral)
     reductions: list[PlannedOrder] = []
     additions: list[PlannedOrder] = []
@@ -98,88 +92,99 @@ def plan_orders(
     for pair in sorted(pairs):
         w = target_w.get(pair, 0.0)
         w = 0.0 if w != w else w  # NaN -> flat
-        target = Decimal(str(w)) * equity
+        if not act_all and abs(w - prev_target.get(pair, 0.0)) <= 1e-9:
+            continue  # target unchanged and not a decision hour: let the position ride
         price = exp.prices.get(pair, ZERO)
+        if price <= 0:
+            continue
+        tgt = Decimal(str(w))
         long_qty = exp.long_qty.get(pair, ZERO)
-        long_n = long_qty * price
+        long_w = long_qty * price / equity
         short_c = exp.short_collateral.get(pair, ZERO)
-        urgent = pair in urgent_pairs
-        recent = _held_too_briefly(pair, last_trade, now, exec_cfg.min_hold_h)
+        short_w = short_c / equity
 
-        if target >= 0:
-            if short_c > 0:  # wrong side (or flat target): close the short fully first
+        if tgt >= 0:
+            flip = short_c > 0
+            if flip:  # close the short at market, then the long (if any) opens from zero below
                 reductions.append(
                     PlannedOrder(
                         pair,
                         "SHORT_CLOSE",
                         True,
-                        urgent,
+                        True,
                         close_pct=Decimal(100),
                         notional=short_c,
-                        reason="short->flat/long",
+                        reason="close short",
                     )
                 )
-                continue
-            diff = target - long_n
-            if target > 0 and long_n > 0 and abs(diff) < deadband:
-                continue  # inside the deadband, same sign
-            if diff == 0 or price <= 0:
+            diff = tgt - long_w
+            opening_or_closing = tgt == 0 or long_w == 0
+            if diff == 0 or (not opening_or_closing and abs(diff) < max(min_w, min_frac * abs(tgt))):
                 continue
             if diff < 0:
-                full_exit = target == 0
-                if recent and not (urgent or full_exit):
-                    continue
-                qty = long_qty if full_exit else _round_qty(pair, -diff / price, rules)
+                qty = long_qty if tgt == 0 else _round_qty(pair, -diff * equity / price, rules)
                 qty = _round_qty(pair, min(qty, long_qty), rules)
                 if _meets_min(pair, price, qty, rules):
                     reductions.append(
                         PlannedOrder(
-                            pair, "SELL", True, urgent, qty=qty, notional=qty * price, reason="reduce long"
+                            pair,
+                            "SELL",
+                            True,
+                            False,
+                            qty=qty,
+                            notional=qty * price,
+                            reason="close long" if tgt == 0 else "reduce long",
                         )
                     )
             else:
-                if recent and not urgent:
-                    continue
-                qty = _round_qty(pair, diff / price, rules)
+                qty = _round_qty(pair, diff * equity / price, rules)
                 if _meets_min(pair, price, qty, rules):
                     additions.append(
                         PlannedOrder(
-                            pair, "BUY", False, False, qty=qty, notional=qty * price, reason="add long"
+                            pair,
+                            "BUY",
+                            False,
+                            False,
+                            qty=qty,
+                            notional=qty * price,
+                            reason="open long" if long_w == 0 else "add long",
                         )
                     )
         else:
-            target_c = -target
-            if long_qty > 0:  # wrong side: sell the long fully first
+            if long_qty > 0:  # flip: sell the long at market, then open the short from zero below
                 if _meets_min(pair, price, long_qty, rules):
                     reductions.append(
                         PlannedOrder(
-                            pair, "SELL", True, urgent, qty=long_qty, notional=long_n, reason="long->short"
+                            pair,
+                            "SELL",
+                            True,
+                            True,
+                            qty=long_qty,
+                            notional=long_qty * price,
+                            reason="close long",
                         )
                     )
-                continue
-            diff = target_c - short_c
-            if short_c > 0 and abs(diff) < deadband:
+            target_c = -tgt
+            diff = target_c - short_w
+            opening_or_closing = short_w == 0
+            if diff == 0 or (not opening_or_closing and abs(diff) < max(min_w, min_frac * target_c)):
                 continue
             if diff < 0:
-                if recent and not urgent:
-                    continue
-                pct = min(Decimal(100), (-diff / short_c * 100)).quantize(Decimal("0.01"), ROUND_DOWN)
+                pct = min(Decimal(100), -diff / short_w * 100).quantize(Decimal("0.01"), ROUND_DOWN)
                 if pct > 0:
                     reductions.append(
                         PlannedOrder(
                             pair,
                             "SHORT_CLOSE",
                             True,
-                            urgent,
+                            False,
                             close_pct=pct,
-                            notional=-diff,
+                            notional=-diff * equity,
                             reason="reduce short",
                         )
                     )
-            elif diff > 0:
-                if recent and not urgent:
-                    continue
-                coll = diff.quantize(Decimal("0.01"), ROUND_DOWN)
+            else:
+                coll = (diff * equity).quantize(Decimal("0.01"), ROUND_DOWN)
                 if coll >= MIN_SHORT_COLLATERAL:
                     additions.append(
                         PlannedOrder(
@@ -189,13 +194,13 @@ def plan_orders(
                             False,
                             collateral=coll,
                             notional=coll,
-                            reason="add short",
+                            reason="open short" if short_w == 0 else "add short",
                         )
                     )
 
-    # no-leverage budget: additions only spend cash we have now or will get back immediately
+    # no-leverage budget: spend only cash we hold now or get back immediately this cycle
     immediate = sum((o.notional for o in reductions if o.action == "SHORT_CLOSE" or o.urgent), ZERO)
-    budget = (exp.cash + immediate) * CASH_BUFFER
+    budget = (exp.cash + immediate - Decimal(str(exec_cfg.cash_buffer)) * equity) * CASH_BUFFER
     wanted = sum((o.notional for o in additions), ZERO)
     if wanted > budget and wanted > 0:
         scale = max(budget, ZERO) / wanted
@@ -214,8 +219,8 @@ def plan_orders(
                     scaled.append(o)
         additions = scaled
 
-    # short closes first (they return cash immediately), then sells, then additions
-    reductions.sort(key=lambda o: (o.action != "SHORT_CLOSE", o.pair))
+    # urgent closes and short closes first (they free cash at once), then maker sells, then additions
+    reductions.sort(key=lambda o: (not o.urgent, o.action != "SHORT_CLOSE", o.pair))
     return reductions + additions
 
 

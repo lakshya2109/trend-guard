@@ -1,105 +1,124 @@
 # STRATEGY.md
 
-**TREND-GUARD: vol-targeted long/short trend ensemble with a drawdown governor.**
+**trend-guard v2: a low-volatility trend book plus a long/short cross-sectional momentum book,
+built for the contest's score rather than for raw return.**
 
-This document is the judge-facing explanation of *why* the bot is built this way, with the
-research it leans on. For exact parameter values see `config/strategy.yaml`; for the formulas
-see BUILD_SPEC.md Sections 6-7 and the code in `src/trend_guard/strategy/` and
-`src/trend_guard/risk/`.
+Parameters live in [`config/strategy.yaml`](../config/strategy.yaml); the code is
+[`src/trend_guard/strategy/book.py`](../src/trend_guard/strategy/book.py). Every number below is
+reproducible with `python backtest/run_backtest.py` and `python backtest/sweep.py`.
 
-## 1. The core bet
+## 1. What the contest rewards
 
-Crypto exhibits time-series momentum at hourly-to-weekly horizons (Liu & Tsyvinski, RFS 2021;
-Liu, Tsyvinski & Wu, JF 2022; Moskowitz, Ooi & Pedersen, JFE 2012). A multi-lookback Donchian +
-momentum ensemble, volatility-scaled and applied long/short across the most liquid pairs, has
-shown net-of-fee Sharpe above 1.5 in a survivorship-bias-free backtest since 2015 (Zarattini,
-Pagani & Barbon, "Catching Crypto Trends", SSRN 5209907) -- this is our core template. We
-extended it long/short because the `/v6` short endpoints were only added to the Roostoo API in
-Sep 2026: the March 2026 round was long-only, and a long-only bot in that round "reacted too
-slowly to a sharp market selloff" and could not recover (public post-mortem).
+After a top-20-by-return screen, teams are ranked on `0.4 Sortino + 0.3 Sharpe + 0.3 Calmar` over
+about 14 daily returns. Three consequences drive the design:
 
-## 2. Why an ensemble, not one indicator
+1. **The ratios are almost scale-free.** Doubling the book doubles both the mean and the risk, so
+   the score barely moves; what a smaller book does change is the chance of a qualifying
+   fortnight (around -1% was the 20th-place cut-off in past rounds). So both sleeves run at modest
+   volatility targets.
+2. **One bad day dominates 14 daily returns.** Diversification between return streams that do not
+   lose on the same days matters more than any single signal.
+3. **Costs are a first-order effect.** At 0.10% fee plus slippage per trade, a book that turns
+   over its capital three times a fortnight gives up about 0.45% per fortnight, roughly the whole
+   median return of most books we tested.
 
-Averaging a Donchian channel-position score and a volatility-normalized momentum score across six
-lookbacks (24h to 504h) reduces sensitivity to any single lookback's whipsaw. Kim, Tse & Wald
-(2016) show TSMOM's edge is driven largely by volatility scaling, not the raw signal -- so we
-never run an unscaled signal; every asset's contribution is divided by its own realized
-volatility before sizing.
+## 2. The book
 
-## 3. Why volatility targeting, twice
+| Sleeve | Capital | What it does |
+|---|---|---|
+| **Trend** | 70% | Long-only time-series trend on every liquid Roostoo crypto pair (including PAXG, tokenized gold). Score = mean over lookbacks of the log return divided by the volatility expected over that horizon (a t-statistic), clipped. Weight ~ score / volatility for names above a threshold, the book scaled to 0.4%/day volatility with the 7-day covariance, per-name cap 50%, positions under 1% dropped because they cannot pay their round-trip cost. Rebalanced daily at 12:00 UTC. **Ensemble of 4 members**: lookbacks {7/14/30 days, 7/14/30/60 days} x entry thresholds {0.25, 0.40}. |
+| **Momentum** | 30% | Cross-sectional long/short. Once a day (00:00 UTC) rank liquid coins (>= $5M/day, >= 30 days of history, PAXG excluded) by risk-adjusted momentum; long the best 6, short the worst 6 (a holding stays while ranked within 12), 60/40 long/short, equal weight per side, resized every hour to 1.5%/day volatility under a constant-correlation model, gross capped at 0.9. **Ensemble of 4 members**: lookbacks {3/7/14 days, 7/14/30 days} x skip {0h, 12h}. |
 
-Volatility is scaled at two levels: per-asset (raw weight divided by that asset's annualized
-EWMA vol) and portfolio-level (all weights jointly scaled to hit a target portfolio volatility
-using a shrunk covariance matrix). This follows a large literature: Barroso & Santa-Clara (JFE
-2015) show variance scaling nearly doubles momentum's Sharpe and removes crashes; Moreira & Muir
-(JF 2017) show vol timing raises Sharpe because expected returns don't rise one-for-one with
-volatility; Daniel & Moskowitz (JFE 2016) document that momentum crashes cluster after declines,
-in panic states, and during sharp rebounds -- which is exactly when an *unscaled* short sleeve
-would get squeezed hardest. The shock filter and squeeze-cover overlay (Section 6 below) are a
-direct response to that finding.
+The account target is the capital-weighted sum of both sleeves, netted per pair. The two shares
+sum to 1 and each sleeve caps its own gross, so long notional plus short collateral can never
+exceed equity (asserted in code). A catastrophe breaker halves every target if the account falls
+10% below its peak (a safety net for bugs or crashes, not a trading rule; it never triggered in the
+backtest).
 
-## 4. Why a regime gate
+**Trade rule (identical in backtest and live, `execution/order_manager.plan_orders`):** act at the
+decision hours (00:00 and 12:00 UTC) or when a target changes; skip a resize smaller than
+max(1% of equity, 25% of the target) unless it opens or closes a position; sign flips close at
+market and reopen on the other side in the same cycle. Between decisions quantities are held, so
+winners are not trimmed every hour.
 
-`mkt` (an equal-weight index momentum score) and `breadth` (share of eligible coins with a
-positive signal) gate how much long vs. short budget is available, with hysteresis so the regime
-doesn't flip-flop at the boundary. This keeps the short sleeve small in strong uptrends (where
-shorting trend is adversarial) and the long sleeve small in confirmed downtrends, rather than
-running a symmetric long/short book at all times.
+## 3. Results (every 14-day window, 12:00 UTC starts, $100k, 0.15% per side)
 
-## 5. Why these risk overlays
+Same data (hourly Binance candles for all 65 tradable Roostoo crypto pairs), same windows, same
+costs and the same score as the team's `roostoo-last-supper` harness; its published numbers are
+shown for comparison.
 
-Every overlay is multiplicative on the target weight, capped at 1.0, and logged with a reason
-string, in this order: drawdown governor -> daily brake -> event -> endgame -> crowding -> news
-(optional) -> global risk_scale.
+| 2026 (258 windows) | Score | Median fortnight | Above -1% | Positive | Worst | Turnover |
+|---|---|---|---|---|---|---|
+| **trend-guard v2** | **0.159** | +0.72% | **85%** | 68% | **-2.2%** | **2.1x** |
+| Team combined 70/30 (published) | 0.131 | +0.91% | 84% | 69% | -2.2% | 3.1x |
 
-- **Drawdown governor** scales exposure down as equity approaches a max-drawdown budget, the
-  Grossman & Zhou (Mathematical Finance 1993) result that optimal risky exposure under a
-  drawdown constraint scales with distance from the floor.
-- **Daily brake** halves (then zeroes new) risk after a bad UTC day, because the scoring formula
-  (Section 6 below) punishes red days asymmetrically -- cutting risk early after a bad day is
-  cheap insurance against a second one.
-- **Event overlay** halves risk around scheduled US macro releases (BLS CPI, FOMC), since crypto
-  shows measurable intraday reversal risk around large scheduled news (Wen, Bouri, Xu & Zhao,
-  2022).
-- **Endgame lock-in** shrinks the vol target late in the competition if cumulative return is
-  already solidly positive -- protecting a lead is worth more than chasing a marginally higher
-  one once Screen 2's return gate is comfortably cleared.
-- **Crowding filter** uses Binance perp funding rate and open-interest changes as a free,
-  almost-nobody-uses-it crash-risk signal: Schmeling, Schrimpf & Todorov ("Crypto Carry",
-  Management Science 2026) show high futures carry predicts future crashes, driven by retail
-  leverage rather than compensated risk -- so we treat it purely as a de-risking signal, never as
-  something to earn carry from (we can't trade perps anyway, and 2510.14435 shows that carry
-  profitability has compressed sharply since 2024).
-- **Shock filter / squeeze protection** cuts longs on a sharp downside 15-minute BTC move, and
-  covers shorts on a sharp upside move that follows a multi-day decline (a short squeeze), which
-  is the momentum-crash pattern Daniel & Moskowitz describe.
-- **News LLM veto** (off by default, Milestone 7) can only ever *reduce* exposure, never
-  initiate or increase a position. This follows directly from the evidence on LLM trading agents:
-  FINSABER (KDD 2026) finds reported LLM trading advantages deteriorate under rigorous
-  out-of-sample testing; the MAS paper provided in our research brief (Luo et al., arXiv
-  2501.00826v3) shows every configuration lost money in the bear regime, and its own ablation
-  shows removing the News Agent barely changes return but raises volatility -- i.e. news acts as
-  a risk dampener, not an alpha source. We use it exactly for that role and nothing more.
+| All windows, Feb 2024 - Sep 2026 (944) | Score | Median fortnight | Above -1% | Positive | Worst |
+|---|---|---|---|---|---|
+| **trend-guard v2** | **0.076** | +0.45% | **76%** | **59%** | **-4.3%** |
+| Team combined 70/30 (published) | 0.059 | +0.46% | 75% | 59% | -4.8% |
 
-## 6. Why we optimize the scoring function directly, not raw return
+2024-25 only (686 windows): v2 0.055 vs 0.041 on score, and better on all five columns in our
+replay of the team book. BTC buy-and-hold scored 0.008 over all windows with a -18% worst
+fortnight.
 
-Screen 3's composite (`0.4 Sortino + 0.3 Sharpe + 0.3 Calmar`) is dominated by drawdown and by
-the size/count of red periods -- a single bad day can erase most of a strategy's score (see the
-worked examples in `roostoo_hackathon_research_report.md` Section 2.1). The backtest selection
-objective (`backtest/windows.py`, BUILD_SPEC.md Section 11.3) therefore maximizes the 25th
-percentile of the rolling-14-day composite, not the mean or the peak, subject to a minimum median
-return and a maximum p95 drawdown. This deliberately trades a bit of upside for a much smaller
-left tail, which is the right trade for this scoring function.
+**How strong is this?** Moderate, not decisive. v2 beats the team book in 56% of individual
+windows. A block bootstrap over fortnights gives P(v2's median score > team's) = 77% over all
+windows but only 57% on 2026 alone: 2026 contains about 18 independent fortnights, too few to
+separate two good books with confidence. v2's 2026 mean fortnight return equals the team's
+(+1.41% vs +1.40%); its median is lower because its distribution is more right-skewed.
 
-## 7. Honest caveats
+## 4. Research log (what was tested, and why the book looks like this)
 
-Over any single 14-day window, outcome is dominated by market path -- a strategy with an annual
-Sharpe of 1.5 at 30% target vol still has a wide dispersion of possible 14-day outcomes. We
-cannot eliminate that; we can only (a) avoid the left tail via the overlays above, (b) be
-positioned correctly if a trend appears, and (c) be engineered cleanly enough to pass Screens 1
-and 4. Parameter selection uses combinatorially symmetric cross-validation (`backtest/pbo.py`) to
-report a probability-of-backtest-overfitting estimate for the chosen config, per Bailey & López
-de Prado (JPM 2014 / J. Comp. Finance 2017), since four people iterating on the same 2024-2026
-data is exactly the multiple-testing setting their work warns about.
+Method: all 944 contest windows plus a single continuous after-cost run (daily Sharpe) per variant,
+which is far less noisy than a median over overlapping windows. Selection used 2024-25; 2026 was
+kept for confirmation.
 
-See `roostoo_hackathon_research_report.md` Section 13 for the full annotated bibliography.
+1. **trend-guard v1 (BUILD_SPEC design) failed after costs.** A Donchian + momentum ensemble with
+   hourly rebalancing, regime gates and seven overlays: +22% gross over 2024-26 but -52% net,
+   because turnover was 190x equity per six months. Its hourly-ATR trailing stop (about 1-2% from
+   the peak) was hit by ordinary noise, producing constant stop-and-re-enter churn.
+2. **The median window score is noisy.** Basket size k = 4/6/8/10 gave 0.020/0.078/0.035/0.079:
+   not a pattern, just noise. Hence ensembles instead of single parameter picks.
+3. **Trend sleeve: stop dropping small positions, use longer lookbacks.** A 0.4%/day book cut at a
+   1% dust floor holds a concentrated few names; lookbacks out to 60 days and an ensemble over
+   thresholds lifted the continuous 2024-25 Sharpe from 0.3 to 1.0-1.7 across the whole grid.
+4. **Momentum: ensemble and hourly vol-targeting.** Averaging lookbacks x skips (Sharpe 2.0 / 2.1
+   in 2024-25 / 2026) beat any single member and cut turnover. Including the unskipped member
+   helped in every variant of the sweep.
+5. **Rejected** (worse or not robust in both periods): residual (beta-adjusted) momentum (Sharpe
+   2.1 in-sample, 0.1-0.4 in 2026), wider rank buffers and enter/exit bands (less turnover but
+   lost alpha: the momentum signal decays quickly), market-trend-dependent short share (the
+   momentum-crash hedge lowered the score in every variant), book-level volatility targeting on
+   top of the sleeves, score-ensembles, dispersion scaling, trailing stops, tight drawdown brakes.
+6. **Things that looked like edges and were not:** short-term (1-3 day) cross-sectional reversal
+   looked like a Sharpe -5 anomaly; the mirror trade loses too once costs are counted and it
+   flips sign with the decision hour. A "seasoned minus newly listed" factor (Sharpe 1.1 / 1.0)
+   flipped sign when rebalanced every 3 instead of 7 days and came almost entirely from 2025.
+
+**Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
+probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
+in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
+the structural choices (ensembles, both skips, trend lookbacks to 60 days, low turnover) hold
+across the grid. The final pick was made among variants that beat the team book on all five
+2024-25 metrics, then by 2026, so 2026 is not a perfectly clean out-of-sample test for it.
+
+## 5. Honest caveats
+
+- Over 14 days the market path dominates. In 2026 windows where BTC fell more than 5%, the book
+  was positive only 44% of the time.
+- Backtests fill at the hourly close plus 5 bps; live fills can be worse in fast markets. Live
+  execution is maker-first (0.05% fee when the limit rests), which the backtest does not credit.
+- The universe is today's Roostoo listings, so coins delisted before 2026 are missing
+  (survivorship bias affects both books equally).
+- Shorts use Roostoo `/v6`; if they are disabled for the account the bot drops the short leg
+  automatically and runs long-only.
+
+## References
+
+- Zarattini, Pagani & Barbon (2025), *Catching Crypto Trends*, SSRN 5209907.
+- Moskowitz, Ooi & Pedersen (2012), *Time Series Momentum*, JFE.
+- Liu & Tsyvinski (2021), *Risks and Returns of Cryptocurrency*, RFS; Liu, Tsyvinski & Wu (2022), JF.
+- Moreira & Muir (2017), *Volatility-Managed Portfolios*, JF; Barroso & Santa-Clara (2015), JFE.
+- Daniel & Moskowitz (2016), *Momentum Crashes*, JFE.
+- Bailey, Borwein, Lopez de Prado & Zhu (2017), *The Probability of Backtest Overfitting*.
+- Roostoo API documentation: github.com/roostoo/Roostoo-API-Documents.
