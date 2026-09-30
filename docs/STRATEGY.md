@@ -201,6 +201,69 @@ kept for confirmation.
     median fortnight from +1.13% to +0.87%, the same trade as a smaller risk dial. Adjacent cells differ
     by about +-0.01 in 2024-25 with no pattern, so picking the grid maximum would be fitting noise.
 
+11. **Tokenized stocks as a hedge or defensive holding (swyam-rd): not adopted.** Stocks priced
+    with their US underlying for all 944 windows, then at real token prices for the 77 windows after
+    listing (1 Jul 2026 on; the listed basket is a set of past winners, which flatters longs and
+    penalises shorts, so both checks are needed). `research/stocks_hedge_experiment.py`:
+
+    | Variant | Score 2024-25 / 2026 / all (base 0.063 / 0.204 / 0.095) | After listing (base 0.261) |
+    |---|---|---|
+    | Short COINB + MSTRB worth 25% / 50% of net long crypto, reset daily | 0.045-0.053 / 0.107-0.118 / 0.062-0.077 | 0.128-0.215 |
+    | Same hedge by shorting BTC instead | 0.052-0.067 / 0.166-0.191 / 0.089-0.091 | 0.196-0.225 |
+    | Stock hedge only while BTC is below its 20-day average (25% / 50%) | 0.070-0.074 / 0.202-0.208 / 0.101-0.113 | 0.191-0.251 |
+    | Idle capital into MSFT / GOOGL / META when book gross < 0.5x | 0.063-0.065 / 0.190-0.203 / 0.090-0.092 | 0.262 |
+
+    Only the 50% risk-off hedge passes round 8's rule on the underlying prices, and it deepens the
+    2026 worst fortnight (-4.4% -> -6.1%) and lowers the post-listing score (0.261 -> 0.191): not
+    adopted. The book already carries momentum shorts; a stock hedge adds US-open gap risk and
+    idiosyncratic noise, and since the score is nearly scale-free a hedge only helps if it adds
+    return, which none did.
+
+    **All bStock ideas side by side** (`research/bstocks_fortnights.py`): median score over (A) 68
+    back-to-back fortnights Feb 2024 - Sep 2026 at underlying prices, (B) the 19 in 2026, (C1) the 6
+    after listing at token prices, (C2) the 77 daily-start windows after listing at token prices.
+
+    | Variant | A | B | C1 | C2 |
+    |---|---|---|---|---|
+    | crypto only (live book) | 0.081 | 0.215 | 0.288 | 0.261 |
+    | stocks allowed in the trend sleeves | 0.135 | 0.197 | 0.246 | 0.274 |
+    | stocks allowed in all sleeves | 0.056 | 0.145 | 0.169 | 0.211 |
+    | 80% book + 20% stock momentum | 0.099 | 0.229 | 0.244 | 0.198 |
+    | 80% book + 20% stock trend | 0.081 | 0.220 | 0.258 | 0.224 |
+    | book + stock momentum on idle capital | 0.097 | 0.251 | 0.151 | 0.156 |
+    | book + COIN/MSTR short hedge (25%) | 0.072 | 0.139 | 0.321 | 0.215 |
+    | book + stock hedge when BTC weak (50%) | 0.103 | 0.250 | 0.292 | 0.191 |
+    | book + idle cash in MSFT/GOOGL/META | 0.078 | 0.215 | 0.297 | 0.262 |
+
+    No variant beats crypto-only in all four views; most gains are in A/B, where the listed basket's
+    hindsight selection flatters stocks, and most variants lose at token prices after listing.
+    Crypto-only stays.
+
+    **Crash cushion** (`research/bstocks_crash_cushion.py`, `bstocks_crash_robustness.py`). Over the 17
+    sharp BTC drops of 2024-26 (average -12.5% in 72 hours) the book lost 1.9% on average, MSFT /
+    GOOGL / META 1.8%, all listed stocks 4.1%, COIN / MSTR 10.0%: "stable" stocks do not cushion
+    this book, but COIN / MSTR are a usable crash short. A crash-only hedge (short COIN + MSTR worth
+    a share of net long crypto while BTC's 72-hour return is below a trigger, checked at 00/12 UTC)
+    at a -5% or -6% trigger improves crash windows at every size (BTC -6% / 75%: crash-window median
+    -2.08% -> -1.38%, worst -8.1% -> -7.2%, above -1% 69% -> 71%) with normal windows almost
+    unchanged (+1.60% -> +1.56%) and the all-window score unchanged (0.095), but trims the median
+    score in 2024-25 (0.063 -> 0.061) and 2026 (0.204 -> 0.197), so it fails round 8's rule; -8% and
+    -10% triggers fire too late to help. No crash occurred after the tokens listed, so it is untested
+    at real token prices, and it needs /v6 shorts on stock pairs to be confirmed. Candidate insurance,
+    not adopted by the rule.
+
+    **Improved and shipped behind a switch (off).** A 32-variant grid (`research/bstocks_crash_walkforward.py`:
+    trigger x check frequency x minimum hold x basket), selected on 2024-25 only with a rule fixed in
+    advance, picked: on when BTC is down > 6% over 72h **or** > 4% over 24h, checked at 00/12 UTC only,
+    off as soon as a check finds no crash, COIN + MSTR, 75% of net long crypto. Hourly checks and
+    24-hour minimum holds were worse (whipsaw); adding CRCL added nothing. On unseen 2026: crash-window
+    mean +0.16% -> +0.83%, crash-window worst -4.2% -> -2.5%, normal median unchanged (+2.30%), above
+    -1% 78% -> 80%, score 0.204 -> 0.203. Through the live code path (`book.crash_hedge` in
+    `book_weights`, `research/bstocks_crash_final.py`): all windows 0.095 -> 0.103, median +1.13% ->
+    +1.21%, above -1% 69% -> 72%, worst -8.1% -> -7.5%; still ahead at 3x slippage (0.055 -> 0.061).
+    Switched off in `config/strategy.yaml` until /v6 shorts on stock pairs are confirmed on the account;
+    with it off the book is byte-for-byte main's.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;

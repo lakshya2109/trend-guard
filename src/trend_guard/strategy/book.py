@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from trend_guard.config import BookConfig, MomentumConfig, TrendConfig
+from trend_guard.config import BookConfig, CrashHedgeConfig, MomentumConfig, TrendConfig
 
 H = 24  # hours per day
 
@@ -227,7 +227,7 @@ def momentum_sleeve(
 
 
 # ----------------------------------------------------------------------------- the book
-SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum")
+SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "crash_hedge")
 
 
 def book_components(
@@ -245,8 +245,13 @@ def book_components(
         (cfg.team.trend_share, cfg.team.momentum_share, "team sleeves"),
     ):
         assert a + b <= 1.0 + 1e-9, f"{what} shares must sum to <= 1 (no leverage)"
+    # the crash hedge's instruments are never part of the sleeves' universe
+    hedge_cols = set(cfg.crash_hedge.instruments)
+    full_close = close
+    core = [c for c in close.columns if c not in hedge_cols]
+    close, quote_volume = close[core], quote_volume.reindex(columns=close.columns)[core]
     zero = np.zeros(close.shape)
-    comp = {k: zero.copy() for k in SLEEVES}
+    comp = {k: zero.copy() for k in SLEEVES if k != "crash_hedge"}
     if cfg.v2_share > 0 and cfg.trend_share > 0:
         comp["v2_trend"] = cfg.v2_share * cfg.trend_share * trend_sleeve(close, quote_volume, cfg.trend)
     if cfg.v2_share > 0 and cfg.momentum_share > 0:
@@ -273,7 +278,44 @@ def book_components(
     scale = cfg.risk_multiplier * np.where(
         gross > cfg.max_gross, cfg.max_gross / np.maximum(gross, 1e-12), 1.0
     )
-    return {k: v * scale for k, v in comp.items()}
+    comp = {k: v * scale for k, v in comp.items()}
+    # expand back to the full panel and add the crash hedge on the book as it stands
+    pos = [full_close.columns.get_loc(c) for c in close.columns]
+    out = {}
+    for k, v in comp.items():
+        w = np.zeros(full_close.shape)
+        w[:, pos] = v
+        out[k] = w
+    out["crash_hedge"] = np.zeros(full_close.shape)
+    h = cfg.crash_hedge
+    if h.enabled and allow_short:
+        out["crash_hedge"] = crash_hedge(full_close, sum(out.values()), h)
+        gross = np.abs(sum(out.values())).sum(axis=1, keepdims=True)
+        fix = np.where(gross > cfg.max_gross, cfg.max_gross / np.maximum(gross, 1e-12), 1.0)
+        out = {k: v * fix for k, v in out.items()}
+    return out
+
+
+def crash_hedge(close: pd.DataFrame, book: np.ndarray, h: CrashHedgeConfig) -> np.ndarray:
+    """Short the instruments, worth h.size x the book's net long crypto, while the reference (BTC) is
+    falling fast: 72h return below trigger_72h or 24h return below trigger_24h. The state is set at the
+    check hours and held until the next check; it switches off as soon as a check finds no crash.
+    Instruments without a price at an hour get no weight (the others share the hedge)."""
+    W = np.zeros(close.shape)
+    inst = [c for c in h.instruments if c in close.columns]
+    if not inst or h.reference not in close.columns:
+        return W
+    ref = close[h.reference].ffill(limit=3)
+    raw = ((ref / ref.shift(72) - 1) < h.trigger_72h) | ((ref / ref.shift(24) - 1) < h.trigger_24h)
+    check = np.isin(close.index.hour, h.check_hours_utc)
+    state = pd.Series(np.where(check, raw.to_numpy(dtype=float), np.nan), index=close.index).ffill().fillna(0.0).to_numpy()
+    idx = [close.columns.get_loc(c) for c in inst]
+    live = np.isfinite(close.iloc[:, idx].ffill(limit=3).to_numpy())
+    n = np.maximum(live.sum(axis=1), 1)
+    net_long = np.clip(np.nansum(np.delete(book, idx, axis=1), axis=1), 0.0, None)
+    for j, col in enumerate(idx):
+        W[:, col] = -h.size * state * net_long * live[:, j] / n
+    return W
 
 
 def book_weights(

@@ -49,6 +49,15 @@ book:
     short_crash_return: -0.40          # no NEW shorts on coins down > 40% over 60 days: crashed losers bounce
     short_crash_lookback_h: 1440
 
+  crash_hedge:                         # crash cushion (docs/STRATEGY.md round 11): OFF until /v6 shorts on stock
+    enabled: false                     # pairs are confirmed on the account; then switch on with a strat: commit
+    instruments: ["COINB/USD", "MSTRB/USD"]
+    trigger_72h: -0.06                 # on while BTC is down > 6% over 72h...
+    trigger_24h: -0.04                 # ...or > 4% over 24h, checked at 00/12 UTC only (hourly checks whipsaw)
+    size: 0.75                         # short 75% of the book's net long crypto, split across the instruments
+    check_hours_utc: [0, 12]
+    reference: "BTC/USD"
+
 breaker:                               # catastrophe circuit breaker only; tighter brakes hurt the score
   dd_level: 0.10
   dd_mult: 0.5

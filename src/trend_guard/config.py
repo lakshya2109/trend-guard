@@ -71,6 +71,20 @@ class TeamConfig(BaseModel):
     momentum_vol_target: float = 0.015  # their [combined] override of the momentum book's 3%/day
 
 
+class CrashHedgeConfig(BaseModel):
+    """Crash cushion: short crypto-linked stock tokens against the book's net long crypto while BTC is
+    falling fast. Checked only at decision hours (hourly checks whipsaw), off as soon as the trigger
+    clears. Evidence: docs/STRATEGY.md research round 11, research/bstocks_crash_walkforward.py."""
+
+    enabled: bool = False  # needs /v6 shorts on stock pairs confirmed on the account before switching on
+    instruments: list[str] = Field(default_factory=lambda: ["COINB/USD", "MSTRB/USD"])
+    trigger_72h: float = -0.06  # on if BTC's 72-hour return is below this...
+    trigger_24h: float = -0.04  # ...or its 24-hour return is below this
+    size: float = 0.75  # short notional = size x the book's net long crypto, split across instruments
+    check_hours_utc: list[int] = Field(default_factory=lambda: [0, 12])
+    reference: str = "BTC/USD"
+
+
 class BookConfig(BaseModel):
     """Account = v2_share x (trend-guard v2 sleeves) + team_share x (teammates' book).
 
@@ -87,6 +101,7 @@ class BookConfig(BaseModel):
     team: TeamConfig = Field(default_factory=TeamConfig)
     trend: TrendConfig = Field(default_factory=TrendConfig)
     momentum: MomentumConfig = Field(default_factory=MomentumConfig)
+    crash_hedge: CrashHedgeConfig = Field(default_factory=CrashHedgeConfig)
 
 
 class BreakerConfig(BaseModel):
