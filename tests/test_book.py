@@ -76,3 +76,23 @@ def test_shares_above_one_are_rejected():
     bad = CFG.book.model_copy(update={"trend_share": 0.8, "momentum_share": 0.4})
     with pytest.raises(AssertionError):
         book_weights(close, qv, bad)
+
+
+def test_team_book_is_long_short_capped_and_causal():
+    from trend_guard.strategy.team_book import team_weights
+
+    close, qv = synthetic_panel()
+    W = team_weights(close, qv, CFG.book.team)
+    assert np.abs(W).sum(axis=1).max() <= 1.0 + 1e-9
+    assert (W[:, close.columns.get_loc("PAXG/USD")] >= 0).all()  # the team trend book is long-only
+    cut = team_weights(close.iloc[:-200], qv.iloc[:-200], CFG.book.team)
+    np.testing.assert_allclose(W[:-200], cut, atol=1e-12)
+
+
+def test_blend_is_the_share_weighted_sum_of_its_parts():
+    close, qv = synthetic_panel()
+    b = CFG.book
+    full = book_weights(close, qv, b).to_numpy()
+    v2 = book_weights(close, qv, b.model_copy(update={"v2_share": 1.0, "team_share": 0.0})).to_numpy()
+    team = book_weights(close, qv, b.model_copy(update={"v2_share": 0.0, "team_share": 1.0})).to_numpy()
+    np.testing.assert_allclose(full, b.v2_share * v2 + b.team_share * team, atol=1e-12)

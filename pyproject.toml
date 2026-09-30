@@ -17,7 +17,8 @@ trend_guard = ["state/schema.sql"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-extend-exclude = ["docs/vendor", "*.md"]
+# team/ is vendored teammate code, kept byte-for-byte unmodified
+extend-exclude = ["docs/vendor", "*.md", "src/trend_guard/strategy/team"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

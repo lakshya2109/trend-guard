@@ -58,12 +58,27 @@ class MomentumConfig(BaseModel):
     exclude: list[str] = Field(default_factory=lambda: ["PAXG/USD"])
 
 
-class BookConfig(BaseModel):
-    """Capital split between the two sleeves; shares must sum to <= 1 (no leverage)."""
+class TeamConfig(BaseModel):
+    """Teammates' combined book (strategy/team, vendored unmodified): Gunek-945's trend book and
+    swyam-rd's momentum book, split as in their roostoo-last-supper config."""
 
     trend_share: float = 0.7
     momentum_share: float = 0.3
+    momentum_vol_target: float = 0.015  # their [combined] override of the momentum book's 3%/day
+
+
+class BookConfig(BaseModel):
+    """Account = v2_share x (trend-guard v2 sleeves) + team_share x (teammates' book).
+
+    trend_share / momentum_share split the v2 part. Every level's shares sum to <= 1 and every sleeve
+    caps its own gross, so longs + short collateral can never exceed equity (no leverage)."""
+
+    v2_share: float = 0.7
+    team_share: float = 0.3
+    trend_share: float = 0.7
+    momentum_share: float = 0.3
     allow_short: bool = True
+    team: TeamConfig = Field(default_factory=TeamConfig)
     trend: TrendConfig = Field(default_factory=TrendConfig)
     momentum: MomentumConfig = Field(default_factory=MomentumConfig)
 

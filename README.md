@@ -8,17 +8,18 @@ shorts), and ties every trade to a logged decision and a git commit.
 
 ## 1. Overview
 
-Two sleeves on one account, summed per pair:
+One account, three books, with target weights summed per pair:
 
-- **Trend (70% of capital)**: long-only, holds liquid crypto (including PAXG gold) that is in a
-  clear 1-8 week uptrend, weighted by trend strength over volatility and scaled to a low
-  0.4%/day book volatility. Rebalanced daily at 12:00 UTC.
-- **Momentum (30%)**: once a day, long the 6 strongest and short the 6 weakest liquid coins on
-  risk-adjusted 3-30 day momentum, resized hourly to 1.5%/day volatility.
+| Book | Share of account | What it does | Author |
+|---|---|---|---|
+| **trend-guard v2** | 70% | Two sleeves, each an **ensemble of four parameter sets**. **Trend (70% of v2):** long-only on liquid crypto (including PAXG gold) that is in a clear 1-8 week uptrend, scaled to a low 0.4%/day volatility and rebalanced daily at 12:00 UTC. **Momentum (30% of v2):** long the 6 strongest and short the 6 weakest coins on 3-30 day risk-adjusted momentum, resized hourly to 1.5%/day volatility. | lakshya2109 (`strategy/book.py`) |
+| **Trend book** | 21% | Long-only trend on 7/14/30-day horizons, 0.4%/day vol target, volatility trailing stops | Gunek-945 (`strategy/team/`, vendored unmodified) |
+| **Momentum book** | 9% | Long/short cross-sectional momentum, 3/7/14-day lookbacks, 1.5%/day vol target | swyam-rd (`strategy/team/`, vendored unmodified) |
 
-Both sleeves are **ensembles of four parameter sets**, because at a 14-day horizon any single
-parameter choice is mostly noise. Execution is maker-first, and positions are resized only when
-the change can pay for its own trading cost.
+The two teammates' books enter together, in their own 70/30 split, as 30% of the account.
+Averaging independently built books cancels part of each one's selection noise, which is the same
+reason v2's own sleeves are ensembles (docs/STRATEGY.md). Execution is maker-first, and positions
+are resized only when the change can pay for its own trading cost.
 
 ## 2. Why this design
 
@@ -37,18 +38,20 @@ shown for comparison.
 
 | 2026 (258 windows) | Score | Median fortnight | Above -1% | Positive | Worst | Turnover / fortnight |
 |---|---|---|---|---|---|---|
-| **trend-guard v2** | **0.159** | +0.72% | **85%** | 68% | **-2.2%** | **2.1x** |
-| Team combined 70/30 | 0.131 | +0.91% | 84% | 69% | -2.2% | 3.1x |
+| **trend-guard (blend)** | **0.178** | +0.96% | **85%** | 69% | -2.3% | 2.3x |
+| trend-guard v2 alone | 0.159 | +0.72% | 85% | 68% | -2.2% | 2.1x |
+| Team combined 70/30 alone | 0.131 | +1.04% | 84.5% | 69% | -2.3% | 3.1x |
 | BTC buy and hold | -0.007 | -0.35% | 55% | 48% | -18.3% | |
 
 | All 944 windows | Score | Median fortnight | Above -1% | Positive | Worst |
 |---|---|---|---|---|---|
-| **trend-guard v2** | **0.076** | +0.45% | **76%** | **59%** | **-4.3%** |
-| Team combined 70/30 | 0.059 | +0.46% | 75% | 59% | -4.8% |
+| **trend-guard (blend)** | **0.088** | **+0.53%** | **78%** | **60%** | **-4.2%** |
+| trend-guard v2 alone | 0.076 | +0.45% | 76% | 59% | -4.3% |
+| Team combined 70/30 alone | 0.060 | +0.44% | 76% | 59% | -5.1% |
 
-The edge is real but moderate. v2 wins 56% of individual windows, and a bootstrap puts the
-probability that its median score is higher at 77% over all windows (57% on 2026 alone, which is
-only about 18 independent fortnights). Reproduce with
+The edge is real but moderate: 2026 contains only about 18 independent fortnights, so
+differences of this size are suggestive rather than conclusive (see docs/STRATEGY.md section 3).
+The blend improves on both of its parts in every period. Reproduce with
 `python scripts/download_history.py && python backtest/run_backtest.py`.
 
 ## 4. Architecture
@@ -72,6 +75,7 @@ flowchart LR
 | Path | Role |
 |---|---|
 | `src/trend_guard/strategy/book.py` | the strategy: pure functions of the price panel, shared by backtest and live |
+| `src/trend_guard/strategy/team/`, `team_book.py` | teammates' books (vendored unmodified, credited in each file) and their adapter |
 | `src/trend_guard/execution/order_manager.py` | targets to orders (the contest trade rule), maker-first executor, ambiguous-order reconciliation |
 | `src/trend_guard/execution/{broker,live_broker,sim_broker}.py` | one Broker protocol, live Roostoo and simulated implementations |
 | `src/trend_guard/roostoo/` | signed REST client (HMAC tested against the documented vector), precision rules, rate limiter |
@@ -159,3 +163,10 @@ See [`docs/STRATEGY.md`](docs/STRATEGY.md) section 5. The short version:
 - In sharp selloffs the book is positive less than half the time.
 - Backtest fills assume the hourly close plus 5 bps.
 - The universe carries survivorship bias.
+
+## Credits
+
+The trend book in `src/trend_guard/strategy/team/trend_signal.py` and `trend_portfolio.py` was written by
+Gunek-945 ([roostoo-trend-book](https://github.com/Gunek-945/roostoo-trend-book)); the momentum book in
+`src/trend_guard/strategy/team/momentum_model.py` was written by swyam-rd (roostoo-last-supper). Both are
+included unmodified with their authors' attribution headers.

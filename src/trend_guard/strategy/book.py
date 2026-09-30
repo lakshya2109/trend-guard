@@ -219,15 +219,31 @@ def momentum_sleeve(
 def book_weights(
     close: pd.DataFrame, quote_volume: pd.DataFrame, cfg: BookConfig, allow_short: bool = True
 ) -> pd.DataFrame:
-    """Account-level target weights for every hour: capital-weighted sum of both sleeves, netted per pair.
+    """Account-level target weights for every hour, netted per pair:
 
-    Longs + short collateral stay within 1x equity: each sleeve caps its own gross, and the shares sum
-    to at most 1 (asserted), so the combined gross can never exceed 1.
+        v2_share x (trend_share x trend sleeve + momentum_share x momentum sleeve)
+      + team_share x teammates' combined book (strategy/team_book.py)
+
+    Each level's shares sum to <= 1 (asserted) and every sleeve caps its own gross at <= 1, so the
+    account's long notional plus short collateral can never exceed equity.
     """
-    assert cfg.trend_share + cfg.momentum_share <= 1.0 + 1e-9, "sleeve shares must sum to <= 1 (no leverage)"
+    for a, b, what in (
+        (cfg.v2_share, cfg.team_share, "v2/team"),
+        (cfg.trend_share, cfg.momentum_share, "v2 sleeves"),
+        (cfg.team.trend_share, cfg.team.momentum_share, "team sleeves"),
+    ):
+        assert a + b <= 1.0 + 1e-9, f"{what} shares must sum to <= 1 (no leverage)"
     W = np.zeros(close.shape)
-    if cfg.trend_share > 0:
-        W += cfg.trend_share * trend_sleeve(close, quote_volume, cfg.trend)
-    if cfg.momentum_share > 0:
-        W += cfg.momentum_share * momentum_sleeve(close, quote_volume, cfg.momentum, allow_short)
+    if cfg.v2_share > 0 and cfg.trend_share > 0:
+        W += cfg.v2_share * cfg.trend_share * trend_sleeve(close, quote_volume, cfg.trend)
+    if cfg.v2_share > 0 and cfg.momentum_share > 0:
+        W += (
+            cfg.v2_share
+            * cfg.momentum_share
+            * momentum_sleeve(close, quote_volume, cfg.momentum, allow_short)
+        )
+    if cfg.team_share > 0:
+        from trend_guard.strategy.team_book import team_weights  # teammates' code, loaded only if used
+
+        W += cfg.team_share * team_weights(close, quote_volume, cfg.team, allow_short)
     return pd.DataFrame(W, index=close.index, columns=close.columns)

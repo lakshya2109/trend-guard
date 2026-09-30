@@ -7,9 +7,15 @@ competition:
   risk_scale: 1.0                      # multiplies every target; 0.1 for a live dry run
 
 book:
-  trend_share: 0.7                     # capital in the low-vol trend sleeve
-  momentum_share: 0.3                  # capital in the long/short momentum sleeve (shares sum <= 1: no leverage)
+  v2_share: 0.7                        # trend-guard v2 sleeves (below) get 70% of the account...
+  team_share: 0.3                      # ...and the teammates' combined book 30% (each level sums <= 1: no leverage)
+  trend_share: 0.7                     # within v2: the low-vol trend sleeve
+  momentum_share: 0.3                  # within v2: the long/short momentum sleeve
   allow_short: true                    # set false if /v6 shorts are disabled for the account
+  team:                                # Gunek-945 trend book + swyam-rd momentum book (strategy/team, unmodified)
+    trend_share: 0.7
+    momentum_share: 0.3
+    momentum_vol_target: 0.015
   trend:
     lookback_sets: [[168, 336, 720], [168, 336, 720, 1440]]   # 7/14/30 and 7/14/30/60 days
     min_scores: [0.25, 0.4]            # members average over both entry thresholds

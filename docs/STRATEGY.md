@@ -1,7 +1,8 @@
 # STRATEGY.md
 
-**trend-guard v2: a low-volatility trend book plus a long/short cross-sectional momentum book,
-built for the contest's score rather than for raw return.**
+**trend-guard: 70% trend-guard v2 (a low-volatility trend sleeve plus a long/short momentum sleeve)
+blended with 30% of the teammates' combined book, built for the contest's score rather than for raw
+return.**
 
 Parameters live in [`config/strategy.yaml`](../config/strategy.yaml); the code is
 [`src/trend_guard/strategy/book.py`](../src/trend_guard/strategy/book.py). Every number below is
@@ -66,6 +67,25 @@ windows. A block bootstrap over fortnights gives P(v2's median score > team's) =
 windows but only 57% on 2026 alone: 2026 contains about 18 independent fortnights, too few to
 separate two good books with confidence. v2's 2026 mean fortnight return equals the team's
 (+1.41% vs +1.40%); its median is lower because its distribution is more right-skewed.
+
+## 3b. The blend with the teammates' book
+
+The live book is 70% v2 + 30% of the teammates' combined book (Gunek-945's trend book and swyam-rd's
+momentum book in their own 70/30 split), vendored unmodified in `src/trend_guard/strategy/team/`.
+The two books' fortnightly returns are 91% correlated, so the gain is not hedging: the books pick
+their names with different code, and averaging them cancels part of each one's selection noise.
+Unlike the ideas rejected in the research log, the blend improves the score in both periods and at
+both splits tested (50/50 and 70/30):
+
+| Score | 2024-25 | 2026 | All |
+|---|---|---|---|
+| v2 alone | 0.055 | 0.159 | 0.076 |
+| Team book alone | 0.041 | 0.131 | 0.060 |
+| **70% v2 + 30% team** | **0.060** | **0.178** | **0.088** |
+| 50% v2 + 50% team | 0.061 | 0.164 | 0.092 |
+
+The 2026 median fortnight rises from +0.72% (v2) to +0.96%, the positive share from 68% to 69%, the
+share above -1% stays at 85%, and the worst 2026 fortnight moves from -2.2% to -2.3%.
 
 ## 4. Research log (what was tested, and why the book looks like this)
 

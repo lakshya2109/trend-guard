@@ -24,7 +24,7 @@ import pandas as pd  # noqa: E402
 from backtest.contest import contest_score, simulate, summarize, window_starts  # noqa: E402
 from trend_guard.config import config_hash, load_strategy_config, load_symbols  # noqa: E402
 from trend_guard.data.binance_live import load_cache, panel  # noqa: E402
-from trend_guard.strategy.book import momentum_sleeve, trend_sleeve  # noqa: E402
+from trend_guard.strategy.book import book_weights  # noqa: E402
 
 PERIODS = {"2024-25": (None, "2026-01-01"), "2026": ("2026-01-01", None), "all": (None, None)}
 # The team's published combined book (roostoo-last-supper README, same windows, costs and score),
@@ -87,9 +87,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"no bars in {args.bars}: run scripts/download_history.py first", file=sys.stderr)
         return 1
     b = cfg.book
-    tr = trend_sleeve(close, qv, b.trend)
-    mo = momentum_sleeve(close, qv, b.momentum, b.allow_short)
-    runs = {"book": b.trend_share * tr + b.momentum_share * mo, "trend_sleeve": tr, "momentum_sleeve": mo}
+    # "book" is exactly what the live engine trades; the other two show each part on its own
+    runs = {
+        "book": book_weights(close, qv, b, b.allow_short).to_numpy(),
+        "v2_only": book_weights(
+            close, qv, b.model_copy(update={"v2_share": 1.0, "team_share": 0.0})
+        ).to_numpy(),
+        "team_only": book_weights(
+            close, qv, b.model_copy(update={"v2_share": 0.0, "team_share": 1.0})
+        ).to_numpy(),
+    }
     runs.update(baselines(close, qv))
     print(f"{close.shape[1]} pairs, {len(close)} hours; weights built in {time.time() - t0:.0f}s")
 
