@@ -219,6 +219,26 @@ kept for confirmation.
     idiosyncratic noise, and since the score is nearly scale-free a hedge only helps if it adds
     return, which none did.
 
+    **All bStock ideas side by side** (`research/bstocks_fortnights.py`): median score over (A) 68
+    back-to-back fortnights Feb 2024 - Sep 2026 at underlying prices, (B) the 19 in 2026, (C1) the 6
+    after listing at token prices, (C2) the 77 daily-start windows after listing at token prices.
+
+    | Variant | A | B | C1 | C2 |
+    |---|---|---|---|---|
+    | crypto only (live book) | 0.081 | 0.215 | 0.288 | 0.261 |
+    | stocks allowed in the trend sleeves | 0.135 | 0.197 | 0.246 | 0.274 |
+    | stocks allowed in all sleeves | 0.056 | 0.145 | 0.169 | 0.211 |
+    | 80% book + 20% stock momentum | 0.099 | 0.229 | 0.244 | 0.198 |
+    | 80% book + 20% stock trend | 0.081 | 0.220 | 0.258 | 0.224 |
+    | book + stock momentum on idle capital | 0.097 | 0.251 | 0.151 | 0.156 |
+    | book + COIN/MSTR short hedge (25%) | 0.072 | 0.139 | 0.321 | 0.215 |
+    | book + stock hedge when BTC weak (50%) | 0.103 | 0.250 | 0.292 | 0.191 |
+    | book + idle cash in MSFT/GOOGL/META | 0.078 | 0.215 | 0.297 | 0.262 |
+
+    No variant beats crypto-only in all four views; most gains are in A/B, where the listed basket's
+    hindsight selection flatters stocks, and most variants lose at token prices after listing.
+    Crypto-only stays.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
