@@ -201,6 +201,24 @@ kept for confirmation.
     median fortnight from +1.13% to +0.87%, the same trade as a smaller risk dial. Adjacent cells differ
     by about +-0.01 in 2024-25 with no pattern, so picking the grid maximum would be fitting noise.
 
+11. **Tokenized stocks as a hedge or defensive holding (swyam-rd): not adopted.** Stocks priced
+    with their US underlying for all 944 windows, then at real token prices for the 77 windows after
+    listing (1 Jul 2026 on; the listed basket is a set of past winners, which flatters longs and
+    penalises shorts, so both checks are needed). `research/stocks_hedge_experiment.py`:
+
+    | Variant | Score 2024-25 / 2026 / all (base 0.063 / 0.204 / 0.095) | After listing (base 0.261) |
+    |---|---|---|
+    | Short COINB + MSTRB worth 25% / 50% of net long crypto, reset daily | 0.045-0.053 / 0.107-0.118 / 0.062-0.077 | 0.128-0.215 |
+    | Same hedge by shorting BTC instead | 0.052-0.067 / 0.166-0.191 / 0.089-0.091 | 0.196-0.225 |
+    | Stock hedge only while BTC is below its 20-day average (25% / 50%) | 0.070-0.074 / 0.202-0.208 / 0.101-0.113 | 0.191-0.251 |
+    | Idle capital into MSFT / GOOGL / META when book gross < 0.5x | 0.063-0.065 / 0.190-0.203 / 0.090-0.092 | 0.262 |
+
+    Only the 50% risk-off hedge passes round 8's rule on the underlying prices, and it deepens the
+    2026 worst fortnight (-4.4% -> -6.1%) and lowers the post-listing score (0.261 -> 0.191): not
+    adopted. The book already carries momentum shorts; a stock hedge adds US-open gap risk and
+    idiosyncratic noise, and since the score is nearly scale-free a hedge only helps if it adds
+    return, which none did.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
