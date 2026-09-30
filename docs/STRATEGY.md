@@ -192,6 +192,36 @@ kept for confirmation.
    (0.11), so no weekend cut. 14 variants were tried across rounds 8-9, above the report's 8-10 cap,
    so the filter's +0.007 all-window gain (0.088 -> 0.095) should be read as modest.
 
+10. **Fifth round: asset coverage (no change adopted).** Does the book use every asset Roostoo
+    lists? `research/asset_coverage.py` classifies all 88 pairs in the live exchangeInfo:
+
+    | Group | Pairs | Treatment |
+    |---|---|---|
+    | Crypto with Binance history | 65 | in the universe; 64 held at some point in 2026 (LISTA never passes the liquidity rule). PAXG: trend sleeves only, held 25% of 2026 hours |
+    | OMNI, TON | 2 | excluded: delisted on Binance and zero volume on Roostoo |
+    | Tokenized stocks (AMDB ... WDCB) | 21 | excluded (see below) |
+
+    **Tokenized stocks** (`research/stocks_experiment.py`). Binance history starts 11 Jun - 13 Jul
+    2026, so the test is the 77 windows from 1 Jul 2026 (about 5-6 independent fortnights; weak
+    evidence). Same live code, only the set of sleeves allowed to hold stocks changes:
+
+    | Stocks allowed in | Score | Median fortnight | Worst | Beats crypto-only |
+    |---|---|---|---|---|
+    | none (current) | 0.261 | +3.61% | -4.4% | |
+    | v2 trend | 0.262 | +3.50% | -4.4% | 14% of windows (mean -0.24%) |
+    | both trend sleeves | 0.245 | +3.28% | -4.4% | 17% (-0.36%) |
+    | all four sleeves | 0.218 | +3.18% | -5.0% | 30% (-0.65%) |
+
+    The trend sleeves pick stocks rarely (3-4% of the book) and the momentum sleeves hurt when they
+    trade them. Worth re-testing mid-contest once more history exists; not adopted now.
+
+    **Roostoo spreads** (`research/spread_experiment.py`). Several pairs quote far wider on Roostoo
+    than the backtest's flat 5 bps (BONK 27, STO 23, PEPE 23, SHIB 18 bps: tick size on sub-cent
+    coins). Charging every pair fee + max(5 bps, half its live spread) moves the score from 0.204 to
+    0.203 (2026) and 0.095 to 0.093 (all), because these pairs are traded little. Dropping pairs
+    above 20 / 12 / 8 bps lowers the 2026 score to 0.154 / 0.132 / 0.087 under the realistic cost,
+    so all pairs stay.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
