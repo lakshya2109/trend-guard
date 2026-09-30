@@ -89,6 +89,7 @@ flowchart LR
 | `src/trend_guard/risk/breaker.py` | catastrophe circuit breaker |
 | `src/trend_guard/engine.py`, `main.py` | 60 s loop, hourly cycle, CLI |
 | `backtest/contest.py`, `run_backtest.py`, `sweep.py`, `pbo.py` | contest replay, reports, the design search and its overfitting check |
+| `backtest/session.py`, `scripts/simulate.py` | a simulated session over any dates with a full trade log and a leakage check |
 | `monitor/dashboard.py` | read-only Streamlit dashboard |
 | `deploy/` | systemd units, EC2 setup, logrotate |
 
@@ -141,11 +142,25 @@ pytest -q && ruff check .
 python scripts/download_history.py                          # hourly bars for every Roostoo crypto pair
 python backtest/run_backtest.py                             # contest replay -> reports/<ts>/summary.md
 python backtest/sweep.py                                    # the 36-variant design search + PBO
+python scripts/simulate.py --start "2026-09-01 12:00" --end "2026-09-15 12:00"  # one simulated session
 python -m trend_guard.main --mode paper --once              # one hourly cycle on live prices, simulated fills
 python -m trend_guard.main --mode paper                     # run paper trading
 ALLOW_LIVE_ORDERS=1 python -m trend_guard.main --mode live  # real orders (operated by a human)
 streamlit run monitor/dashboard.py --server.address 127.0.0.1
 ```
+
+### Simulated session
+
+`scripts/simulate.py --start <UTC> --end <UTC> [--capital 100000] [--out file.txt]` replays the live
+book over any dates, starting flat in cash. It prints the return, the contest score and its three
+ratios, drawdowns, exposure, fees, turnover, active trading days, daily returns and P&L per pair, and
+writes all of that plus every trade (time, pair, BUY/SELL/SHORT/COVER, open/add/reduce/close/flip,
+quantity, price, notional, fee, weight before and after, and which sleeves drove it) to
+`sim_<start>_<end>.txt` in the current directory. There is no data leakage: no bar after `--end` is
+loaded, history is limited to what the live bot loads, and every run recomputes the targets with the
+second half of the session deleted and checks the first half is identical (it exits non-zero if not).
+Execution is the contest simulator's, trade for trade (`tests/test_session.py`). The backtest's windows
+act on the 13:00 close, the session on the exact `--start`, so the two differ slightly for the same day.
 
 ## 9. Deployment
 

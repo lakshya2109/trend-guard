@@ -13,3 +13,4 @@ state/*.db
 .DS_Store
 .claude/settings.local.json
 *.egg-info/
+sim_*.txt

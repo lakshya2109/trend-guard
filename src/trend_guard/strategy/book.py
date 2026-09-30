@@ -216,16 +216,17 @@ def momentum_sleeve(
 
 
 # ----------------------------------------------------------------------------- the book
-def book_weights(
+SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum")
+
+
+def book_components(
     close: pd.DataFrame, quote_volume: pd.DataFrame, cfg: BookConfig, allow_short: bool = True
-) -> pd.DataFrame:
-    """Account-level target weights for every hour, netted per pair:
+) -> dict[str, np.ndarray]:
+    """Each sleeve's contribution to the account target (T, N), already multiplied by its capital share,
+    the risk multiplier and the hour's gross cap, so the components sum exactly to book_weights.
 
         v2_share x (trend_share x trend sleeve + momentum_share x momentum sleeve)
-      + team_share x teammates' combined book (strategy/team_book.py)
-
-    The result is multiplied by risk_multiplier and then capped hour by hour at max_gross (<= 1), so
-    the account's long notional plus short collateral can never exceed equity.
+      + team_share x (team trend_share x Gunek-945 trend book + team momentum_share x swyam-rd momentum book)
     """
     for a, b, what in (
         (cfg.v2_share, cfg.team_share, "v2/team"),
@@ -233,21 +234,44 @@ def book_weights(
         (cfg.team.trend_share, cfg.team.momentum_share, "team sleeves"),
     ):
         assert a + b <= 1.0 + 1e-9, f"{what} shares must sum to <= 1 (no leverage)"
-    W = np.zeros(close.shape)
+    zero = np.zeros(close.shape)
+    comp = {k: zero.copy() for k in SLEEVES}
     if cfg.v2_share > 0 and cfg.trend_share > 0:
-        W += cfg.v2_share * cfg.trend_share * trend_sleeve(close, quote_volume, cfg.trend)
+        comp["v2_trend"] = cfg.v2_share * cfg.trend_share * trend_sleeve(close, quote_volume, cfg.trend)
     if cfg.v2_share > 0 and cfg.momentum_share > 0:
-        W += (
+        comp["v2_momentum"] = (
             cfg.v2_share
             * cfg.momentum_share
             * momentum_sleeve(close, quote_volume, cfg.momentum, allow_short)
         )
     if cfg.team_share > 0:
-        from trend_guard.strategy.team_book import team_weights  # teammates' code, loaded only if used
+        from trend_guard.strategy.team_book import team_momentum, team_trend  # teammates' code
 
-        W += cfg.team_share * team_weights(close, quote_volume, cfg.team, allow_short)
+        t = cfg.team
+        if t.trend_share > 0:
+            comp["team_trend"] = cfg.team_share * t.trend_share * team_trend(close, quote_volume)
+        if t.momentum_share > 0:
+            comp["team_momentum"] = (
+                cfg.team_share
+                * t.momentum_share
+                * team_momentum(close, quote_volume, t.momentum_vol_target, allow_short)
+            )
     # risk dial: scale the whole book, then cap gross per hour so it can never exceed max_gross (no leverage)
-    W *= cfg.risk_multiplier
-    gross = np.abs(W).sum(axis=1, keepdims=True)
-    W = np.where(gross > cfg.max_gross, W * cfg.max_gross / np.maximum(gross, 1e-12), W)
+    total = sum(comp.values()) * cfg.risk_multiplier
+    gross = np.abs(total).sum(axis=1, keepdims=True)
+    scale = cfg.risk_multiplier * np.where(
+        gross > cfg.max_gross, cfg.max_gross / np.maximum(gross, 1e-12), 1.0
+    )
+    return {k: v * scale for k, v in comp.items()}
+
+
+def book_weights(
+    close: pd.DataFrame, quote_volume: pd.DataFrame, cfg: BookConfig, allow_short: bool = True
+) -> pd.DataFrame:
+    """Account-level target weights for every hour (the sum of book_components), netted per pair.
+
+    The book is multiplied by risk_multiplier and then capped hour by hour at max_gross (<= 1), so the
+    account's long notional plus short collateral can never exceed equity.
+    """
+    W = sum(book_components(close, quote_volume, cfg, allow_short).values())
     return pd.DataFrame(W, index=close.index, columns=close.columns)

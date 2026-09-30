@@ -19,6 +19,7 @@ Autonomous trading bot for the Roostoo Quant Hackathon. BUILD_SPEC.md is the sou
 - Tests: `pytest -q`   Lint: `ruff check .`
 - Data: `python scripts/download_history.py`
 - Backtest: `python backtest/run_backtest.py --config config/strategy.yaml`   Design search + PBO: `python backtest/sweep.py`
+- Simulated session + trade log: `python scripts/simulate.py --start "2026-09-01 12:00" --end "2026-09-15 12:00"`
 - Paper mode: `python -m trend_guard.main --mode paper`
 
 ## Progress log
