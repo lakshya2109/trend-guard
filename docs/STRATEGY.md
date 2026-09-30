@@ -217,6 +217,14 @@ kept for confirmation.
     hourly and 3-hourly re-ranking are clearly worse: coins near the top-6 cut-off swap on noise and each
     swap pays a round trip. Hourly re-ranking without the rank buffer collapses (0.015 / 0.066, 10.6x).
 
+13. **Basket size and market-dependent long/short split (both kept).** Momentum k = 3-15 per side
+    (buffer 2k): 3-4 worse everywhere; 8-15 slightly better in 2024-25 (0.071-0.073) but 2026 falls
+    steadily (0.188 -> 0.128), so k = 6 stays. The live book is already regime-adaptive: net exposure
+    averages +15% of equity when BTC fell >10% over 14 days and +45% when it rose >10% (the trend
+    sleeves only buy rising coins). Tilting the momentum short share with BTC's 14-day trend lowered
+    both periods in all 3 variants (best 0.044 / 0.159 vs 0.063 / 0.204), matching the earlier
+    rejection of a market-trend-dependent short share.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
