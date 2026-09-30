@@ -192,6 +192,15 @@ kept for confirmation.
    (0.11), so no weekend cut. 14 variants were tried across rounds 8-9, above the report's 8-10 cap,
    so the filter's +0.007 all-window gain (0.088 -> 0.095) should be read as modest.
 
+10. **Sleeve volatility targets re-tested on the live book (2x, crash filter): kept at 0.4% / 1.5%.**
+    Grid of trend targets 0.2-1.5%/day x momentum targets 1.0-2.5%/day (32 cells). No cell beats
+    the live pair in both 2024-25 and 2026; the live pair has the highest 2026 score in the grid
+    (0.204). Higher targets are worse everywhere (trend 1.0%: 0.040-0.050 / 0.158-0.163, worst
+    fortnight -10.6% to -11.3%): more risk does not buy more score or median return. Lower targets
+    (0.2% / 1.0%) raise the all-window score to 0.102 and soften the worst fortnight (-6.3%) but cut the
+    median fortnight from +1.13% to +0.87%, the same trade as a smaller risk dial. Adjacent cells differ
+    by about +-0.01 in 2024-25 with no pattern, so picking the grid maximum would be fitting noise.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
