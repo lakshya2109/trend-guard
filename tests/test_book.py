@@ -91,8 +91,18 @@ def test_team_book_is_long_short_capped_and_causal():
 
 def test_blend_is_the_share_weighted_sum_of_its_parts():
     close, qv = synthetic_panel()
-    b = CFG.book
+    b = CFG.book.model_copy(update={"risk_multiplier": 1.0})
     full = book_weights(close, qv, b).to_numpy()
     v2 = book_weights(close, qv, b.model_copy(update={"v2_share": 1.0, "team_share": 0.0})).to_numpy()
     team = book_weights(close, qv, b.model_copy(update={"v2_share": 0.0, "team_share": 1.0})).to_numpy()
     np.testing.assert_allclose(full, b.v2_share * v2 + b.team_share * team, atol=1e-12)
+
+
+def test_risk_multiplier_scales_the_book_but_never_levers():
+    close, qv = synthetic_panel()
+    one = book_weights(close, qv, CFG.book.model_copy(update={"risk_multiplier": 1.0})).to_numpy()
+    two = book_weights(close, qv, CFG.book.model_copy(update={"risk_multiplier": 2.0})).to_numpy()
+    small = np.abs(one).sum(axis=1) <= 0.5  # rows the cap does not touch at x2
+    np.testing.assert_allclose(two[small], 2 * one[small], atol=1e-12)
+    huge = book_weights(close, qv, CFG.book.model_copy(update={"risk_multiplier": 50.0})).to_numpy()
+    assert np.abs(huge).sum(axis=1).max() <= CFG.book.max_gross + 1e-9

@@ -87,6 +87,38 @@ both splits tested (50/50 and 70/30):
 The 2026 median fortnight rises from +0.72% (v2) to +0.96%, the positive share from 68% to 69%, the
 share above -1% stays at 85%, and the worst 2026 fortnight moves from -2.2% to -2.3%.
 
+## 3c. Risk level (2x) and the ML model that was not adopted
+
+**Risk dial.** The composite score is nearly scale-free, so the book's size sets the return, not the
+ratios. At 1x the book was 63% cash (median gross 0.37). Scaling the whole book:
+
+| Book size | Gross | Score (all) | Median fortnight (all / 2026) | P(> +5%) all | P(< -5%) all | Worst |
+|---|---|---|---|---|---|---|
+| 1x | 0.37 | 0.088 | +0.53% / +0.96% | 8% | 0% | -4.2% |
+| 1.5x | 0.55 | 0.095 | +0.88% / +1.40% | 15% | 2% | -6.4% |
+| **2x (live)** | 0.74 | 0.088 | **+1.08% / +2.14%** | **20%** | 3.5% | -8.5% |
+| 3x (capped) | 1.00 | 0.068 | +1.06% / +2.42% | 27% | 7% | -11.4% |
+
+Tilting risk toward either sleeve (trend x1-5 by momentum x1-3, 20 combinations) did not beat scaling
+both evenly; a pre-declared rule (max 2024-25 median return subject to no loss of 2024-25 score) picked
+1x, i.e. more return is not free: it is bought with deeper bad fortnights. 2x was chosen by the team
+for its return profile, knowingly.
+
+**ML model (walk-forward, not adopted).** A cross-sectional model (ridge and a regularised LightGBM,
+17 rank features, monthly expanding-window retraining with a label embargo, every prediction
+out-of-sample) predicts next-day relative returns with a genuine, stable rank IC of +0.07 to +0.13 in
+each of 2024, 2025 and 2026. The signal is a low-risk effect: high-volatility, high-beta, recently
+listed and "lottery" coins underperform the next day (survivorship bias would work against this
+finding, not for it). It does not convert into return:
+
+- a long/short ML book lost money after costs in 7 of 8 pre-declared variants (its short side is the
+  riskiest coins, which squeeze hardest in rallies);
+- used as a filter on the momentum sleeve it raised the score (all windows 0.088 -> 0.108) and the
+  positive-fortnight share, but lowered the mean return in every variant, the opposite of the goal.
+
+It is documented rather than deployed; it is the natural next step if the team ever wants a smoother
+book instead of a higher-return one.
+
 ## 4. Research log (what was tested, and why the book looks like this)
 
 Method: all 944 contest windows plus a single continuous after-cost run (daily Sharpe) per variant,

@@ -78,6 +78,8 @@ class BookConfig(BaseModel):
     trend_share: float = 0.7
     momentum_share: float = 0.3
     allow_short: bool = True
+    risk_multiplier: float = 1.0  # scales the whole book; gross is then capped at max_gross
+    max_gross: float = 1.0  # long notional + short collateral <= this share of equity (no leverage)
     team: TeamConfig = Field(default_factory=TeamConfig)
     trend: TrendConfig = Field(default_factory=TrendConfig)
     momentum: MomentumConfig = Field(default_factory=MomentumConfig)

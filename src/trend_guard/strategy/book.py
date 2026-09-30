@@ -224,8 +224,8 @@ def book_weights(
         v2_share x (trend_share x trend sleeve + momentum_share x momentum sleeve)
       + team_share x teammates' combined book (strategy/team_book.py)
 
-    Each level's shares sum to <= 1 (asserted) and every sleeve caps its own gross at <= 1, so the
-    account's long notional plus short collateral can never exceed equity.
+    The result is multiplied by risk_multiplier and then capped hour by hour at max_gross (<= 1), so
+    the account's long notional plus short collateral can never exceed equity.
     """
     for a, b, what in (
         (cfg.v2_share, cfg.team_share, "v2/team"),
@@ -246,4 +246,8 @@ def book_weights(
         from trend_guard.strategy.team_book import team_weights  # teammates' code, loaded only if used
 
         W += cfg.team_share * team_weights(close, quote_volume, cfg.team, allow_short)
+    # risk dial: scale the whole book, then cap gross per hour so it can never exceed max_gross (no leverage)
+    W *= cfg.risk_multiplier
+    gross = np.abs(W).sum(axis=1, keepdims=True)
+    W = np.where(gross > cfg.max_gross, W * cfg.max_gross / np.maximum(gross, 1e-12), W)
     return pd.DataFrame(W, index=close.index, columns=close.columns)
