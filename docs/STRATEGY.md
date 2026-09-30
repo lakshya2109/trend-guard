@@ -95,6 +95,21 @@ kept for confirmation.
    flips sign with the decision hour. A "seasoned minus newly listed" factor (Sharpe 1.1 / 1.0)
    flipped sign when rebalanced every 3 instead of 7 days and came almost entirely from 2025.
 
+7. **Second research round (literature ideas, none adopted).** Each was tested as a new sleeve or
+   a change to v2, selected on 2024-25 and confirmed on 2026:
+
+   | Idea (source) | Result on the Roostoo universe |
+   |---|---|
+   | Volume-weighted market time-series momentum (Huang, Sangiorgi & Urquhart 2024, SSRN 4825389; Sharpe 2.17 reported) | Sharpe -0.5 (2024-25) / -1.2 (2026), long-only version too. The paper's 3,000 mostly tiny coins behave differently from 65 liquid ones |
+   | MAX / lottery effect (Li et al., Financial Innovation 2021) | Sharpe 0.0 / -1.3 |
+   | Adaptive per-coin trend selection by trailing Sharpe (AdaptiveTrend, arXiv 2602.11708) | lower score in 2024-25 and overall |
+   | Trailing stops on the momentum sleeve (AdaptiveTrend's largest ablation) | no gain at 2x, 3x or 4x daily volatility |
+   | Sleeve momentum: tilt capital toward the sleeve with the better trailing Sharpe ("Cryptocurrency Factor Momentum") | only a 60-day window helped; 30, 45, 90 and 120 days did not: an isolated cell, treated as noise |
+   | Volume-confirmed momentum (volume-based momentum literature) | better in 2024-25 in 23 of 24 variants, worse in 2026 in 24 of 24: a regime effect, not an edge |
+
+   The last row is the clearest example of why 2026 was held out: tuned on all data at once it
+   would have been adopted.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
