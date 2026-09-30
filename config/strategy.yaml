@@ -46,6 +46,8 @@ book:
     min_liquidity_usd: 5000000
     min_age_h: 720
     exclude: ["PAXG/USD"]              # gold is not crypto momentum
+    short_crash_return: -0.40          # no NEW shorts on coins down > 40% over 60 days: crashed losers bounce
+    short_crash_lookback_h: 1440
 
 breaker:                               # catastrophe circuit breaker only; tighter brakes hurt the score
   dd_level: 0.10

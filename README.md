@@ -36,24 +36,27 @@ $100k, 0.10% fee + 5 bps slippage on every trade, contest score on daily marks. 
 protocol, data and costs as the team's `roostoo-last-supper` harness, whose published figures are
 shown for comparison.
 
-The live book runs the blend at **2x risk** (`book.risk_multiplier: 2.0`, gross capped at 1x equity):
+The live book runs the blend at **2x risk** (`book.risk_multiplier: 2.0`, gross capped at 1x equity),
+with the momentum sleeves' crash filter (no new shorts on coins down more than 40% in 60 days). The 1x
+rows are from before that filter:
 
 | 2026 (258 windows) | Score | Median fortnight | P(fortnight > +5%) | Above -1% | Positive | Worst |
 |---|---|---|---|---|---|---|
-| **trend-guard (blend, 2x risk)** | **0.191** | **+2.14%** | **28%** | 78% | 67% | -4.3% |
+| **trend-guard (blend, 2x risk)** | **0.204** | **+2.21%** | **28%** | 78% | 69% | -4.4% |
 | trend-guard (blend, 1x risk) | 0.178 | +0.96% | 10% | 85% | 69% | -2.3% |
 | Team combined 70/30 alone | 0.131 | +1.04% | 10% | 84.5% | 69% | -2.3% |
 | BTC buy and hold | -0.007 | -0.35% | | 55% | 48% | -18.3% |
 
 | All 944 windows | Score | Median fortnight | P(fortnight > +5%) | P(fortnight < -5%) | Above -1% | Worst |
 |---|---|---|---|---|---|---|
-| **trend-guard (blend, 2x risk)** | **0.088** | **+1.08%** | **20%** | 3.5% | 69% | -8.5% |
+| **trend-guard (blend, 2x risk)** | **0.095** | **+1.13%** | **21%** | 3.2% | 69% | -8.1% |
 | trend-guard (blend, 1x risk) | 0.088 | +0.53% | 8% | 0% | 78% | -4.2% |
 | Team combined 70/30 alone | 0.060 | +0.44% | | | 76% | -5.1% |
 
 The score barely depends on book size, but returns do: doubling the book doubles the median fortnight
 and the chance of a +5% fortnight while the score stays the same, at the cost of deeper bad fortnights.
-2x was chosen over 3x because at 3x the book hits the 1x gross cap and the score falls to 0.068.
+2x was chosen over 3x because at 3x the book hits the 1x gross cap and the score falls to 0.068
+(both measured before the crash filter).
 
 The edge is real but moderate: 2026 contains only about 18 independent fortnights, so
 differences of this size are suggestive rather than conclusive (see docs/STRATEGY.md section 3).

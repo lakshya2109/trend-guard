@@ -11,9 +11,10 @@ every row, the live engine reads the last one, so what is tested is exactly what
                    members (two lookback sets x two thresholds) are averaged.
   momentum sleeve  cross-sectional: once a day rank liquid coins by risk-adjusted momentum, long
                    the best k, short the worst k (a holding is kept while it stays within `buffer`
-                   ranks), equal weight per side, resized every hour to a daily volatility target
-                   with a constant-correlation risk model. Four members (two lookback sets x two
-                   skips) are averaged.
+                   ranks; no new shorts on coins already down > 40% in 60 days), equal weight
+                   per side, resized every hour to a daily volatility target with a
+                   constant-correlation risk model. Four members (two lookback sets x two skips)
+                   are averaged.
 
 Why ensembles: single parameter choices are noisy at a 14-day horizon (see docs/STRATEGY.md);
 averaging members keeps the signal and cancels part of the selection noise and the turnover.
@@ -188,6 +189,13 @@ def momentum_member(
         & np.isfinite(f.close)
     )
     select = f.index.hour == p.select_hour_utc
+    # crash filter: a coin already down more than short_crash_return over the lookback is not a new short
+    crashed = np.zeros((T, N), dtype=bool)
+    if p.short_crash_return is not None:
+        L = p.short_crash_lookback_h
+        if L < T:
+            drop = f.logp[L:] - f.logp[:-L]
+            crashed[L:] = np.nan_to_num(drop, nan=0.0) < np.log1p(p.short_crash_return)
     W = np.zeros((T, N))
     longs: list[int] = []
     shorts: list[int] = []
@@ -195,7 +203,10 @@ def momentum_member(
         if select[t]:
             s = sc[t]
             longs = _pick(s, elig[t] & (s > 0), longs, p.k, p.buffer)
-            shorts = _pick(-s, elig[t] & (s < 0), shorts, p.k, p.buffer) if allow_short else []
+            held = np.zeros(N, dtype=bool)
+            held[shorts] = True
+            ok_short = elig[t] & (s < 0) & (~crashed[t] | held)  # held shorts are not forced out
+            shorts = _pick(-s, ok_short, shorts, p.k, p.buffer) if allow_short else []
         if not longs and not shorts:
             continue
         w = np.zeros(N)

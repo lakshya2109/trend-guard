@@ -28,7 +28,7 @@ about 14 daily returns. Three consequences drive the design:
 | Sleeve | Capital | What it does |
 |---|---|---|
 | **Trend** | 70% | Long-only time-series trend on every liquid Roostoo crypto pair (including PAXG, tokenized gold). Score = mean over lookbacks of the log return divided by the volatility expected over that horizon (a t-statistic), clipped. Weight ~ score / volatility for names above a threshold, the book scaled to 0.4%/day volatility with the 7-day covariance, per-name cap 50%, positions under 1% dropped because they cannot pay their round-trip cost. Rebalanced daily at 12:00 UTC. **Ensemble of 4 members**: lookbacks {7/14/30 days, 7/14/30/60 days} x entry thresholds {0.25, 0.40}. |
-| **Momentum** | 30% | Cross-sectional long/short. Once a day (00:00 UTC) rank liquid coins (>= $5M/day, >= 30 days of history, PAXG excluded) by risk-adjusted momentum; long the best 6, short the worst 6 (a holding stays while ranked within 12), 60/40 long/short, equal weight per side, resized every hour to 1.5%/day volatility under a constant-correlation model, gross capped at 0.9. **Ensemble of 4 members**: lookbacks {3/7/14 days, 7/14/30 days} x skip {0h, 12h}. |
+| **Momentum** | 30% | Cross-sectional long/short. Once a day (00:00 UTC) rank liquid coins (>= $5M/day, >= 30 days of history, PAXG excluded) by risk-adjusted momentum; long the best 6, short the worst 6 (a holding stays while ranked within 12; no new short on a coin already down more than 40% over 60 days), 60/40 long/short, equal weight per side, resized every hour to 1.5%/day volatility under a constant-correlation model, gross capped at 0.9. **Ensemble of 4 members**: lookbacks {3/7/14 days, 7/14/30 days} x skip {0h, 12h}. |
 
 The account target is the capital-weighted sum of both sleeves, netted per pair. The two shares
 sum to 1 and each sleeve caps its own gross, so long notional plus short collateral can never
@@ -177,6 +177,20 @@ kept for confirmation.
 
    A per-short cap does nothing here (shorts are already equal-weight, 1/6 of the short side each).
    Funding-rate filters were not tested: the bar cache has no futures funding history.
+
+9. **Fourth round: the rest of the pre-launch report. Adopted: a crash filter on new shorts.**
+   Same rule and base as round 8.
+
+   | Variant | Score 2024-25 / 2026 | Worst | Result |
+   |---|---|---|---|
+   | No new shorts on coins down more than 20 / 25 / 30 / **40%** over 60 days | 0.060 / 0.209, 0.060 / 0.194, 0.063 / 0.199, **0.063 / 0.204** | -8.5%, -8.8%, -9.2%, **-8.1%** | every cut-off raises the score in both periods without lowering the above -1% share; **40% adopted** (passes the whole rule, blocks the fewest shorts). Consistent with crypto losers reversing after about a month (Dobrynskaya) |
+   | Band on the hourly vol-target resize (skip if the scale moved < 20%) | 0.057 / 0.193 | -8.3% | passes by a trivial margin with unchanged turnover: noise. Freezing the whole book between the 00/12 decisions cuts turnover only 2%, so hourly resizing is not where the churn is |
+   | Nearness to the 90-day high added to the momentum rank | 0.069 / 0.146 | -8.4% | 2026 much worse |
+
+   Diagnostics (no change made): book return per unit of risk by forecast BTC-vol tercile is 0.15 /
+   0.06 / 0.13 (low / mid / high), so no vol-day filter; weekends (0.14) are no worse than weekdays
+   (0.11), so no weekend cut. 14 variants were tried across rounds 8-9, above the report's 8-10 cap,
+   so the filter's +0.007 all-window gain (0.088 -> 0.095) should be read as modest.
 
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the

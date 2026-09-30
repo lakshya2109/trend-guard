@@ -106,3 +106,16 @@ def test_risk_multiplier_scales_the_book_but_never_levers():
     np.testing.assert_allclose(two[small], 2 * one[small], atol=1e-12)
     huge = book_weights(close, qv, CFG.book.model_copy(update={"risk_multiplier": 50.0})).to_numpy()
     assert np.abs(huge).sum(axis=1).max() <= CFG.book.max_gross + 1e-9
+
+
+def test_no_new_shorts_on_crashed_coins():
+    close, qv = synthetic_panel(n_days=120)
+    p = CFG.book.momentum.model_copy(update={"min_age_h": 48})
+    crash = np.log(close).diff(p.short_crash_lookback_h).to_numpy() < np.log1p(p.short_crash_return)
+    assert crash.any()  # the falling coins do crash past the threshold
+    on = momentum_sleeve(close, qv, p)
+    off = momentum_sleeve(close, qv, p.model_copy(update={"short_crash_return": None}))
+    # without the filter crashed coins get shorted; with it, a short never starts on a crashed coin
+    assert (off[crash] < 0).any()
+    started = (on < 0) & ~np.vstack([np.zeros((1, on.shape[1]), bool), on[:-1] < 0])
+    assert not (started & crash).any()

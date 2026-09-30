@@ -56,6 +56,10 @@ class MomentumConfig(BaseModel):
     min_liquidity_usd: float = 5e6
     min_age_h: int = 720
     exclude: list[str] = Field(default_factory=lambda: ["PAXG/USD"])
+    # no NEW shorts on a coin already down more than this over the lookback (crashed losers bounce);
+    # None disables the filter. Existing shorts are not forced out.
+    short_crash_return: float | None = -0.40
+    short_crash_lookback_h: int = 1440
 
 
 class TeamConfig(BaseModel):
