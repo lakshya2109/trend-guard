@@ -201,6 +201,15 @@ kept for confirmation.
     median fortnight from +1.13% to +0.87%, the same trade as a smaller risk dial. Adjacent cells differ
     by about +-0.01 in 2024-25 with no pattern, so picking the grid maximum would be fitting noise.
 
+11. **Faster signals and jump-chasing (not adopted).** Gross edge by horizon (2024-26, liquid coins):
+    1-4 hour moves partly reverse (-1 to -2 bp per period, t = -5.9 at 1h) against a ~30 bp round trip;
+    momentum appears only from ~12h. After a 1-hour jump above 5%, the next hour is flat relative to the
+    market, so reacting within the hour gains nothing, but the coin beats the market by ~+1% over the
+    next day on average. A sleeve buying at the close of the jump hour and holding 12-24h loses on its
+    own after costs (median fortnight -0.4% to -2.9%, worst -19% to -27%), and 10-20% of it in the
+    book lowers the score in both periods in all 4 pre-declared variants (best: 0.050 / 0.101 vs
+    0.063 / 0.204). Jumps above 10% reverse (-4.6% vs the market over 3 days).
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
