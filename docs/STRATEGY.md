@@ -210,6 +210,13 @@ kept for confirmation.
     book lowers the score in both periods in all 4 pre-declared variants (best: 0.050 / 0.101 vs
     0.063 / 0.204). Jumps above 10% reverse (-4.6% vs the market over 3 days).
 
+12. **Momentum re-rank frequency (kept daily).** Re-ranking every 1 / 3 / 6 / 12 / 24 / 48 hours
+    scores 0.039 / 0.056 / 0.062 / 0.070 / 0.063 / 0.038 (2024-25) and 0.159 / 0.178 / 0.191 / 0.189 /
+    0.204 / 0.152 (2026), turnover 6.9 / 5.8 / 5.3 / 4.8 / 4.8 / 4.4x. The daily re-rank at 00 / 06 / 12
+    / 18 UTC alone spans 0.051-0.069 and 0.168-0.232, so 6-24h is a plateau inside that noise, while
+    hourly and 3-hourly re-ranking are clearly worse: coins near the top-6 cut-off swap on noise and each
+    swap pays a round trip. Hourly re-ranking without the rank buffer collapses (0.015 / 0.066, 10.6x).
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
