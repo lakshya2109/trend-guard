@@ -201,6 +201,30 @@ kept for confirmation.
     median fortnight from +1.13% to +0.87%, the same trade as a smaller risk dial. Adjacent cells differ
     by about +-0.01 in 2024-25 with no pattern, so picking the grid maximum would be fitting noise.
 
+11. **A dedicated tokenized-stock sleeve (swyam-rd): not adopted before launch.** The tokens'
+    own Binance history starts Jun-Jul 2026, so stocks were priced with their US underlying (Yahoo
+    hourly back to Nov 2023, `research/fetch_stock_proxies.py`). Proxy check
+    (`research/stocks_proxy_check.py`, 21 tokens, Jun-Sep 2026): 14-day returns correlate 0.95 with
+    the token, but 38% of token variance happens outside US hours and 14-day tracking error is 3.9%.
+    Sleeves were long-only (v2's trend or momentum machinery on the stock panel), either carved out
+    of the book or added on top of its idle capital (`research/stocks_sleeve_experiment.py`):
+
+    | All 944 windows (underlying prices) | Score | Median | Above -1% | Worst |
+    |---|---|---|---|---|
+    | live book | 0.095 | +1.13% | 69% | -8.1% |
+    | 80% book + 20% stock momentum (1.5%/day) | 0.113 | +1.29% | 73% | -8.0% |
+    | 80% book + 20% stock trend (0.4%/day) | 0.098 | +0.96% | 72% | -6.9% |
+    | book + 100% stock momentum on idle capital | 0.161 | +2.46% | 71% | -12.4% |
+
+    All eight carve-out variants pass round 8's rule, but the gain is mostly selection bias
+    (`research/stocks_sleeve_validation.py`): Roostoo listed these names in mid-2026, and an
+    equal-weight hold of them made +80% / +99% / +108% in 2024 / 2025 / 2026 against BTC's +105% /
+    -7% / -5%. In the only window after the listing (77 windows from 1 Jul 2026, traded and valued at
+    the real token prices, signals from the underlying), every stock variant lowers the score
+    (0.261 -> 0.198-0.239) and the median fortnight (+3.61% -> +2.6-3.0%); the 20% trend sleeve only
+    softens the worst fortnight (-4.4% -> -3.6%) and lifts the above -1% share (87% -> 90%).
+    Re-test mid-contest with the extra weeks of post-listing data.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
