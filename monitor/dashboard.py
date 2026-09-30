@@ -31,7 +31,7 @@ import streamlit as st
 from trend_guard.config import load_symbols
 from trend_guard.metrics import all_definitions
 
-DB_PATH = os.environ.get("TREND_GUARD_DB", "state/trend_guard.db")
+DB_PATH = os.environ.get("TREND_GUARD_DB", "state/live.db")  # paper mode writes state/paper.db
 LOGS_DIR = Path(os.environ.get("TREND_GUARD_LOGS", "logs"))
 
 

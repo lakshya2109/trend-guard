@@ -37,7 +37,7 @@ from trend_guard.data.universe import compute_eligible_universe
 from trend_guard.execution.broker import Broker, Exposure
 from trend_guard.execution.order_manager import OrderExecutor, PlannedOrder, plan_orders
 from trend_guard.execution.sim_broker import SimBroker
-from trend_guard.risk.protective import atr, shock_filter
+from trend_guard.risk.protective import shock_filter
 from trend_guard.roostoo.client import RoostooClient
 from trend_guard.roostoo.errors import ShortsDisabledError
 from trend_guard.roostoo.models import Ticker
@@ -49,6 +49,7 @@ from trend_guard.strategy.pipeline import (
     OverlayInputs,
     StopState,
     asset_signal,
+    atr_series,
     bucket_for,
     classify,
     decide,
@@ -74,7 +75,6 @@ FUNDING_Z_LOOKBACK = 90  # 30 days of 8-hourly funding prints
 SHOCK_WINDOW = timedelta(minutes=15)
 FREEZE = timedelta(minutes=60)
 BASIS_LIMIT = 0.005  # Section 5.5: median |basis| above 0.5% over 24h -> distrust Binance bars
-ATR_WINDOW = 24
 
 
 def git_commit() -> str:
@@ -296,7 +296,7 @@ class Engine:
             st = StopState(side, float(m["best_price"]), float(m["stop_ref"]) if m["stop_ref"] else None)
             bars = self.bars.get(pair)
             a = (
-                float(atr(bars["high"], bars["low"], bars["close"], ATR_WINDOW).iloc[-1])
+                float(atr_series(bars, pcfg.atr_bar_h, pcfg.atr_window).iloc[-1])
                 if bars is not None
                 else math.nan
             )

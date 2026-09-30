@@ -38,13 +38,13 @@ from trend_guard.clock import SimClock
 from trend_guard.config import StrategyConfig, SymbolsConfig, load_events
 from trend_guard.execution.order_manager import plan_orders
 from trend_guard.execution.sim_broker import OHLCBar, SimBroker
-from trend_guard.risk.protective import atr
 from trend_guard.strategy.pipeline import (
     CRYPTO,
     PAXG,
     OverlayInputs,
     StopState,
     asset_signal,
+    atr_series,
     bucket_for,
     classify,
     decide,
@@ -60,7 +60,6 @@ from trend_guard.strategy.signals import ANN_H, ewma_vol
 
 STARTING_CASH = Decimal("100000")
 QV_WINDOW_H = 30 * 24  # trailing quote-volume window for liquidity ranking (universe + index)
-ATR_WINDOW = 24  # Section 7.1: ATR over the last 24 hourly bars
 BLOCK_DAYS = 14  # competition length, used to reset endgame/peak per block
 
 
@@ -137,7 +136,11 @@ def run_backtest(
     signals = pd.DataFrame({p: asset_signal(close[p].dropna(), cfg).reindex(index) for p in pairs})
     sigma_h = pd.DataFrame({p: ewma_vol(log_ret[p], cfg.vol.halflife_h) for p in pairs})
     sigma_ann = sigma_h * math.sqrt(ANN_H)
-    atr_df = pd.DataFrame({p: atr(high[p], low[p], close[p], ATR_WINDOW) for p in pairs})
+    pc = cfg.protective
+    atr_df = pd.DataFrame(
+        {p: atr_series(pd.DataFrame({"high": high[p], "low": low[p], "close": close[p]}), pc.atr_bar_h,
+                       pc.atr_window) for p in pairs}
+    )
     mid_df = pd.DataFrame({p: donchian_mid(close[p], median_lookback(cfg.signal.lookbacks_h)) for p in pairs})
     ret_72h = close / close.shift(72) - 1.0
     first_seen = close.apply(lambda s: s.first_valid_index())

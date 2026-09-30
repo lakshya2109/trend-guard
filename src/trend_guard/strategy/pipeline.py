@@ -32,6 +32,7 @@ from trend_guard.risk.overlays import (
     event_overlay,
     tournament_overlay,
 )
+from trend_guard.risk.protective import atr
 from trend_guard.strategy.portfolio import apply_aggregate_caps, apply_caps, build_portfolio, enforce_gross
 from trend_guard.strategy.regime import breadth, gate_crypto, gate_diversifier, next_regime
 from trend_guard.strategy.signals import ANN_H, compute_signal
@@ -131,6 +132,18 @@ def warmup_bars(cfg: StrategyConfig) -> int:
     need_d = (max(cfg.signal.lookbacks_d) + 2) * 24
     mode = cfg.signal.mode
     return (need_h if mode == "hourly" else need_d if mode == "daily" else max(need_h, need_d)) + 50
+
+
+def atr_series(bars: pd.DataFrame, bar_h: int, window: int) -> pd.Series:
+    """ATR on `bar_h`-hour bars, returned on the hourly index and causal: a coarse bar's range only
+    counts once that bar has fully closed."""
+    if bar_h <= 1:
+        return atr(bars["high"], bars["low"], bars["close"], window)
+    rule = f"{bar_h}h"
+    agg = bars[["high", "low", "close"]].resample(rule).agg({"high": "max", "low": "min", "close": "last"})
+    coarse = atr(agg["high"], agg["low"], agg["close"], window)
+    coarse.index = coarse.index + pd.Timedelta(hours=bar_h)  # usable after the coarse bar closes
+    return coarse.reindex(bars.index.union(coarse.index)).ffill().reindex(bars.index)
 
 
 # --- trailing stop state (pure ratchet) ------------------------------------------------------------
@@ -254,8 +267,16 @@ def decide(
     for a, s in signals.items():
         if asset_class.get(a) in (CRYPTO, CRYPTO_BETA):
             s_eff[a] = gate_crypto(s, regime, cfg.regime, shorts_enabled)
+            held = current_w.get(a, 0.0)
+            if cfg.regime.hold_to_zero and s_eff[a] == 0.0 and s == s and held * s > 0:
+                # exit band: keep a held position while its signal is still on the same side of zero
+                b = cfg.regime.budgets[regime]
+                budget = b.long if s > 0 else (b.short if shorts_enabled else 0.0)
+                s_eff[a] = s * budget
         else:
             s_eff[a] = gate_diversifier(s, cfg.diversifiers)
+            if cfg.regime.hold_to_zero and s_eff[a] == 0.0 and s == s and current_w.get(a, 0.0) * s > 0:
+                s_eff[a] = s
 
     # 2. portfolio construction; NaN (no history) means flat
     raw = build_portfolio(s_eff, sigma_ann, cov, bucket_of, cfg.vol, cfg.portfolio)

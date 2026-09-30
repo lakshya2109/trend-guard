@@ -64,6 +64,10 @@ class RegimeConfig(BaseModel):
     off: RegimeThreshold
     hysteresis: float = 0.10
     budgets: dict[str, RegimeBudget]
+    # per-asset entry/exit band: when True, an open position is kept while its signal stays on the
+    # same side of zero, even after it falls back inside the entry threshold (False = spec default:
+    # entry and exit share one threshold)
+    hold_to_zero: bool = False
 
 
 class DiversifiersConfig(BaseModel):
@@ -139,6 +143,8 @@ class RiskConfig(BaseModel):
 
 class ProtectiveConfig(BaseModel):
     atr_mult: float = 2.5
+    atr_bar_h: int = 1  # bar size the ATR is measured on (1 = hourly bars, spec default; 24 = daily)
+    atr_window: int = 24  # number of those bars averaged
     shock_z: float = 2.5
     squeeze_prior_drop: float = -0.08
     cooldown_h: int = 6
