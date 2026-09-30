@@ -201,6 +201,23 @@ kept for confirmation.
     median fortnight from +1.13% to +0.87%, the same trade as a smaller risk dial. Adjacent cells differ
     by about +-0.01 in 2024-25 with no pattern, so picking the grid maximum would be fitting noise.
 
+11. **Funding-rate crowding filters (swyam-rd): not adopted.** Perpetual funding history for all 65
+    pairs (Binance USD-M, `research/fetch_funding.py`; sub-cent coins via their 1000x contracts).
+    Feature: trailing 3-day mean funding. Ten variants on the live book, rule fixed in advance
+    (round 8's): `research/funding_experiment.py`, `research/funding_robustness.py`.
+
+    | Variant (threshold per 8h) | Score 2024-25 / 2026 / all (base 0.063 / 0.204 / 0.095) | Result |
+    |---|---|---|
+    | Drop momentum shorts while funding < -3 / -5 bp (squeeze risk) | 0.061 / 0.159 / 0.094, 0.063 / 0.199 / 0.095 | 2026 worse |
+    | Drop momentum longs while funding > +3 / +5 bp (crowded longs) | 0.079 / 0.204 / 0.104, 0.071 / 0.204 / 0.103 | 2026 unchanged |
+    | Both sides, all sleeves, or halving instead of dropping | 0.073-0.087 / 0.159-0.212 / 0.099-0.105 | one cell passes (halve, 5 bp) |
+
+    The crowded-long filter is a 2024 effect only: it binds in 8-25% of 2024 hours, 0% of 2025 and
+    under 1% of 2026, changes 9% of windows for the better and 3% for the worse, and lowers the mean
+    fortnight (-0.07%). Funding on 30 Sep 2026 is +0.4 bp for BTC and no coin is above +3 bp, so it
+    would be idle in the contest. The one passing cell mixes a harmful short filter with this 2024
+    effect: treated as noise.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
