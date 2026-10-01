@@ -102,6 +102,7 @@ def test_rank_vs_previous_field():
 
     # the percentile normalisation orders last year's teams like their published scores
     s = field_scores(FIELD[:, 0], FIELD[:, 1], FIELD[:, 2], FIELD[:, 3])
-    assert pd.Series(s).corr(pd.Series(FIELD[:, 4]), method="spearman") > 0.95
+    rho = np.corrcoef(pd.Series(s).rank(), pd.Series(FIELD[:, 4]).rank())[0, 1]  # Spearman without scipy
+    assert rho > 0.95
     assert rank_vs_field(WINNER["sharpe"] + 0.1, WINNER["sortino"] + 0.1, WINNER["calmar_total"] + 1, 15) == 1
     assert rank_vs_field(-2.0, -2.0, -10.0, 1) == len(FIELD) + 1
