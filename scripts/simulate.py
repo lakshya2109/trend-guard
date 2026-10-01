@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))  # import trend_guard even without `pip install -e .`
 
 import pandas as pd  # noqa: E402
 
@@ -62,6 +63,19 @@ def format_report(m: dict, res, start: pd.Timestamp, end: pd.Timestamp, cfg_hash
     L.append(f"  Sortino             {m['sortino']:>12.4f}   (annualised ~{m['sortino_annualised']:.2f})")
     L.append(f"  Sharpe              {m['sharpe']:>12.4f}   (annualised ~{m['sharpe_annualised']:.2f})")
     L.append(f"  Calmar              {m['calmar']:>12.4f}   (mean daily return / max daily drawdown)")
+    L.append("")
+    L.append("PREVIOUS EDITION'S LEADERBOARD VIEW (backtest/benchmark.py)")
+    w = m["winner"]
+    L.append(
+        f"  Calmar (total return / max drawdown) {m['calmar_total']:>8.3f}   "
+        f"last year's winner {w['calmar_total']:.2f}"
+    )
+    L.append(
+        f"  Sharpe / Sortino (daily)             {m['sharpe']:>8.3f} / {m['sortino']:.3f}   winner "
+        f"{w['sharpe']:.2f} / {w['sortino']:.2f}"
+    )
+    L.append(f"  active days (dates with a trade)     {m['active_dates']:>8d}   score = active days x ratios")
+    L.append(f"  estimated rank among their 52 teams  {m['rank_vs_field']:>8d}")
     L.append("")
     L.append("RISK AND ACTIVITY")
     L.append(

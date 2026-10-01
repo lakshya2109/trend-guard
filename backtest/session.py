@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
+from backtest.benchmark import WINNER, rank_vs_field
 from trend_guard.config import StrategyConfig
 from trend_guard.strategy.book import SLEEVES, book_components
 
@@ -213,6 +214,12 @@ def metrics(res: SessionResult, capital: float) -> dict:
     # contest days are 24h periods from the start, not calendar dates
     days_traded = len({int((t.time - eq.index[0]) // pd.Timedelta(days=1)) for t in res.trades})
     n_days = max(1, int(round((eq.index[-1] - eq.index[0]) / pd.Timedelta(days=1))))
+    # previous edition's leaderboard: Calmar = total return / max drawdown, active days = dates with a trade
+    total = float(eq.iloc[-1] / capital - 1)
+    mdd_hourly = float((1 - eq / eq.cummax()).max())
+    calmar_total = total / max(mdd_hourly, 1e-8)
+    sharpe_lb = mean / max(float(r.std(ddof=1)) if len(r) > 1 else 0.0, 1e-8)
+    active_dates = len({t.time.date() for t in res.trades})
     return {
         "start_equity": capital,
         "end_equity": float(eq.iloc[-1]),
@@ -236,4 +243,8 @@ def metrics(res: SessionResult, capital: float) -> dict:
         "avg_net_exposure": float(res.exposure["net"].mean()),
         "max_gross_exposure": float(res.exposure["gross"].max()),
         "daily_returns": r,
+        "calmar_total": calmar_total,
+        "active_dates": active_dates,
+        "rank_vs_field": rank_vs_field(sharpe_lb, sortino, calmar_total, active_dates),
+        "winner": WINNER,
     }

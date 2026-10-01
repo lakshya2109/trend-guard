@@ -80,3 +80,28 @@ def test_breaker_state_machine():
     b2 = Breaker(BreakerConfig())
     b2.load(b.state())
     assert b2.peak == 100.0
+
+
+def test_competition_metrics_and_active_days():
+    from backtest.contest import competition_metrics, non_overlapping
+
+    close = flat_close()
+    close.iloc[30:] = 110.0  # +10% inside the window
+    W = np.full((len(close), 1), 0.5)
+    starts = window_starts(close.index, BT)
+    eq, _, traded = simulate(W, close, starts, BT, EX, NO_BRAKE, with_trades=True)
+    m = competition_metrics(eq, traded, close.index[starts])
+    row = m.iloc[0]
+    assert row["active_days"] == 1  # one buy at the open, nothing after
+    assert np.isclose(row["calmar_total"], row["return"] / row["max_drawdown"])
+    assert list(non_overlapping(pd.date_range("2025-01-01", periods=30, freq="D"), 14)) == [0, 14, 28]
+
+
+def test_rank_vs_previous_field():
+    from backtest.benchmark import FIELD, WINNER, field_scores, rank_vs_field
+
+    # the percentile normalisation orders last year's teams like their published scores
+    s = field_scores(FIELD[:, 0], FIELD[:, 1], FIELD[:, 2], FIELD[:, 3])
+    assert pd.Series(s).corr(pd.Series(FIELD[:, 4]), method="spearman") > 0.95
+    assert rank_vs_field(WINNER["sharpe"] + 0.1, WINNER["sortino"] + 0.1, WINNER["calmar_total"] + 1, 15) == 1
+    assert rank_vs_field(-2.0, -2.0, -10.0, 1) == len(FIELD) + 1

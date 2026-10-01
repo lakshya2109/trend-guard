@@ -46,6 +46,7 @@ def _simulate(W, px, act, starts, H, cost, min_w, min_frac, capital, dd_lvl, dd_
     N = W.shape[1]
     equity = np.empty((nwin, H + 1))
     turnover = np.zeros(nwin)
+    traded = np.zeros((nwin, H))  # notional traded per hour (x capital): active days come from this
     for k in range(nwin):
         st = starts[k]
         qty = np.zeros(N)
@@ -92,7 +93,8 @@ def _simulate(W, px, act, starts, H, cost, min_w, min_frac, capital, dd_lvl, dd_
                     qty[i] += notional / p
                 cash -= notional + abs(notional) * cost
                 turnover[k] += abs(notional) / capital
-    return equity, turnover
+                traded[k, s] += abs(notional) / capital
+    return equity, turnover, traded
 
 
 def simulate(
@@ -102,11 +104,13 @@ def simulate(
     bt: BacktestConfig,
     ex: ExecutionConfig,
     breaker: BreakerConfig,
-) -> tuple[np.ndarray, np.ndarray]:
-    """(equity paths (n_windows, hours+1), turnover per window as a multiple of capital)."""
+    with_trades: bool = False,
+) -> tuple[np.ndarray, ...]:
+    """(equity paths (n_windows, hours+1), turnover per window as a multiple of capital), plus the
+    notional traded per hour (n_windows, hours) when with_trades is set."""
     px = close.ffill(limit=3).to_numpy(dtype=np.float64)
     act = np.isin(close.index.hour, ex.decision_hours_utc)
-    return _simulate(
+    eq, turnover, traded = _simulate(
         np.ascontiguousarray(W, dtype=np.float64),
         px,
         act,
@@ -120,6 +124,7 @@ def simulate(
         breaker.dd_mult,
         breaker.dd_recover,
     )
+    return (eq, turnover, traded) if with_trades else (eq, turnover)
 
 
 def contest_score(equity: np.ndarray) -> np.ndarray:
@@ -169,3 +174,39 @@ def summarize(
             "windows": int(m.sum()),
         }
     return pd.DataFrame(rows).T
+
+
+def competition_metrics(
+    equity: np.ndarray, traded: np.ndarray, start_times: pd.DatetimeIndex
+) -> pd.DataFrame:
+    """Per-window metrics as the previous edition's leaderboard reported them (backtest/benchmark.py):
+    Sharpe and Sortino on daily returns (not annualised), Calmar = total return / max drawdown, and
+    active days = UTC calendar dates with at least one trade (a 12:00 -> 12:00 fortnight spans 15)."""
+    marks = equity[:, ::24]
+    r = marks[:, 1:] / marks[:, :-1] - 1.0
+    mean = r.mean(axis=1)
+    ret = equity[:, -1] / equity[:, 0] - 1.0
+    mdd = np.max(1.0 - equity / np.maximum.accumulate(equity, axis=1), axis=1)
+    down = np.sqrt(np.mean(np.minimum(r, 0.0) ** 2, axis=1))
+    active = np.zeros(len(start_times), dtype=int)
+    for k, st in enumerate(start_times):
+        hours = st + pd.to_timedelta(
+            np.arange(1, traded.shape[1] + 1), unit="h"
+        )  # trades go out after each bar
+        active[k] = len(set(hours[traded[k] > 0].date))
+    return pd.DataFrame(
+        {
+            "return": ret,
+            "sharpe": mean / np.maximum(r.std(axis=1, ddof=1), EPS),
+            "sortino": mean / np.maximum(down, EPS),
+            "calmar_total": ret / np.maximum(mdd, EPS),
+            "max_drawdown": mdd,
+            "active_days": active,
+        },
+        index=start_times,
+    )
+
+
+def non_overlapping(start_times: pd.DatetimeIndex, days: int, offset: int = 0) -> np.ndarray:
+    """Positions of windows that share no day: every `days`-th daily start, beginning at `offset`."""
+    return np.arange(offset, len(start_times), days)

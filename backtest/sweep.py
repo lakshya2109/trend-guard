@@ -19,6 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))  # import trend_guard even without `pip install -e .`
 
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -44,7 +45,7 @@ def continuous_daily_returns(W: np.ndarray, close: pd.DataFrame, cfg) -> pd.Seri
     s = int(window_starts(idx, cfg.backtest)[0])
     px = close.ffill(limit=3).to_numpy(dtype=np.float64)
     act = np.isin(idx.hour, cfg.execution.decision_hours_utc)
-    eq, _ = _simulate(
+    eq, _, _ = _simulate(
         np.ascontiguousarray(W, dtype=np.float64),
         px,
         act,
