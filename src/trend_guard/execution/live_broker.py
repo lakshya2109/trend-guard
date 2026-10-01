@@ -30,7 +30,14 @@ from trend_guard.execution.broker import (
     ShortCloseAck,
 )
 from trend_guard.roostoo.client import RoostooClient
-from trend_guard.roostoo.models import OrderDetail, ShortCloseResult, ShortOpenResult, Ticker, WalletEntry
+from trend_guard.roostoo.models import (
+    OrderDetail,
+    ShortCloseResult,
+    ShortOpenResult,
+    ShortPosition,
+    Ticker,
+    WalletEntry,
+)
 from trend_guard.roostoo.rules import TradingRule
 
 # Roostoo's raw OrderDetail.Status strings, normalised to our OrderStatusValue. Unrecognised raw
@@ -61,29 +68,66 @@ def _normalise_role(raw: str) -> Role:
     return ""
 
 
+def _filled(detail: OrderDetail) -> tuple[Decimal, Decimal, Decimal]:
+    """(filled qty, avg price, fee in USD) as actually executed.
+
+    Roostoo echoes FilledQuantity = Quantity on PENDING and CANCELED limit orders that never traded,
+    with FilledAverPrice 0, so a zero average price means nothing filled. Commission can be charged
+    in the base coin (CommissionCoin != USD); it is converted to USD at the fill price.
+    """
+    avg = Decimal(str(detail.filled_aver_price))
+    if avg <= 0:
+        return Decimal("0"), Decimal("0"), Decimal("0")
+    fee = Decimal(str(detail.commission_charge_value))
+    if detail.commission_coin and detail.commission_coin != "USD":
+        fee *= avg
+    return Decimal(str(detail.filled_quantity)), avg, fee
+
+
 def _order_ack_from_detail(detail: OrderDetail) -> OrderAck:
+    filled_qty, avg_price, fee = _filled(detail)
     return OrderAck(
         order_id=str(detail.order_id),
         status=_normalise_status(detail.status),
         role=_normalise_role(detail.role),
-        filled_qty=Decimal(str(detail.filled_quantity)),
-        avg_price=Decimal(str(detail.filled_aver_price)),
-        fee=Decimal(str(detail.commission_charge_value)),
+        filled_qty=filled_qty,
+        avg_price=avg_price,
+        fee=fee,
     )
 
 
 def _order_status_from_detail(detail: OrderDetail) -> OrderStatus:
+    filled_qty, avg_price, fee = _filled(detail)
     return OrderStatus(
         order_id=str(detail.order_id),
         status=_normalise_status(detail.status),
         role=_normalise_role(detail.role),
-        filled_qty=Decimal(str(detail.filled_quantity)),
-        avg_price=Decimal(str(detail.filled_aver_price)),
-        fee=Decimal(str(detail.commission_charge_value)),
+        filled_qty=filled_qty,
+        avg_price=avg_price,
+        fee=fee,
         qty=Decimal(str(detail.quantity)),
         pair=detail.pair,
         side=detail.side if detail.side in ("BUY", "SELL") else None,
     )
+
+
+def _short_increment(ack: ShortAck, before: ShortPosition | None) -> ShortAck:
+    """Turn a merged short_open answer into just this trade.
+
+    Opening on a pair that is already short merges into the position, and Roostoo returns the whole
+    position's ShortQty, Collateral and weighted EntryPrice; the trade log needs the added part only.
+    """
+    if before is None or ack.status != "OPEN":
+        return ack
+    old_qty, old_px = Decimal(str(before.short_qty)), Decimal(str(before.entry_price))
+    added = ack.short_qty - old_qty
+    if added <= 0:
+        return ack
+    return ack.model_copy(update={
+        "short_qty": added,
+        "entry_price": (ack.short_qty * ack.entry_price - old_qty * old_px) / added,
+        "collateral": ack.collateral - Decimal(str(before.collateral)),
+    })
 
 
 def _short_ack_from_result(result: ShortOpenResult) -> ShortAck:
@@ -275,8 +319,10 @@ class LiveBroker:
     # --- shorts: collateral/qty are already USD-denominated, no TradingRule rounding needed ---
     def short_open(self, pair: str, collateral: Decimal) -> ShortAck:
         self._require_live()
-        result = self.client.short_open(pair, collateral)
-        return _short_ack_from_result(result)
+        open_shorts = self.client.short_positions()  # needed to separate this trade from a merge
+        before = next((sp for sp in open_shorts if sp.pair == pair and sp.short_qty > 0), None)
+        ack = _short_ack_from_result(self.client.short_open(pair, collateral))
+        return _short_increment(ack, before)
 
     def short_close(self, pair: str, pct: Decimal) -> ShortCloseAck:
         self._require_live()
