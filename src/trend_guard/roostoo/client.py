@@ -170,7 +170,8 @@ class RoostooClient:
 
     def get_balance(self) -> dict[str, WalletEntry]:
         data = self._get("/v3/balance", {}, auth="signed")
-        raw = data.get("Wallet", {}) or {}
+        # live API answers with "SpotWallet" (Oct 2026); older docs say "Wallet"
+        raw = data.get("SpotWallet") or data.get("Wallet") or {}
         return {coin: WalletEntry.model_validate(v) for coin, v in raw.items()}
 
     def pending_count(self) -> tuple[int, dict[str, int]]:

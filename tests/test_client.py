@@ -57,6 +57,20 @@ def test_missing_numeric_fields_parse_as_zero():
 
 
 @responses.activate
+@pytest.mark.parametrize("key", ["SpotWallet", "Wallet"])
+def test_balance_reads_spot_wallet_and_legacy_wallet(key: str):
+    # the live API returns "SpotWallet"; the published docs still say "Wallet"
+    responses.add(
+        responses.GET,
+        f"{BASE}/v3/balance",
+        json={"Success": True, "ErrMsg": "", key: {"USD": {"Free": 50000, "Lock": 0, "ShortCollateral": 0}}},
+        status=200,
+    )
+    bal = make_client().get_balance()
+    assert bal["USD"].free == 50000
+
+
+@responses.activate
 def test_pending_count_empty_is_not_an_error():
     responses.add(
         responses.GET,
