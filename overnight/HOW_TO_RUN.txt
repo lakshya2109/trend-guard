@@ -1,0 +1,68 @@
+TREND-GUARD 4x OVERNIGHT TEST (branch trend-guard-4x + main fixes; Roostoo MOCK account, real orders)
+==================================================================================
+
+Everything is set up in:  C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x
+  - .venv\            isolated Python with trend-guard installed (this folder's code only)
+  - .env              mock API keys, ALLOW_LIVE_ORDERS=1, BOT_MODE=live   (gitignored, never commit)
+  - data\bars\1h\     hourly price history the strategy needs (the bot tops it up every hour)
+  - overnight\        this monitor (excluded from git)
+
+START (in a new terminal: PowerShell or Command Prompt)
+-----------------------------------------------------------
+  cd "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x"
+  .venv\Scripts\python overnight\run_overnight.py
+
+Leave the window open. Keep the laptop plugged in; the script stops Windows from sleeping
+while it runs (closing the lid may still sleep it, depending on your power settings).
+
+STOP
+----
+  Press Ctrl+C once in that window. It stops the bot, takes a final snapshot and writes the report.
+  Open positions stay open on the mock account (it does not sell everything).
+
+WHAT YOU GET (in overnight\runs\<start time>_UTC\)
+-----------------------------------------------------------
+  monitor_log.txt        readable log, updated live:
+                           every 10 min (hh:00, :10, :20 ...): equity, cash, locked cash, long value,
+                           short collateral + unrealized PnL, PnL $ and %, peak, drawdown, max drawdown,
+                           realized PnL, fees, fills, gross/net exposure, positions, pending orders,
+                           BTC/ETH/SOL prices, bot status, warnings/errors
+                           every hour at hh:10 (7 min after the bot's hh:03 rebalance): the same plus
+                           the full portfolio table (asset, side, qty, price, value, weight, avg cost,
+                           unrealized PnL)
+  overnight_report_*.txt the final detailed report, written when you stop: summary, 10-minute equity
+                           timeline, hourly portfolios, realized PnL by asset, every trade, every hourly
+                           decision cycle, engine warnings/errors, bot console tail
+  snapshots.jsonl        the same data machine-readable
+  bot_console.log        the bot's own console output
+  (the bot's own logs stay in logs\ and its state in state\live.db)
+
+WATCH IT LIVE FROM ANOTHER TERMINAL (optional)
+----------------------------------------------
+  Get-Content -Wait (Get-ChildItem overnight\runs | Sort-Object Name | Select-Object -Last 1).FullName\monitor_log.txt
+
+IF THE TERMINAL WAS CLOSED / PC RESTARTED
+-----------------------------------------
+  Rebuild the report from what was logged:
+  .venv\Scripts\python overnight\make_report.py
+
+FRESH START FROM ALL CASH (mock account only)
+--------------------------------------------
+  Stop the bot first, then:
+  .venv\Scripts\python overnight\flatten_account.py            (dry run: prints the plan)
+  .venv\Scripts\python overnight\flatten_account.py --execute  (cancel orders, close shorts, sell coins)
+  It also moves state\live.db to state\archive\ so the next run starts with fresh bot state.
+  Never run it on the competition account: manual API calls there break Screen 1.
+
+EMERGENCY: PAUSE TRADING WITHOUT STOPPING
+------------------------------------------
+  Create a file named HALT in the trend-guard-4x folder (e.g.  ni HALT  in PowerShell).
+  The bot cancels its resting orders and idles; delete the file to resume.
+
+NOTES
+-----
+  - The bot trades once an hour at hh:03 (UTC and local share the minute). The first rebalance
+    happens at the first hh:03 after you start it, and is a full rebalance.
+  - The mock account started with $50,000 USD (the contest gives $100,000; percentages compare).
+  - Bot restarts: if the bot crashes, the monitor restarts it after 30 s (up to 20 times) and
+    logs it; the bot resumes from state\live.db.
