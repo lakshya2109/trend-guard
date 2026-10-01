@@ -1,0 +1,41 @@
+
+===== bot start 2026-10-01T21:36:36.480935+00:00 =====
+2026-10-02 05:36:39,434 api INFO GET
+2026-10-02 05:36:39,502 engine INFO startup
+2026-10-02 05:36:39,879 api INFO GET
+2026-10-02 05:36:40,420 api INFO GET
+2026-10-02 05:36:40,422 engine INFO universe
+2026-10-02 05:36:40,804 api INFO GET
+2026-10-02 05:36:41,185 api INFO GET
+2026-10-02 05:36:41,564 api INFO GET
+2026-10-02 05:36:41,946 api INFO GET
+2026-10-02 05:36:42,337 api INFO GET
+2026-10-02 05:36:42,747 api INFO GET
+2026-10-02 05:36:43,130 api INFO GET
+2026-10-02 05:36:46,203 api INFO GET
+2026-10-02 05:36:46,449 api INFO GET
+2026-10-02 05:36:46,694 api INFO GET
+2026-10-02 05:36:46,729 decisions INFO cycle
+2026-10-02 05:37:42,262 api INFO GET
+2026-10-02 05:37:42,663 api INFO GET
+2026-10-02 05:37:43,062 api INFO GET
+2026-10-02 05:37:43,446 api INFO GET
+2026-10-02 05:38:42,109 api INFO GET
+2026-10-02 05:38:42,359 api INFO GET
+2026-10-02 05:38:42,900 api INFO GET
+2026-10-02 05:38:43,318 api INFO GET
+2026-10-02 05:39:42,053 api INFO GET
+2026-10-02 05:39:42,306 api INFO GET
+2026-10-02 05:39:42,793 api INFO GET
+2026-10-02 05:39:43,215 api INFO GET
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\main.py", line 85, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\main.py", line 80, in main
+    engine.run_forever()
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\engine.py", line 289, in run_forever
+    time.sleep(max(1.0, LOOP_S - (time.monotonic() - started)))
+KeyboardInterrupt

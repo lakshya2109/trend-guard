@@ -1,0 +1,19 @@
+{
+ "run_dir": "C:\\Users\\gunek\\Downloads\\Quant Hackathon - Gunek Front\\trend-guard-final\\overnight\\runs\\20260930_2104_UTC",
+ "start": "2026-09-30T21:04:36.385158+00:00",
+ "start_equity": 50328.694459,
+ "start_prices": {
+  "BTC/USD": 83759.715,
+  "ETH/USD": 2683.505,
+  "SOL/USD": 118.245
+ },
+ "peak": 59540.57585050001,
+ "max_dd": 0.0035934415387117724,
+ "max_dd_at": "2026-10-01T08:32:18.506714+00:00",
+ "min_equity": 50328.694459,
+ "last_fill_count": 25,
+ "last_log_check": "2026-10-01T08:32:18.506714+00:00",
+ "restarts": 0,
+ "baseline_equity": 50000.0,
+ "baseline_note": "account was untouched at 50,000 USD before this run; the saved start snapshot landed mid-way through the bot's first orders"
+}

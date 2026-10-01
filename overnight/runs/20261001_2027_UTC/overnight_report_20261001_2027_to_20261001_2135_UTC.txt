@@ -1,0 +1,207 @@
+TREND-GUARD OVERNIGHT TEST REPORT (Roostoo mock account)
+====================================================================================================
+Run folder     : overnight\runs\20261001_2027_UTC
+Started        : 2026-10-02 04:27:20 China Standard Time  (2026-10-01 20:27 UTC)
+Ended          : 2026-10-02 05:35:34 China Standard Time  (2026-10-01 21:35 UTC)
+Duration       : 1.14 hours
+Bot commit     : 8b8ee6a69eca6ff7b578822f2eceeff192f9349a   config hash 3908548efbda   mode live   shorts enabled True
+Bot restarts   : 0
+
+SUMMARY
+----------------------------------------------------------------------------------------------------
+Start equity   : $49,756.98
+End equity     : $49,629.60
+PnL            : -$127.37  (-0.26%)
+  realized this run +$0.00   fees this run $15.50   unrealized on open positions vs their cost -$325.20
+  (PnL is equity now minus equity at the start. Unrealized includes moves on positions bought before
+   this run, so it does not add up to the run PnL when the run started with open positions.)
+Peak equity    : $49,764.18
+Lowest equity  : $49,622.36
+Max drawdown   : 0.28%  (at 2026-10-01T21:30 UTC)
+BTC same period: -0.26%  (84,784.01 -> 84,560.01)
+Trades (fills) : 14  (BUY 9, SELL 0, SHORT_OPEN 5, SHORT_CLOSE 0)   buys 9 / sells 5
+Traded notional: $21,678.52  = 0.44x start equity
+Maker fills    : 8 of 14 (57%)
+Hourly cycles  : 4   engine warnings 0   errors 0
+Final exposure : gross 91.0%  net +25.1%  13 long / 9 short   cash $4,154.23
+
+EQUITY TIMELINE (every 10 minutes)
+----------------------------------------------------------------------------------------------------
+Local time                    Equity          PnL    PnL %          Cash        Longs      Shorts   Gross     Net     DD    Pos         BTC
+2026-10-02 04:27:21       $49,756.98       +$0.00   +0.00%    $25,848.22   $14,357.06   $9,515.87   47.9%   +9.8%  0.00% 13/9        84,784
+2026-10-02 04:30:00       $49,745.29      -$11.68   -0.02%    $12,774.22   $20,431.67  $16,508.26   74.2%   +7.9%  0.02% 13/9        84,767
+2026-10-02 04:40:00       $49,764.18       +$7.20   +0.01%    $12,774.22   $20,420.91  $16,508.26   74.1%   +8.0%  0.00% 13/9        84,687
+2026-10-02 04:50:00       $49,755.51       -$1.46   -0.00%    $12,774.22   $20,410.62  $16,508.26   74.1%   +8.0%  0.02% 13/9        84,599
+2026-10-02 05:00:00       $49,750.21       -$6.77   -0.01%    $12,774.22   $20,401.57  $16,508.26   74.1%   +8.0%  0.03% 13/9        84,634
+2026-10-02 05:10:00       $49,708.27      -$48.70   -0.10%     $4,154.23   $28,974.29  $16,508.26   91.4%  +25.2%  0.11% 13/9        84,633
+2026-10-02 05:20:00       $49,669.17      -$87.80   -0.18%     $4,154.23   $28,922.40  $16,508.26   91.3%  +25.2%  0.19% 13/9        84,624
+2026-10-02 05:30:00       $49,622.36     -$134.62   -0.27%     $4,154.23   $28,843.10  $16,508.26   91.2%  +25.1%  0.28% 13/9        84,579
+2026-10-02 05:35:34       $49,629.60     -$127.37   -0.26%     $4,154.23   $28,816.87  $16,508.26   91.0%  +25.1%  0.27% 13/9        84,560
+
+PORTFOLIO EVERY HOUR
+----------------------------------------------------------------------------------------------------
+START  2026-10-02 04:27:21 China Standard Time   equity $49,756.98  PnL +$0.00 (+0.00%)  cash $25,848.22  gross 47.9% net +9.8%
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0558     $3,254.13    6.54%     0.0552479       -$32.20   -1.00%
+    SUI/USD     LONG      1,690.400000       1.18665     $2,005.91    4.03%        1.1657       +$35.41   +1.80%
+    SEI/USD     LONG     26,956.300000      0.071565     $1,929.13    3.88%       0.07316       -$43.00   -2.18%
+    NEAR/USD    LONG        366.000000        4.8555     $1,777.11    3.57%         5.389      -$195.26   -9.90%
+    BTC/USD     LONG          0.017450        84,784     $1,479.48    2.97%        83,656       +$19.68   +1.35%
+    ETH/USD     LONG          0.488900      2,701.34     $1,320.68    2.65%      2,687.91        +$6.56   +0.50%
+    ARB/USD     SHORT     6,114.700000        0.2009     $1,228.44    2.47%        0.2025        +$9.78   +0.79%
+    HBAR/USD    LONG     11,839.000000      0.102975     $1,219.12    2.45%       0.10881       -$69.08   -5.36%
+    ENA/USD     LONG      4,935.380000       0.24595     $1,213.86    2.44%         0.263       -$84.15   -6.48%
+    ZEC/USD     SHORT         0.869000      1,335.49     $1,160.54    2.33%      1,423.56       +$76.54   +6.19%
+    AAVE/USD    LONG          6.011000       169.785     $1,020.58    2.05%        159.15       +$63.93   +6.68%
+    PENDLE/USD  SHORT       363.400000         2.381       $865.26    1.74%         2.363        -$6.54   -0.76%
+    ZEN/USD     SHORT       116.150000         7.151       $830.59    1.67%         7.394       +$28.22   +3.29%
+    TUT/USD     SHORT    28,174.000000       0.02497       $703.50    1.41%       0.02429       -$19.16   -2.80%
+    AVAX/USD    LONG         62.520000       11.0065       $688.13    1.38%        10.945        +$3.84   +0.56%
+    PUMP/USD    LONG    115,077.000000     0.0058305       $670.96    1.35%       0.00586        -$3.39   -0.50%
+    XPL/USD     SHORT     6,886.000000       0.09631       $663.19    1.33%       0.09262       -$25.41   -3.98%
+    TRX/USD     SHORT     1,451.000000        0.3357       $487.10    0.98%        0.3381        +$3.48   +0.71%
+    LTC/USD     LONG          5.326000        68.315       $363.85    0.73%         66.63        +$8.97   +2.53%
+    FET/USD     LONG      1,456.600000       0.23015       $335.24    0.67%        0.2261        +$5.90   +1.79%
+    LINK/USD    LONG         23.100000       14.4165       $333.02    0.67%        14.355        +$1.42   +0.43%
+    CAKE/USD    SHORT       110.860000         2.592       $287.35    0.58%         2.602        +$1.11   +0.38%
+
+HOURLY  2026-10-02 05:10:00 China Standard Time   equity $49,708.27  PnL -$48.70 (-0.10%)  cash $4,154.23  gross 91.4% net +25.2%
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT   102,275.800000        0.0558     $5,706.99   11.48%     0.0554422       -$36.60   -0.65%
+    SEI/USD     LONG     60,505.700000      0.071235     $4,310.12    8.67%     0.0721176       -$53.40   -1.22%
+    SUI/USD     LONG      3,659.000000       1.17555     $4,301.34    8.65%       1.17237       +$11.63   +0.27%
+    NEAR/USD    LONG        882.700000        4.8245     $4,258.59    8.57%       5.07876      -$224.43   -5.01%
+    HBAR/USD    LONG     29,273.000000      0.102905     $3,012.34    6.06%      0.105302       -$70.17   -2.28%
+    BTC/USD     LONG          0.034400      84,632.8     $2,911.37    5.86%      84,211.8       +$14.48   +0.50%
+    ENA/USD     LONG     11,025.770000       0.24515     $2,702.97    5.44%      0.253499       -$92.06   -3.29%
+    AAVE/USD    LONG         13.090000        170.15     $2,227.26    4.48%        164.92       +$68.46   +3.17%
+    PENDLE/USD  SHORT       919.900000          2.37     $2,180.16    4.39%       2.37449        +$4.13   +0.19%
+    ARB/USD     SHORT    10,824.600000        0.1997     $2,161.67    4.35%      0.201804       +$22.77   +1.04%
+    ZEN/USD     SHORT       301.420000         7.125     $2,147.62    4.32%        7.2471       +$36.80   +1.68%
+    ZEC/USD     SHORT         1.577000      1,334.21     $2,104.05    4.23%      1,384.67       +$79.57   +3.64%
+    PUMP/USD    LONG    273,036.000000     0.0058525     $1,597.94    3.21%    0.00584554        +$1.90   +0.12%
+    ETH/USD     LONG          0.488900      2,697.51     $1,318.81    2.65%      2,687.91        +$4.69   +0.36%
+    AVAX/USD    LONG        118.230000       10.9915     $1,299.53    2.61%        10.969        +$2.66   +0.20%
+    TUT/USD     SHORT    28,174.000000         0.025       $704.35    1.42%       0.02429       -$20.00   -2.92%
+    XPL/USD     SHORT     6,886.000000       0.09576       $659.40    1.33%       0.09262       -$21.62   -3.39%
+    TRX/USD     SHORT     1,451.000000        0.3355       $486.81    0.98%        0.3381        +$3.77   +0.77%
+    LTC/USD     LONG          5.326000        68.665       $365.71    0.74%         66.63       +$10.84   +3.05%
+    FET/USD     LONG      1,456.600000        0.2306       $335.89    0.68%        0.2261        +$6.55   +1.99%
+    LINK/USD    LONG         23.100000       14.3905       $332.42    0.67%        14.355        +$0.82   +0.25%
+    CAKE/USD    SHORT       110.860000         2.578       $285.80    0.57%         2.602        +$2.66   +0.92%
+
+FINAL  2026-10-02 05:35:34 China Standard Time   equity $49,629.60  PnL -$127.37 (-0.26%)  cash $4,154.23  gross 91.0% net +25.1%
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT   102,275.800000        0.0557     $5,696.76   11.48%     0.0554422       -$26.37   -0.47%
+    SUI/USD     LONG      3,659.000000       1.17005     $4,281.21    8.63%       1.17237        -$8.49   -0.20%
+    SEI/USD     LONG     60,505.700000      0.070755     $4,281.08    8.63%     0.0721176       -$82.44   -1.89%
+    NEAR/USD    LONG        882.700000        4.7935     $4,231.22    8.53%       5.07876      -$251.80   -5.62%
+    HBAR/USD    LONG     29,273.000000      0.102475     $2,999.75    6.04%      0.105302       -$82.76   -2.68%
+    BTC/USD     LONG          0.034400        84,560     $2,908.86    5.86%      84,211.8       +$11.98   +0.41%
+    ENA/USD     LONG     11,025.770000       0.24305     $2,679.81    5.40%      0.253499      -$115.21   -4.12%
+    AAVE/USD    LONG         13.090000        169.78     $2,222.42    4.48%        164.92       +$63.61   +2.95%
+    PENDLE/USD  SHORT       919.900000          2.36     $2,170.96    4.37%       2.37449       +$13.33   +0.61%
+    ARB/USD     SHORT    10,824.600000        0.1987     $2,150.85    4.33%      0.201804       +$33.60   +1.54%
+    ZEN/USD     SHORT       301.420000         7.074     $2,132.25    4.30%        7.2471       +$52.17   +2.39%
+    ZEC/USD     SHORT         1.577000      1,320.55     $2,082.51    4.20%      1,384.67      +$101.12   +4.63%
+    PUMP/USD    LONG    273,036.000000     0.0057705     $1,575.55    3.17%    0.00584554       -$20.49   -1.28%
+    ETH/USD     LONG          0.488900      2,693.65     $1,316.93    2.65%      2,687.91        +$2.81   +0.21%
+    AVAX/USD    LONG        118.230000       10.9535     $1,295.03    2.61%        10.969        -$1.84   -0.14%
+    TUT/USD     SHORT    28,174.000000       0.02492       $702.10    1.41%       0.02429       -$17.75   -2.59%
+    XPL/USD     SHORT     6,886.000000       0.09484       $653.07    1.32%       0.09262       -$15.29   -2.40%
+    TRX/USD     SHORT     1,451.000000        0.3355       $486.81    0.98%        0.3381        +$3.77   +0.77%
+    LTC/USD     LONG          5.326000        68.345       $364.01    0.73%         66.63        +$9.13   +2.57%
+    FET/USD     LONG      1,456.600000       0.22695       $330.58    0.67%        0.2261        +$1.24   +0.38%
+    LINK/USD    LONG         23.100000       14.3035       $330.41    0.67%        14.355        -$1.19   -0.36%
+    CAKE/USD    SHORT       110.860000         2.551       $282.80    0.57%         2.602        +$5.65   +1.96%
+
+REALIZED PnL BY ASSET (average-cost, before fees)
+----------------------------------------------------------------------------------------------------
+  (no positions closed yet)
+
+ALL TRADES (fills, from Roostoo's order history)
+----------------------------------------------------------------------------------------------------
+Local time            Pair        Side                     Qty         Price      Notional     Fee $   Role  Type
+2026-10-02 04:27:30   AAVE/USD    BUY                 7.079000        169.82     $1,202.16    0.6011  MAKER  LIMIT
+2026-10-02 04:27:30   ARB/USD     SHORT_OPEN      4,709.900000        0.2009       $946.22    0.9462  TAKER  MARKET
+2026-10-02 04:27:37   PENDLE/USD  SHORT_OPEN        556.500000         2.382     $1,325.58    1.3256  TAKER  MARKET
+2026-10-02 04:27:38   PUMP/USD    BUY           157,959.000000      0.005835       $921.69    0.4608  MAKER  LIMIT
+2026-10-02 04:27:40   NEAR/USD    BUY               516.700000         4.859     $2,510.65    1.2553  MAKER  LIMIT
+2026-10-02 04:27:41   WLFI/USD    SHORT_OPEN     43,958.100000        0.0557     $2,448.47    2.4485  TAKER  MARKET
+2026-10-02 04:27:42   ZEC/USD     SHORT_OPEN          0.708000      1,336.93       $946.55    0.9465  TAKER  MARKET
+2026-10-02 04:27:43   ZEN/USD     SHORT_OPEN        185.270000         7.155     $1,325.61    1.3256  TAKER  MARKET
+2026-10-02 04:29:25   BTC/USD     BUY                 0.016950        84,784     $1,437.09    0.7185  MAKER  LIMIT
+2026-10-02 05:03:45   AVAX/USD    BUY                55.710000        10.996       $612.59    0.3063  MAKER  LIMIT
+2026-10-02 05:03:46   ENA/USD     BUY             6,090.390000        0.2458     $1,497.02    0.7485  MAKER  LIMIT
+2026-10-02 05:03:47   HBAR/USD    BUY            17,434.000000       0.10292     $1,794.31    0.8972  MAKER  LIMIT
+2026-10-02 05:03:48   SUI/USD     BUY             1,968.600000        1.1781     $2,319.21    2.3192  TAKER  LIMIT
+2026-10-02 05:03:49   SEI/USD     BUY            33,549.400000       0.07128     $2,391.40    1.1957  MAKER  LIMIT
+
+BOT FILL LOG CHECK (6 phantom rows in logs/fills with no price)
+----------------------------------------------------------------------------------------------------
+  Roostoo reports FilledQuantity = Quantity on cancelled limit orders that never traded;
+  older bot code logged those as fills. They are ignored above (exchange history is used).
+  2026-10-01T20:29:25  AVAX/USD    BUY                55.010000  price 0.0  fee 0.0
+  2026-10-01T20:29:25  ENA/USD     BUY             6,028.840000  price 0.0  fee 0.0
+  2026-10-01T20:29:25  ETH/USD     BUY                 0.483100  price 0.0  fee 0.0
+  2026-10-01T20:29:25  HBAR/USD    BUY            17,250.000000  price 0.0  fee 0.0
+  2026-10-01T20:29:26  SEI/USD     BUY            32,971.800000  price 0.0  fee 0.0
+  2026-10-01T20:29:26  SUI/USD     BUY             1,924.400000  price 0.0  fee 0.0
+
+HOURLY DECISION CYCLES
+----------------------------------------------------------------------------------------------------
+  20261001T20  equity $49,758.44  gross 97.4%  net +28.4%  mult 1.0  act_all True  orders 15
+      top targets: WLFI -11.4%, NEAR +8.6%, SEI +8.6%, SUI +8.6%, HBAR +6.0%, BTC +5.9%, ENA +5.4%, ETH +5.3%
+  20261001T21  equity $49,766.23  gross 97.8%  net +28.5%  mult 1.0  act_all False  orders 5
+      top targets: WLFI -11.5%, NEAR +8.7%, SEI +8.7%, SUI +8.7%, HBAR +6.1%, BTC +5.9%, ENA +5.4%, ETH +5.3%
+  20261001T21  equity $49,639.92  gross 97.8%  net +28.5%  mult 1.0  act_all False  orders 0
+      top targets: WLFI -11.5%, NEAR +8.7%, SEI +8.7%, SUI +8.7%, HBAR +6.1%, BTC +5.9%, ENA +5.4%, ETH +5.3%
+  20261001T21  equity $49,512.18  gross 97.8%  net +28.5%  mult 1.0  act_all True  orders 22
+      top targets: WLFI -11.5%, NEAR +8.7%, SEI +8.7%, SUI +8.7%, HBAR +6.1%, BTC +5.9%, ENA +5.4%, ETH +5.3%
+
+WARNINGS AND ERRORS FROM THE ENGINE (0 warnings, 0 errors)
+----------------------------------------------------------------------------------------------------
+  (none)
+
+BOT CONSOLE (last 40 lines)
+----------------------------------------------------------------------------------------------------
+  2026-10-02 05:29:25,075 api INFO GET
+  2026-10-02 05:29:25,487 api INFO GET
+  2026-10-02 05:29:26,063 api INFO GET
+  2026-10-02 05:29:26,511 api INFO GET
+  2026-10-02 05:30:25,024 api INFO GET
+  2026-10-02 05:30:25,438 api INFO GET
+  2026-10-02 05:30:25,953 api INFO GET
+  2026-10-02 05:30:26,404 api INFO GET
+  2026-10-02 05:31:25,024 api INFO GET
+  2026-10-02 05:31:25,290 api INFO GET
+  2026-10-02 05:31:25,804 api INFO GET
+  2026-10-02 05:31:26,100 api INFO GET
+  2026-10-02 05:32:25,022 api INFO GET
+  2026-10-02 05:32:25,285 api INFO GET
+  2026-10-02 05:32:25,798 api INFO GET
+  2026-10-02 05:32:26,246 api INFO GET
+  2026-10-02 05:33:25,150 api INFO GET
+  2026-10-02 05:33:25,571 api INFO GET
+  2026-10-02 05:33:26,092 api INFO GET
+  2026-10-02 05:33:26,540 api INFO GET
+  2026-10-02 05:33:26,980 api INFO GET
+  2026-10-02 05:34:25,015 api INFO GET
+  2026-10-02 05:34:25,279 api INFO GET
+  2026-10-02 05:34:25,793 api INFO GET
+  2026-10-02 05:34:26,087 api INFO GET
+  2026-10-02 05:35:25,026 api INFO GET
+  2026-10-02 05:35:25,437 api INFO GET
+  2026-10-02 05:35:25,959 api INFO GET
+  2026-10-02 05:35:26,407 api INFO GET
+  Traceback (most recent call last):
+    File "<frozen runpy>", line 198, in _run_module_as_main
+    File "<frozen runpy>", line 88, in _run_code
+    File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\main.py", line 85, in <module>
+      sys.exit(main())
+               ^^^^^^
+    File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\main.py", line 80, in main
+      engine.run_forever()
+    File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\engine.py", line 289, in run_forever
+      time.sleep(max(1.0, LOOP_S - (time.monotonic() - started)))
+  KeyboardInterrupt

@@ -1,0 +1,17 @@
+[2026-10-01 21:42:46 UTC] overnight test starting; run folder C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\overnight\runs\20261001_2142_UTC
+[2026-10-01 21:42:46 UTC] press Ctrl+C once to stop: the bot stops, a final snapshot is taken and the report is written
+====================================================================================================
+[START] 2026-10-02 05:42:47 China Standard Time   (2026-10-01T21:42:47 UTC)
+  Equity            $49,512.18   PnL +$0.00 (+0.00%)   start $49,512.18
+  Cash (USD)        $49,512.18   in pending orders $0.00
+  Longs                  $0.00   Shorts collateral $0.00  short uPnL +$0.00
+  Check       equity = cash + pending-order cash + longs + short collateral + short uPnL
+  Exposure    gross 0.0%  net +0.0%   positions 0 long / 0 short   pending orders 0
+  Risk        peak $49,512.18  drawdown 0.00%  max DD 0.00%  min equity $49,512.18
+  PnL detail  realized this run +$0.00  fees this run $0.00  unrealized on open positions (vs their cost) +$0.00
+  Fills       this run 0 (+0 since last, $0.00 traded; from Roostoo order history)
+  Market      BTC 84,502.64 (+0.00%) | ETH 2,690.09 (+0.00%) | SOL 117.52 (+0.00%)
+  Bot         STOPPED (pid None, restarts 0)   cycles 0  last cycle - gross 0.0% orders -   warnings +0 errors +0
+  Portfolio:
+    (no open positions: 100% cash)
+[2026-10-01 21:42:49 UTC] bot started (pid 55748); console output -> bot_console.log

@@ -1,0 +1,77 @@
+[2026-10-01 21:35:39 UTC] overnight test starting; run folder C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\overnight\runs\20261001_2135_UTC
+[2026-10-01 21:35:39 UTC] press Ctrl+C once to stop: the bot stops, a final snapshot is taken and the report is written
+====================================================================================================
+[START] 2026-10-02 05:35:41 China Standard Time   (2026-10-01T21:35:41 UTC)
+  Equity            $49,633.16   PnL +$0.00 (+0.00%)   start $49,633.16
+  Cash (USD)         $4,154.23   in pending orders $0.00
+  Longs             $28,820.91   Shorts collateral $16,508.26  short uPnL +$149.77
+  Check       equity = cash + pending-order cash + longs + short collateral + short uPnL
+  Exposure    gross 91.0%  net +25.1%   positions 13 long / 9 short   pending orders 0
+  Risk        peak $49,633.16  drawdown 0.00%  max DD 0.00%  min equity $49,633.16
+  PnL detail  realized this run +$0.00  fees this run $0.00  unrealized on open positions (vs their cost) -$321.64
+  Fills       this run 0 (+0 since last, $0.00 traded; from Roostoo order history)
+  Market      BTC 84,560.01 (+0.00%) | ETH 2,693.65 (+0.00%) | SOL 117.72 (+0.00%)
+  Bot         STOPPED (pid None, restarts 0)   cycles 0  last cycle - gross 0.0% orders -   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT   102,275.800000        0.0557     $5,696.76   11.48%     0.0554422       -$26.37   -0.47%
+    SEI/USD     LONG     60,505.700000      0.070775     $4,282.29    8.63%     0.0721176       -$81.23   -1.86%
+    SUI/USD     LONG      3,659.000000       1.17005     $4,281.21    8.63%       1.17237        -$8.49   -0.20%
+    NEAR/USD    LONG        882.700000        4.7965     $4,233.87    8.53%       5.07876      -$249.15   -5.56%
+    HBAR/USD    LONG     29,273.000000      0.102465     $2,999.46    6.04%      0.105302       -$83.05   -2.69%
+    BTC/USD     LONG          0.034400        84,560     $2,908.86    5.86%      84,211.8       +$11.98   +0.41%
+    ENA/USD     LONG     11,025.770000       0.24305     $2,679.81    5.40%      0.253499      -$115.21   -4.12%
+    AAVE/USD    LONG         13.090000       169.795     $2,222.62    4.48%        164.92       +$63.81   +2.96%
+    PENDLE/USD  SHORT       919.900000          2.36     $2,170.96    4.37%       2.37449       +$13.33   +0.61%
+    ARB/USD     SHORT    10,824.600000        0.1987     $2,150.85    4.33%      0.201804       +$33.60   +1.54%
+    ZEN/USD     SHORT       301.420000         7.074     $2,132.25    4.30%        7.2471       +$52.17   +2.39%
+    ZEC/USD     SHORT         1.577000      1,320.88     $2,083.03    4.20%      1,384.67      +$100.60   +4.61%
+    PUMP/USD    LONG    273,036.000000     0.0057715     $1,575.83    3.17%    0.00584554       -$20.21   -1.27%
+    ETH/USD     LONG          0.488900      2,693.65     $1,316.93    2.65%      2,687.91        +$2.81   +0.21%
+    AVAX/USD    LONG        118.230000       10.9535     $1,295.03    2.61%        10.969        -$1.84   -0.14%
+    TUT/USD     SHORT    28,174.000000       0.02492       $702.10    1.41%       0.02429       -$17.75   -2.59%
+    XPL/USD     SHORT     6,886.000000       0.09485       $653.14    1.32%       0.09262       -$15.36   -2.41%
+    TRX/USD     SHORT     1,451.000000        0.3355       $486.81    0.98%        0.3381        +$3.77   +0.77%
+    LTC/USD     LONG          5.326000        68.345       $364.01    0.73%         66.63        +$9.13   +2.57%
+    FET/USD     LONG      1,456.600000       0.22695       $330.58    0.67%        0.2261        +$1.24   +0.38%
+    LINK/USD    LONG         23.100000       14.3035       $330.41    0.67%        14.355        -$1.19   -0.36%
+    CAKE/USD    SHORT       110.860000          2.55       $282.69    0.57%         2.602        +$5.76   +2.00%
+[2026-10-01 21:35:43 UTC] bot started (pid 33724); console output -> bot_console.log
+[2026-10-01 21:35:47 UTC] Ctrl+C received: stopping the bot and writing the report ...
+====================================================================================================
+[FINAL] 2026-10-02 05:35:48 China Standard Time   (2026-10-01T21:35:48 UTC)
+  Equity            $49,640.34   PnL +$7.17 (+0.01%)   start $49,633.16
+  Cash (USD)         $4,154.23   in pending orders $0.00
+  Longs             $28,828.32   Shorts collateral $16,508.26  short uPnL +$149.53
+  Check       equity = cash + pending-order cash + longs + short collateral + short uPnL
+  Exposure    gross 91.0%  net +25.1%   positions 13 long / 9 short   pending orders 0
+  Risk        peak $49,640.34  drawdown 0.00%  max DD 0.00%  min equity $49,633.16
+  PnL detail  realized this run +$0.00  fees this run $0.00  unrealized on open positions (vs their cost) -$314.47
+  Fills       this run 0 (+0 since last, $0.00 traded; from Roostoo order history)
+  Market      BTC 84,560.01 (+0.00%) | ETH 2,693.65 (+0.00%) | SOL 117.72 (+0.00%)
+  Bot         STOPPED (pid 33724, restarts 0)   cycles 0  last cycle - gross 0.0% orders -   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT   102,275.800000        0.0557     $5,696.76   11.48%     0.0554422       -$26.37   -0.47%
+    SUI/USD     LONG      3,659.000000       1.17035     $4,282.31    8.63%       1.17237        -$7.40   -0.17%
+    SEI/USD     LONG     60,505.700000      0.070755     $4,281.08    8.62%     0.0721176       -$82.44   -1.89%
+    NEAR/USD    LONG        882.700000        4.8005     $4,237.40    8.54%       5.07876      -$245.62   -5.48%
+    HBAR/USD    LONG     29,273.000000      0.102465     $2,999.46    6.04%      0.105302       -$83.05   -2.69%
+    BTC/USD     LONG          0.034400        84,560     $2,908.86    5.86%      84,211.8       +$11.98   +0.41%
+    ENA/USD     LONG     11,025.770000       0.24315     $2,680.92    5.40%      0.253499      -$114.11   -4.08%
+    AAVE/USD    LONG         13.090000       169.855     $2,223.40    4.48%        164.92       +$64.60   +2.99%
+    PENDLE/USD  SHORT       919.900000          2.36     $2,170.96    4.37%       2.37449       +$13.33   +0.61%
+    ARB/USD     SHORT    10,824.600000        0.1987     $2,150.85    4.33%      0.201804       +$33.60   +1.54%
+    ZEN/USD     SHORT       301.420000         7.076     $2,132.85    4.30%        7.2471       +$51.57   +2.36%
+    ZEC/USD     SHORT         1.577000      1,320.65     $2,082.67    4.20%      1,384.67      +$100.96   +4.62%
+    PUMP/USD    LONG    273,036.000000     0.0057775     $1,577.47    3.18%    0.00584554       -$18.58   -1.16%
+    ETH/USD     LONG          0.488900      2,693.65     $1,316.93    2.65%      2,687.91        +$2.81   +0.21%
+    AVAX/USD    LONG        118.230000       10.9545     $1,295.15    2.61%        10.969        -$1.72   -0.13%
+    TUT/USD     SHORT    28,174.000000       0.02492       $702.10    1.41%       0.02429       -$17.75   -2.59%
+    XPL/USD     SHORT     6,886.000000       0.09485       $653.14    1.32%       0.09262       -$15.36   -2.41%
+    TRX/USD     SHORT     1,451.000000        0.3355       $486.81    0.98%        0.3381        +$3.77   +0.77%
+    LTC/USD     LONG          5.326000        68.365       $364.11    0.73%         66.63        +$9.24   +2.60%
+    FET/USD     LONG      1,456.600000       0.22715       $330.87    0.67%        0.2261        +$1.53   +0.46%
+    LINK/USD    LONG         23.100000       14.3015       $330.36    0.67%        14.355        -$1.24   -0.37%
+    CAKE/USD    SHORT       110.860000          2.55       $282.69    0.57%         2.602        +$5.76   +2.00%
+[2026-10-01 21:35:52 UTC] REPORT WRITTEN: C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\overnight\runs\20261001_2135_UTC\overnight_report_20261001_2135_to_20261001_2135_UTC.txt

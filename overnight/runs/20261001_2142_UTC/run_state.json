@@ -1,0 +1,17 @@
+{
+ "run_dir": "C:\\Users\\gunek\\Downloads\\Quant Hackathon - Gunek Front\\trend-guard-4x\\overnight\\runs\\20261001_2142_UTC",
+ "start": "2026-10-01T21:42:46.323727+00:00",
+ "start_equity": 49512.18,
+ "start_prices": {
+  "BTC/USD": 84502.63500000001,
+  "ETH/USD": 2690.085,
+  "SOL/USD": 117.515
+ },
+ "peak": 49512.18,
+ "max_dd": 0.0,
+ "max_dd_at": "",
+ "min_equity": 49512.18,
+ "last_fill_count": 0,
+ "last_log_check": "2026-10-01T21:42:47.769098+00:00",
+ "restarts": 0
+}

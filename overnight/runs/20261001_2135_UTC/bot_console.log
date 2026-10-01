@@ -1,0 +1,68 @@
+
+===== bot start 2026-10-01T21:35:43.233159+00:00 =====
+2026-10-02 05:35:45,950 api INFO GET
+2026-10-02 05:35:46,010 engine INFO startup
+2026-10-02 05:35:46,249 api INFO GET
+2026-10-02 05:35:46,624 api INFO GET
+2026-10-02 05:35:46,625 engine INFO universe
+2026-10-02 05:35:46,873 api INFO GET
+2026-10-02 05:35:47,279 api INFO GET
+2026-10-02 05:35:47,660 api INFO GET
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\main.py", line 85, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\main.py", line 80, in main
+    engine.run_forever()
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\engine.py", line 286, in run_forever
+    self.tick()
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\engine.py", line 257, in tick
+    tickers: dict[str, Ticker] = self.client.get_ticker()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\roostoo\client.py", line 167, in get_ticker
+    data = self._get("/v3/ticker", params, auth="ts")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\src\trend_guard\roostoo\client.py", line 103, in _get
+    r = self.session.get(self.base_url + path, params=p, headers=headers, timeout=self.timeout)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\requests\sessions.py", line 671, in get
+    return self.request("GET", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\requests\sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\requests\sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\requests\adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\urllib3\connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\urllib3\connectionpool.py", line 540, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-4x\.venv\Lib\site-packages\urllib3\connection.py", line 638, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1423, in getresponse
+    response.begin()
+  File "C:\Users\gunek\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 1252, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gunek\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 1104, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

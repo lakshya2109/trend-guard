@@ -1,0 +1,1002 @@
+[2026-09-30 21:04:36 UTC] overnight test starting; run folder C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-final\overnight\runs\20260930_2104_UTC
+[2026-09-30 21:04:36 UTC] press Ctrl+C once to stop: the bot stops, a final snapshot is taken and the report is written
+[2026-09-30 21:04:36 UTC] bot started (pid 54160); console output -> bot_console.log
+====================================================================================================
+[START] 2026-10-01 05:04:56 China Standard Time   (2026-09-30T21:04:56 UTC)
+  Equity            $50,328.69   PnL +$0.00 (+0.00%)   start $50,328.69
+  Cash (USD)        $45,110.93   locked in orders $2,905.79
+  Longs              $2,311.97   Shorts collateral $0.00  short uPnL +$0.00
+  Exposure    gross 4.6%  net +4.6%   positions 3 long / 0 short   pending orders 0
+  Risk        peak $50,328.69  drawdown 0.00%  max DD 0.00%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $0.00  fills total 0 (+0 since last, $0.00 traded)
+  Market      BTC 83,759.71 (+0.00%) | ETH 2,683.51 (+0.00%) | SOL 118.25 (+0.00%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    ENA/USD     LONG      4,935.380000       0.26305     $1,298.25    2.58%             0        +$0.00   +0.00%
+    AVAX/USD    LONG         62.520000       10.9455       $684.31    1.36%             0        +$0.00   +0.00%
+    FET/USD     LONG      1,456.600000       0.22615       $329.41    0.65%             0        +$0.00   +0.00%
+====================================================================================================
+[HOURLY] 2026-10-01 05:10:00 China Standard Time   (2026-09-30T21:10:00 UTC)
+  Equity            $57,843.38   PnL +$7,514.68 (+14.93%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,784.11   Shorts collateral $7,890.24  short uPnL +$17.10
+  Exposure    gross 34.0%  net +6.8%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.00%  max DD 0.00%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+19 since last, $19,722.58 traded)
+  Market      BTC 83,746.67 (-0.02%) | ETH 2,684.34 (+0.03%) | SOL 118.13 (-0.09%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    SEI/USD     LONG     26,956.300000      0.072905     $1,965.25    3.40%       0.07316        -$6.87   -0.35%
+    SUI/USD     LONG      1,690.400000       1.16085     $1,962.30    3.39%        1.1657        -$8.20   -0.42%
+    NEAR/USD    LONG        366.000000        5.3545     $1,959.75    3.39%         5.389       -$12.63   -0.64%
+    TRX/USD     SHORT     4,564.300000        0.3382     $1,543.65    2.67%        0.3381        -$0.46   -0.03%
+    WLFI/USD    SHORT    27,906.300000        0.0552     $1,540.43    2.66%        0.0553        +$2.79   +0.18%
+    TRUMP/USD   SHORT       752.423000         2.047     $1,540.21    2.66%         2.051        +$3.01   +0.19%
+    ENA/USD     LONG      4,935.380000       0.26125     $1,289.37    2.23%         0.263        -$8.64   -0.67%
+    HBAR/USD    LONG     11,839.000000      0.108425     $1,283.64    2.22%       0.10881        -$4.56   -0.35%
+    AAVE/USD    LONG          6.011000       158.705       $953.98    1.65%        159.15        -$2.67   -0.28%
+    PENDLE/USD  SHORT       363.400000         2.356       $856.17    1.48%         2.363        +$2.54   +0.30%
+    ZEN/USD     SHORT       116.150000         7.354       $854.17    1.48%         7.394        +$4.65   +0.54%
+    AVAX/USD    LONG         62.520000       10.9285       $683.25    1.18%        10.945        -$1.03   -0.15%
+    TUT/USD     SHORT    28,174.000000       0.02419       $681.53    1.18%       0.02429        +$2.82   +0.41%
+    PUMP/USD    LONG    115,077.000000     0.0058535       $673.60    1.16%       0.00586        -$0.75   -0.11%
+    XPL/USD     SHORT     6,886.000000        0.0925       $636.96    1.10%       0.09262        +$0.83   +0.13%
+    LTC/USD     LONG          5.326000        66.555       $354.47    0.61%         66.63        -$0.40   -0.11%
+    LINK/USD    LONG         23.100000       14.3285       $330.99    0.57%        14.355        -$0.61   -0.18%
+    FET/USD     LONG      1,456.600000       0.22485       $327.52    0.57%        0.2261        -$1.82   -0.55%
+    ZEC/USD     SHORT         0.155000      1,419.88       $220.08    0.38%      1,425.84        +$0.92   +0.42%
+====================================================================================================
+[10MIN] 2026-10-01 05:20:00 China Standard Time   (2026-09-30T21:20:00 UTC)
+  Equity            $57,834.32   PnL +$7,505.63 (+14.91%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,780.41   Shorts collateral $7,890.24  short uPnL +$11.76
+  Exposure    gross 34.0%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.02%  max DD 0.02%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,790.01 (+0.04%) | ETH 2,683.36 (-0.01%) | SOL 118.09 (-0.13%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 05:30:00 China Standard Time   (2026-09-30T21:30:00 UTC)
+  Equity            $57,803.87   PnL +$7,475.17 (+14.85%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,746.44   Shorts collateral $7,890.24  short uPnL +$15.27
+  Exposure    gross 33.9%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.07%  max DD 0.07%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,725.99 (-0.04%) | ETH 2,683.98 (+0.02%) | SOL 118.07 (-0.14%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 05:40:00 China Standard Time   (2026-09-30T21:40:00 UTC)
+  Equity            $57,806.79   PnL +$7,478.10 (+14.86%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,762.64   Shorts collateral $7,890.24  short uPnL +$2.00
+  Exposure    gross 34.0%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.06%  max DD 0.07%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,744.01 (-0.02%) | ETH 2,685.14 (+0.06%) | SOL 118.02 (-0.19%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 05:50:00 China Standard Time   (2026-09-30T21:50:00 UTC)
+  Equity            $57,799.47   PnL +$7,470.78 (+14.84%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,739.73   Shorts collateral $7,890.24  short uPnL +$17.58
+  Exposure    gross 33.9%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.08%  max DD 0.08%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,734.86 (-0.03%) | ETH 2,684.38 (+0.03%) | SOL 117.94 (-0.25%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 06:00:00 China Standard Time   (2026-09-30T22:00:00 UTC)
+  Equity            $57,802.25   PnL +$7,473.56 (+14.85%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,744.06   Shorts collateral $7,890.24  short uPnL +$16.03
+  Exposure    gross 33.9%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.07%  max DD 0.08%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,769.02 (+0.01%) | ETH 2,684.43 (+0.03%) | SOL 118.05 (-0.17%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 1  last cycle 20260930T21 gross 39.5% orders 19   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 06:10:00 China Standard Time   (2026-09-30T22:10:00 UTC)
+  Equity            $57,771.63   PnL +$7,442.93 (+14.79%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,679.75   Shorts collateral $7,890.24  short uPnL +$49.72
+  Exposure    gross 33.8%  net +6.6%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.12%  max DD 0.12%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,606.01 (-0.18%) | ETH 2,678.81 (-0.18%) | SOL 117.69 (-0.47%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 2  last cycle 20260930T22 gross 39.6% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    SEI/USD     LONG     26,956.300000       0.07297     $1,967.00    3.40%       0.07316        -$5.12   -0.26%
+    SUI/USD     LONG      1,690.400000       1.15105     $1,945.73    3.37%        1.1657       -$24.76   -1.26%
+    NEAR/USD    LONG        366.000000        5.2515     $1,922.05    3.33%         5.389       -$50.33   -2.55%
+    TRX/USD     SHORT     4,564.300000        0.3378     $1,541.82    2.67%        0.3381        +$1.37   +0.09%
+    TRUMP/USD   SHORT       752.423000         2.029     $1,526.67    2.64%         2.051       +$16.55   +1.07%
+    WLFI/USD    SHORT    27,906.300000        0.0546     $1,523.68    2.64%        0.0553       +$19.53   +1.27%
+    ENA/USD     LONG      4,935.380000       0.25845     $1,275.55    2.21%         0.263       -$22.46   -1.73%
+    HBAR/USD    LONG     11,839.000000       0.10531     $1,246.77    2.16%       0.10881       -$41.44   -3.22%
+    AAVE/USD    LONG          6.011000       158.565       $953.13    1.65%        159.15        -$3.52   -0.37%
+    PENDLE/USD  SHORT       363.400000         2.353       $855.08    1.48%         2.363        +$3.63   +0.42%
+    ZEN/USD     SHORT       116.150000         7.298       $847.66    1.47%         7.394       +$11.15   +1.30%
+    TUT/USD     SHORT    28,174.000000       0.02427       $683.78    1.18%       0.02429        +$0.56   +0.08%
+    AVAX/USD    LONG         62.520000       10.8695       $679.56    1.18%        10.945        -$4.72   -0.69%
+    PUMP/USD    LONG    115,077.000000     0.0058995       $678.90    1.18%       0.00586        +$4.55   +0.67%
+    XPL/USD     SHORT     6,886.000000       0.09347       $643.63    1.11%       0.09262        -$5.85   -0.92%
+    LTC/USD     LONG          5.326000        66.765       $355.59    0.62%         66.63        +$0.72   +0.20%
+    LINK/USD    LONG         23.100000       14.2855       $330.00    0.57%        14.355        -$1.61   -0.48%
+    FET/USD     LONG      1,456.600000       0.22345       $325.48    0.56%        0.2261        -$3.86   -1.17%
+    ZEC/USD     SHORT         0.155000      1,408.01       $218.24    0.38%      1,425.84        +$2.76   +1.25%
+====================================================================================================
+[10MIN] 2026-10-01 06:20:00 China Standard Time   (2026-09-30T22:20:00 UTC)
+  Equity            $57,820.75   PnL +$7,492.06 (+14.89%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,772.62   Shorts collateral $7,890.24  short uPnL +$5.97
+  Exposure    gross 34.0%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,843.38  drawdown 0.04%  max DD 0.12%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,739.70 (-0.02%) | ETH 2,684.69 (+0.04%) | SOL 118.07 (-0.14%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 2  last cycle 20260930T22 gross 39.6% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 06:30:00 China Standard Time   (2026-09-30T22:30:00 UTC)
+  Equity            $57,862.59   PnL +$7,533.90 (+14.97%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,838.03   Shorts collateral $7,890.24  short uPnL -$17.59
+  Exposure    gross 34.1%  net +6.8%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,862.59  drawdown 0.00%  max DD 0.12%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,824.01 (+0.08%) | ETH 2,688.93 (+0.20%) | SOL 118.32 (+0.07%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 2  last cycle 20260930T22 gross 39.6% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 06:40:00 China Standard Time   (2026-09-30T22:40:00 UTC)
+  Equity            $57,904.61   PnL +$7,575.91 (+15.05%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,886.11   Shorts collateral $7,890.24  short uPnL -$23.66
+  Exposure    gross 34.2%  net +6.9%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.00%  max DD 0.12%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,818.01 (+0.07%) | ETH 2,691.07 (+0.28%) | SOL 118.47 (+0.19%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 2  last cycle 20260930T22 gross 39.6% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 06:50:00 China Standard Time   (2026-09-30T22:50:00 UTC)
+  Equity            $57,869.45   PnL +$7,540.76 (+14.98%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,858.16   Shorts collateral $7,890.24  short uPnL -$30.87
+  Exposure    gross 34.2%  net +6.8%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.06%  max DD 0.12%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,775.55 (+0.02%) | ETH 2,690.36 (+0.26%) | SOL 118.44 (+0.16%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 2  last cycle 20260930T22 gross 39.6% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 07:00:00 China Standard Time   (2026-09-30T23:00:00 UTC)
+  Equity            $57,842.82   PnL +$7,514.13 (+14.93%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,817.53   Shorts collateral $7,890.24  short uPnL -$16.87
+  Exposure    gross 34.1%  net +6.8%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.11%  max DD 0.12%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,684.01 (-0.09%) | ETH 2,686.89 (+0.13%) | SOL 118.16 (-0.08%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 2  last cycle 20260930T22 gross 39.6% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 07:10:00 China Standard Time   (2026-09-30T23:10:00 UTC)
+  Equity            $57,830.66   PnL +$7,501.96 (+14.91%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,811.12   Shorts collateral $7,890.24  short uPnL -$22.63
+  Exposure    gross 34.1%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.13%  max DD 0.13%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,664.01 (-0.11%) | ETH 2,686.81 (+0.12%) | SOL 118.22 (-0.03%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 3  last cycle 20260930T23 gross 39.7% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    SEI/USD     LONG     26,956.300000      0.073525     $1,981.96    3.43%       0.07316        +$9.84   +0.50%
+    SUI/USD     LONG      1,690.400000       1.16455     $1,968.56    3.40%        1.1657        -$1.94   -0.10%
+    NEAR/USD    LONG        366.000000        5.3585     $1,961.21    3.39%         5.389       -$11.16   -0.57%
+    TRUMP/USD   SHORT       752.423000          2.06     $1,549.99    2.68%         2.051        -$6.77   -0.44%
+    TRX/USD     SHORT     4,564.300000        0.3379     $1,542.28    2.67%        0.3381        +$0.91   +0.06%
+    WLFI/USD    SHORT    27,906.300000        0.0551     $1,537.64    2.66%        0.0553        +$5.58   +0.36%
+    ENA/USD     LONG      4,935.380000       0.26485     $1,307.14    2.26%         0.263        +$9.13   +0.70%
+    HBAR/USD    LONG     11,839.000000      0.105185     $1,245.29    2.15%       0.10881       -$42.92   -3.33%
+    AAVE/USD    LONG          6.011000       159.625       $959.51    1.66%        159.15        +$2.86   +0.30%
+    PENDLE/USD  SHORT       363.400000          2.39       $868.53    1.50%         2.363        -$9.81   -1.14%
+    ZEN/USD     SHORT       116.150000         7.347       $853.35    1.48%         7.394        +$5.46   +0.64%
+    TUT/USD     SHORT    28,174.000000       0.02443       $688.29    1.19%       0.02429        -$3.94   -0.58%
+    AVAX/USD    LONG         62.520000       10.9545       $684.88    1.18%        10.945        +$0.59   +0.09%
+    PUMP/USD    LONG    115,077.000000      0.005943       $683.90    1.18%       0.00586        +$9.55   +1.42%
+    XPL/USD     SHORT     6,886.000000       0.09446       $650.45    1.12%       0.09262       -$12.67   -1.99%
+    LTC/USD     LONG          5.326000        66.955       $356.60    0.62%         66.63        +$1.73   +0.49%
+    LINK/USD    LONG         23.100000       14.3765       $332.10    0.57%        14.355        +$0.50   +0.15%
+    FET/USD     LONG      1,456.600000       0.22655       $329.99    0.57%        0.2261        +$0.66   +0.20%
+    ZEC/USD     SHORT         0.155000      1,434.75       $222.39    0.38%      1,425.84        -$1.38   -0.62%
+====================================================================================================
+[10MIN] 2026-10-01 07:20:00 China Standard Time   (2026-09-30T23:20:00 UTC)
+  Equity            $57,840.74   PnL +$7,512.04 (+14.93%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,829.18   Shorts collateral $7,890.24  short uPnL -$30.60
+  Exposure    gross 34.1%  net +6.8%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.11%  max DD 0.13%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,728.46 (-0.04%) | ETH 2,690.32 (+0.25%) | SOL 118.32 (+0.07%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 3  last cycle 20260930T23 gross 39.7% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 07:30:00 China Standard Time   (2026-09-30T23:30:00 UTC)
+  Equity            $57,835.28   PnL +$7,506.58 (+14.92%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,816.96   Shorts collateral $7,890.24  short uPnL -$23.84
+  Exposure    gross 34.1%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.12%  max DD 0.13%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,662.01 (-0.12%) | ETH 2,689.20 (+0.21%) | SOL 118.19 (-0.05%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 3  last cycle 20260930T23 gross 39.7% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 07:40:00 China Standard Time   (2026-09-30T23:40:00 UTC)
+  Equity            $57,844.40   PnL +$7,515.71 (+14.93%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,831.11   Shorts collateral $7,890.24  short uPnL -$28.87
+  Exposure    gross 34.1%  net +6.8%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.10%  max DD 0.13%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,649.99 (-0.13%) | ETH 2,689.84 (+0.24%) | SOL 118.23 (-0.01%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 3  last cycle 20260930T23 gross 39.7% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 07:50:00 China Standard Time   (2026-09-30T23:50:00 UTC)
+  Equity            $57,826.28   PnL +$7,497.58 (+14.90%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,801.91   Shorts collateral $7,890.24  short uPnL -$17.79
+  Exposure    gross 34.1%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.14%  max DD 0.14%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,574.01 (-0.22%) | ETH 2,687.61 (+0.15%) | SOL 118.09 (-0.13%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 3  last cycle 20260930T23 gross 39.7% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 08:00:00 China Standard Time   (2026-10-01T00:00:00 UTC)
+  Equity            $57,826.66   PnL +$7,497.96 (+14.90%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,803.42   Shorts collateral $7,890.24  short uPnL -$18.92
+  Exposure    gross 34.1%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.13%  max DD 0.14%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,654.42 (-0.13%) | ETH 2,686.72 (+0.12%) | SOL 118.16 (-0.08%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 3  last cycle 20260930T23 gross 39.7% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 08:10:00 China Standard Time   (2026-10-01T00:10:00 UTC)
+  Equity            $57,784.56   PnL +$7,455.87 (+14.81%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,744.33   Shorts collateral $7,890.24  short uPnL -$1.93
+  Exposure    gross 34.0%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.21%  max DD 0.21%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,484.01 (-0.33%) | ETH 2,682.69 (-0.03%) | SOL 117.95 (-0.25%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 4  last cycle 20261001T00 gross 39.8% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    SEI/USD     LONG     26,956.300000      0.073245     $1,974.41    3.42%       0.07316        +$2.29   +0.12%
+    SUI/USD     LONG      1,690.400000       1.15755     $1,956.72    3.39%        1.1657       -$13.78   -0.70%
+    NEAR/USD    LONG        366.000000        5.3015     $1,940.35    3.36%         5.389       -$32.03   -1.62%
+    TRX/USD     SHORT     4,564.300000        0.3381     $1,543.19    2.67%        0.3381        +$0.00   +0.00%
+    TRUMP/USD   SHORT       752.423000         2.047     $1,540.21    2.67%         2.051        +$3.01   +0.19%
+    WLFI/USD    SHORT    27,906.300000         0.055     $1,534.85    2.66%        0.0553        +$8.37   +0.54%
+    ENA/USD     LONG      4,935.380000       0.26385     $1,302.20    2.25%         0.263        +$4.20   +0.32%
+    HBAR/USD    LONG     11,839.000000      0.103965     $1,230.84    2.13%       0.10881       -$57.36   -4.45%
+    AAVE/USD    LONG          6.011000       159.295       $957.52    1.66%        159.15        +$0.87   +0.09%
+    PENDLE/USD  SHORT       363.400000         2.374       $862.71    1.49%         2.363        -$4.00   -0.47%
+    ZEN/USD     SHORT       116.150000         7.322       $850.45    1.47%         7.394        +$8.36   +0.97%
+    TUT/USD     SHORT    28,174.000000       0.02437       $686.60    1.19%       0.02429        -$2.25   -0.33%
+    AVAX/USD    LONG         62.520000       10.9145       $682.37    1.18%        10.945        -$1.91   -0.28%
+    PUMP/USD    LONG    115,077.000000     0.0058915       $677.98    1.17%       0.00586        +$3.62   +0.54%
+    XPL/USD     SHORT     6,886.000000       0.09468       $651.97    1.13%       0.09262       -$14.19   -2.22%
+    LTC/USD     LONG          5.326000        67.115       $357.45    0.62%         66.63        +$2.58   +0.73%
+    FET/USD     LONG      1,456.600000       0.22825       $332.47    0.58%        0.2261        +$3.13   +0.95%
+    LINK/USD    LONG         23.100000       14.3725       $332.00    0.57%        14.355        +$0.40   +0.12%
+    ZEC/USD     SHORT         0.155000      1,433.81       $222.24    0.38%      1,425.84        -$1.24   -0.56%
+====================================================================================================
+[10MIN] 2026-10-01 08:20:00 China Standard Time   (2026-10-01T00:20:00 UTC)
+  Equity            $57,759.45   PnL +$7,430.75 (+14.76%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,725.16   Shorts collateral $7,890.24  short uPnL -$7.87
+  Exposure    gross 34.0%  net +6.6%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.25%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,455.79 (-0.36%) | ETH 2,679.74 (-0.14%) | SOL 117.97 (-0.23%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 4  last cycle 20261001T00 gross 39.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 08:30:00 China Standard Time   (2026-10-01T00:30:00 UTC)
+  Equity            $57,783.64   PnL +$7,454.94 (+14.81%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,753.60   Shorts collateral $7,890.24  short uPnL -$12.12
+  Exposure    gross 34.0%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.21%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,486.01 (-0.33%) | ETH 2,682.44 (-0.04%) | SOL 118.09 (-0.14%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 4  last cycle 20261001T00 gross 39.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 08:40:00 China Standard Time   (2026-10-01T00:40:00 UTC)
+  Equity            $57,798.39   PnL +$7,469.69 (+14.84%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,788.82   Shorts collateral $7,890.24  short uPnL -$32.59
+  Exposure    gross 34.1%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.18%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,521.92 (-0.28%) | ETH 2,684.39 (+0.03%) | SOL 118.09 (-0.13%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 4  last cycle 20261001T00 gross 39.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 08:50:00 China Standard Time   (2026-10-01T00:50:00 UTC)
+  Equity            $57,826.88   PnL +$7,498.19 (+14.90%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,822.41   Shorts collateral $7,890.24  short uPnL -$37.69
+  Exposure    gross 34.2%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.13%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,537.85 (-0.26%) | ETH 2,686.88 (+0.13%) | SOL 118.10 (-0.12%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 4  last cycle 20261001T00 gross 39.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 09:00:00 China Standard Time   (2026-10-01T01:00:00 UTC)
+  Equity            $57,807.12   PnL +$7,478.43 (+14.86%)   start $50,328.69
+  Cash (USD)        $30,261.68   locked in orders $7,890.24
+  Longs             $11,794.33   Shorts collateral $7,890.24  short uPnL -$29.36
+  Exposure    gross 34.1%  net +6.7%   positions 11 long / 8 short   pending orders 0
+  Risk        peak $57,904.61  drawdown 0.17%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized +$0.00  fees paid $15.78  fills total 19 (+0 since last, $0.00 traded)
+  Market      BTC 83,508.01 (-0.30%) | ETH 2,685.32 (+0.07%) | SOL 118.00 (-0.20%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 4  last cycle 20261001T00 gross 39.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 09:10:00 China Standard Time   (2026-10-01T01:10:00 UTC)
+  Equity            $59,455.76   PnL +$9,127.06 (+18.13%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,837.37   Shorts collateral $9,515.87  short uPnL -$36.86
+  Exposure    gross 36.0%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+6 since last, $8,587.22 traded)
+  Market      BTC 83,601.58 (-0.19%) | ETH 2,687.51 (+0.15%) | SOL 118.05 (-0.17%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 5  last cycle 20261001T01 gross 42.2% orders 6   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0553     $3,224.97    5.42%     0.0552479        -$3.04   -0.09%
+    SEI/USD     LONG     26,956.300000      0.074195     $2,000.02    3.36%       0.07316       +$27.90   +1.41%
+    SUI/USD     LONG      1,690.400000       1.17785     $1,991.04    3.35%        1.1657       +$20.54   +1.04%
+    NEAR/USD    LONG        366.000000        5.3245     $1,948.77    3.28%         5.389       -$23.61   -1.20%
+    ENA/USD     LONG      4,935.380000       0.26725     $1,318.98    2.22%         0.263       +$20.98   +1.62%
+    ARB/USD     SHORT     6,114.700000        0.2034     $1,243.73    2.09%        0.2025        -$5.50   -0.44%
+    HBAR/USD    LONG     11,839.000000      0.104635     $1,238.77    2.08%       0.10881       -$49.43   -3.84%
+    ZEC/USD     SHORT         0.869000         1,423     $1,236.59    2.08%      1,423.56        +$0.49   +0.04%
+    AAVE/USD    LONG          6.011000       159.865       $960.95    1.62%        159.15        +$4.30   +0.45%
+    PENDLE/USD  SHORT       363.400000         2.397       $871.07    1.47%         2.363       -$12.36   -1.44%
+    ZEN/USD     SHORT       116.150000         7.385       $857.77    1.44%         7.394        +$1.05   +0.12%
+    TUT/USD     SHORT    28,174.000000       0.02432       $685.19    1.15%       0.02429        -$0.85   -0.12%
+    AVAX/USD    LONG         62.520000       10.8695       $679.56    1.14%        10.945        -$4.72   -0.69%
+    PUMP/USD    LONG    115,077.000000     0.0057915       $666.47    1.12%       0.00586        -$7.88   -1.17%
+    XPL/USD     SHORT     6,886.000000       0.09499       $654.10    1.10%       0.09262       -$16.32   -2.56%
+    TRX/USD     SHORT     1,451.000000        0.3381       $490.58    0.83%        0.3381        +$0.00   +0.00%
+    LTC/USD     LONG          5.326000        67.485       $359.43    0.60%         66.63        +$4.55   +1.28%
+    FET/USD     LONG      1,456.600000       0.23405       $340.92    0.57%        0.2261       +$11.58   +3.52%
+    LINK/USD    LONG         23.100000       14.3925       $332.47    0.56%        14.355        +$0.87   +0.26%
+    CAKE/USD    SHORT       110.860000         2.605       $288.79    0.49%         2.602        -$0.33   -0.12%
+====================================================================================================
+[10MIN] 2026-10-01 09:20:00 China Standard Time   (2026-10-01T01:20:00 UTC)
+  Equity            $59,454.22   PnL +$9,125.52 (+18.13%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,840.21   Shorts collateral $9,515.87  short uPnL -$41.24
+  Exposure    gross 36.0%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,646.01 (-0.14%) | ETH 2,690.47 (+0.26%) | SOL 118.18 (-0.06%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 5  last cycle 20261001T01 gross 42.2% orders 6   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 09:30:00 China Standard Time   (2026-10-01T01:30:00 UTC)
+  Equity            $59,435.82   PnL +$9,107.12 (+18.10%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,834.20   Shorts collateral $9,515.87  short uPnL -$53.64
+  Exposure    gross 36.0%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.03%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,630.20 (-0.15%) | ETH 2,691.02 (+0.28%) | SOL 118.38 (+0.11%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 5  last cycle 20261001T01 gross 42.2% orders 6   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 09:40:00 China Standard Time   (2026-10-01T01:40:00 UTC)
+  Equity            $59,401.76   PnL +$9,073.07 (+18.03%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,776.00   Shorts collateral $9,515.87  short uPnL -$29.49
+  Exposure    gross 35.9%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.09%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,570.01 (-0.23%) | ETH 2,689.86 (+0.24%) | SOL 118.16 (-0.07%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 5  last cycle 20261001T01 gross 42.2% orders 6   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 09:50:00 China Standard Time   (2026-10-01T01:50:00 UTC)
+  Equity            $59,382.89   PnL +$9,054.19 (+17.99%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,739.09   Shorts collateral $9,515.87  short uPnL -$11.45
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.12%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,512.01 (-0.30%) | ETH 2,689.43 (+0.22%) | SOL 118.16 (-0.08%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 5  last cycle 20261001T01 gross 42.2% orders 6   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 10:00:00 China Standard Time   (2026-10-01T02:00:00 UTC)
+  Equity            $59,390.04   PnL +$9,061.35 (+18.00%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,736.53   Shorts collateral $9,515.87  short uPnL -$1.74
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.11%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,518.08 (-0.29%) | ETH 2,690.01 (+0.24%) | SOL 118.12 (-0.10%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 5  last cycle 20261001T01 gross 42.2% orders 6   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 10:10:00 China Standard Time   (2026-10-01T02:10:00 UTC)
+  Equity            $59,404.68   PnL +$9,075.99 (+18.03%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,773.45   Shorts collateral $9,515.87  short uPnL -$24.01
+  Exposure    gross 35.9%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.09%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,628.01 (-0.16%) | ETH 2,693.47 (+0.37%) | SOL 118.28 (+0.03%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 6  last cycle 20261001T02 gross 42.3% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0552     $3,219.14    5.42%     0.0552479        +$2.79   +0.09%
+    SUI/USD     LONG      1,690.400000       1.17915     $1,993.24    3.36%        1.1657       +$22.74   +1.15%
+    SEI/USD     LONG     26,956.300000      0.073395     $1,978.46    3.33%       0.07316        +$6.33   +0.32%
+    NEAR/USD    LONG        366.000000        5.2395     $1,917.66    3.23%         5.389       -$54.72   -2.77%
+    ENA/USD     LONG      4,935.380000       0.26415     $1,303.68    2.19%         0.263        +$5.68   +0.44%
+    ARB/USD     SHORT     6,114.700000        0.2029     $1,240.67    2.09%        0.2025        -$2.45   -0.20%
+    ZEC/USD     SHORT         0.869000      1,421.34     $1,235.14    2.08%      1,423.56        +$1.93   +0.16%
+    HBAR/USD    LONG     11,839.000000      0.104245     $1,234.16    2.08%       0.10881       -$54.05   -4.20%
+    AAVE/USD    LONG          6.011000       161.625       $971.53    1.64%        159.15       +$14.88   +1.56%
+    PENDLE/USD  SHORT       363.400000         2.414       $877.25    1.48%         2.363       -$18.53   -2.16%
+    ZEN/USD     SHORT       116.150000          7.34       $852.54    1.44%         7.394        +$6.27   +0.73%
+    TUT/USD     SHORT    28,174.000000       0.02422       $682.37    1.15%       0.02429        +$1.97   +0.29%
+    AVAX/USD    LONG         62.520000       10.9005       $681.50    1.15%        10.945        -$2.78   -0.41%
+    PUMP/USD    LONG    115,077.000000      0.005786       $665.84    1.12%       0.00586        -$8.52   -1.26%
+    XPL/USD     SHORT     6,886.000000       0.09533       $656.44    1.11%       0.09262       -$18.66   -2.93%
+    TRX/USD     SHORT     1,451.000000        0.3381       $490.58    0.83%        0.3381        +$0.00   +0.00%
+    LTC/USD     LONG          5.326000        67.155       $357.67    0.60%         66.63        +$2.80   +0.79%
+    FET/USD     LONG      1,456.600000       0.23235       $338.44    0.57%        0.2261        +$9.10   +2.76%
+    LINK/USD    LONG         23.100000       14.3415       $331.29    0.56%        14.355        -$0.31   -0.09%
+    CAKE/USD    SHORT       110.860000         2.578       $285.80    0.48%         2.602        +$2.66   +0.92%
+====================================================================================================
+[10MIN] 2026-10-01 10:20:00 China Standard Time   (2026-10-01T02:20:00 UTC)
+  Equity            $59,382.88   PnL +$9,054.18 (+17.99%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,726.52   Shorts collateral $9,515.87  short uPnL +$1.11
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.12%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,514.01 (-0.29%) | ETH 2,686.93 (+0.13%) | SOL 118.09 (-0.13%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 6  last cycle 20261001T02 gross 42.3% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 10:30:00 China Standard Time   (2026-10-01T02:30:00 UTC)
+  Equity            $59,388.46   PnL +$9,059.77 (+18.00%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,753.32   Shorts collateral $9,515.87  short uPnL -$20.11
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.11%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,541.32 (-0.26%) | ETH 2,688.85 (+0.20%) | SOL 118.12 (-0.10%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 6  last cycle 20261001T02 gross 42.3% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 10:40:00 China Standard Time   (2026-10-01T02:40:00 UTC)
+  Equity            $59,383.92   PnL +$9,055.22 (+17.99%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,752.98   Shorts collateral $9,515.87  short uPnL -$24.32
+  Exposure    gross 35.9%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.12%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,444.33 (-0.38%) | ETH 2,686.31 (+0.10%) | SOL 118.00 (-0.20%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 6  last cycle 20261001T02 gross 42.3% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 10:50:00 China Standard Time   (2026-10-01T02:50:00 UTC)
+  Equity            $59,400.06   PnL +$9,071.36 (+18.02%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,776.53   Shorts collateral $9,515.87  short uPnL -$31.72
+  Exposure    gross 35.9%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.09%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,415.77 (-0.41%) | ETH 2,684.99 (+0.06%) | SOL 118.03 (-0.19%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 6  last cycle 20261001T02 gross 42.3% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 11:00:00 China Standard Time   (2026-10-01T03:00:00 UTC)
+  Equity            $59,426.36   PnL +$9,097.67 (+18.08%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,839.74   Shorts collateral $9,515.87  short uPnL -$68.63
+  Exposure    gross 36.1%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.05%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,488.01 (-0.32%) | ETH 2,687.27 (+0.14%) | SOL 118.20 (-0.03%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 6  last cycle 20261001T02 gross 42.3% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 11:10:00 China Standard Time   (2026-10-01T03:10:00 UTC)
+  Equity            $59,436.86   PnL +$9,108.16 (+18.10%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,842.24   Shorts collateral $9,515.87  short uPnL -$60.64
+  Exposure    gross 36.0%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.03%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,474.74 (-0.34%) | ETH 2,687.12 (+0.13%) | SOL 118.06 (-0.15%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 7  last cycle 20261001T03 gross 42.5% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0556     $3,242.46    5.46%     0.0552479       -$20.54   -0.64%
+    SUI/USD     LONG      1,690.400000       1.17825     $1,991.71    3.35%        1.1657       +$21.21   +1.08%
+    SEI/USD     LONG     26,956.300000      0.073585     $1,983.58    3.34%       0.07316       +$11.46   +0.58%
+    NEAR/USD    LONG        366.000000        5.2945     $1,937.79    3.26%         5.389       -$34.59   -1.75%
+    ENA/USD     LONG      4,935.380000       0.26825     $1,323.92    2.23%         0.263       +$25.91   +2.00%
+    ARB/USD     SHORT     6,114.700000        0.2042     $1,248.62    2.10%        0.2025       -$10.39   -0.84%
+    HBAR/USD    LONG     11,839.000000      0.104765     $1,240.31    2.09%       0.10881       -$47.89   -3.72%
+    ZEC/USD     SHORT         0.869000      1,415.28     $1,229.88    2.07%      1,423.56        +$7.20   +0.58%
+    AAVE/USD    LONG          6.011000       163.955       $985.53    1.66%        159.15       +$28.88   +3.02%
+    PENDLE/USD  SHORT       363.400000         2.411       $876.16    1.47%         2.363       -$17.44   -2.03%
+    ZEN/USD     SHORT       116.150000         7.368       $855.79    1.44%         7.394        +$3.02   +0.35%
+    AVAX/USD    LONG         62.520000       11.0445       $690.50    1.16%        10.945        +$6.22   +0.91%
+    TUT/USD     SHORT    28,174.000000       0.02439       $687.16    1.16%       0.02429        -$2.82   -0.41%
+    PUMP/USD    LONG    115,077.000000       0.00574       $660.54    1.11%       0.00586       -$13.81   -2.05%
+    XPL/USD     SHORT     6,886.000000       0.09579       $659.61    1.11%       0.09262       -$21.83   -3.42%
+    TRX/USD     SHORT     1,451.000000        0.3376       $489.86    0.82%        0.3381        +$0.73   +0.15%
+    LTC/USD     LONG          5.326000        67.375       $358.84    0.60%         66.63        +$3.97   +1.12%
+    FET/USD     LONG      1,456.600000       0.23095       $336.40    0.57%        0.2261        +$7.06   +2.15%
+    LINK/USD    LONG         23.100000       14.4205       $333.11    0.56%        14.355        +$1.51   +0.46%
+    CAKE/USD    SHORT       110.860000         2.589       $287.02    0.48%         2.602        +$1.44   +0.50%
+====================================================================================================
+[10MIN] 2026-10-01 11:20:00 China Standard Time   (2026-10-01T03:20:00 UTC)
+  Equity            $59,423.53   PnL +$9,094.83 (+18.07%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,845.43   Shorts collateral $9,515.87  short uPnL -$77.16
+  Exposure    gross 36.1%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.05%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,477.33 (-0.34%) | ETH 2,687.51 (+0.15%) | SOL 118.07 (-0.14%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 7  last cycle 20261001T03 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 11:30:00 China Standard Time   (2026-10-01T03:30:00 UTC)
+  Equity            $59,397.88   PnL +$9,069.18 (+18.02%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,819.74   Shorts collateral $9,515.87  short uPnL -$77.11
+  Exposure    gross 36.0%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.10%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,508.74 (-0.30%) | ETH 2,686.94 (+0.13%) | SOL 118.06 (-0.16%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 7  last cycle 20261001T03 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 11:40:04 China Standard Time   (2026-10-01T03:40:04 UTC)
+  Equity            $59,453.95   PnL +$9,125.25 (+18.13%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,893.87   Shorts collateral $9,515.87  short uPnL -$95.18
+  Exposure    gross 36.2%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,622.38 (-0.16%) | ETH 2,691.38 (+0.29%) | SOL 118.28 (+0.03%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 7  last cycle 20261001T03 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 11:50:00 China Standard Time   (2026-10-01T03:50:00 UTC)
+  Equity            $59,450.20   PnL +$9,121.51 (+18.12%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,899.70   Shorts collateral $9,515.87  short uPnL -$104.75
+  Exposure    gross 36.2%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,455.76  drawdown 0.01%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,654.42 (-0.13%) | ETH 2,691.28 (+0.29%) | SOL 118.27 (+0.02%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 7  last cycle 20261001T03 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 12:00:00 China Standard Time   (2026-10-01T04:00:00 UTC)
+  Equity            $59,467.07   PnL +$9,138.37 (+18.16%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,932.49   Shorts collateral $9,515.87  short uPnL -$120.67
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,467.07  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,754.01 (-0.01%) | ETH 2,696.07 (+0.47%) | SOL 118.70 (+0.39%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 7  last cycle 20261001T03 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 12:10:00 China Standard Time   (2026-10-01T04:10:00 UTC)
+  Equity            $59,445.37   PnL +$9,116.68 (+18.11%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,923.63   Shorts collateral $9,515.87  short uPnL -$133.51
+  Exposure    gross 36.3%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,467.07  drawdown 0.04%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,864.99 (+0.13%) | ETH 2,698.65 (+0.56%) | SOL 118.68 (+0.36%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 8  last cycle 20261001T04 gross 42.5% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0557     $3,248.30    5.46%     0.0552479       -$26.37   -0.82%
+    SEI/USD     LONG     26,956.300000       0.07399     $1,994.50    3.36%       0.07316       +$22.37   +1.13%
+    SUI/USD     LONG      1,690.400000       1.17495     $1,986.14    3.34%        1.1657       +$15.64   +0.79%
+    NEAR/USD    LONG        366.000000        5.3795     $1,968.90    3.31%         5.389        -$3.48   -0.18%
+    ENA/USD     LONG      4,935.380000       0.27005     $1,332.80    2.24%         0.263       +$34.79   +2.68%
+    ARB/USD     SHORT     6,114.700000        0.2054     $1,255.96    2.11%        0.2025       -$17.73   -1.43%
+    HBAR/USD    LONG     11,839.000000      0.105065     $1,243.86    2.09%       0.10881       -$44.34   -3.44%
+    ZEC/USD     SHORT         0.869000      1,429.17     $1,241.95    2.09%      1,423.56        -$4.87   -0.39%
+    AAVE/USD    LONG          6.011000       166.115       $998.52    1.68%        159.15       +$41.87   +4.38%
+    PENDLE/USD  SHORT       363.400000         2.431       $883.43    1.49%         2.363       -$24.71   -2.88%
+    ZEN/USD     SHORT       116.150000         7.461       $866.60    1.46%         7.394        -$7.78   -0.91%
+    TUT/USD     SHORT    28,174.000000       0.02494       $702.66    1.18%       0.02429       -$18.31   -2.68%
+    AVAX/USD    LONG         62.520000       11.1155       $694.94    1.17%        10.945       +$10.66   +1.56%
+    XPL/USD     SHORT     6,886.000000       0.09752       $671.52    1.13%       0.09262       -$33.74   -5.29%
+    PUMP/USD    LONG    115,077.000000     0.0058075       $668.31    1.12%       0.00586        -$6.04   -0.90%
+    TRX/USD     SHORT     1,451.000000        0.3384       $491.02    0.83%        0.3381        -$0.44   -0.09%
+    LTC/USD     LONG          5.326000        67.545       $359.74    0.61%         66.63        +$4.87   +1.37%
+    FET/USD     LONG      1,456.600000        0.2341       $340.99    0.57%        0.2261       +$11.65   +3.54%
+    LINK/USD    LONG         23.100000       14.4995       $334.94    0.56%        14.355        +$3.34   +1.01%
+    CAKE/USD    SHORT       110.860000         2.598       $288.01    0.48%         2.602        +$0.44   +0.15%
+====================================================================================================
+[10MIN] 2026-10-01 12:20:00 China Standard Time   (2026-10-01T04:20:00 UTC)
+  Equity            $59,454.97   PnL +$9,126.27 (+18.13%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,902.52   Shorts collateral $9,515.87  short uPnL -$102.80
+  Exposure    gross 36.2%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,467.07  drawdown 0.02%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,746.01 (-0.02%) | ETH 2,697.28 (+0.51%) | SOL 118.45 (+0.18%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 8  last cycle 20261001T04 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 12:30:00 China Standard Time   (2026-10-01T04:30:00 UTC)
+  Equity            $59,479.98   PnL +$9,151.29 (+18.18%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,947.57   Shorts collateral $9,515.87  short uPnL -$122.84
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,479.98  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,860.01 (+0.12%) | ETH 2,697.61 (+0.53%) | SOL 118.55 (+0.25%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 8  last cycle 20261001T04 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 12:40:00 China Standard Time   (2026-10-01T04:40:00 UTC)
+  Equity            $59,498.26   PnL +$9,169.57 (+18.22%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,951.30   Shorts collateral $9,515.87  short uPnL -$108.29
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,498.26  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,900.01 (+0.17%) | ETH 2,697.15 (+0.51%) | SOL 118.59 (+0.29%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 8  last cycle 20261001T04 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 12:50:00 China Standard Time   (2026-10-01T04:50:00 UTC)
+  Equity            $59,537.09   PnL +$9,208.40 (+18.30%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,020.84   Shorts collateral $9,515.87  short uPnL -$139.00
+  Exposure    gross 36.4%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,537.09  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,110.01 (+0.42%) | ETH 2,709.47 (+0.97%) | SOL 119.16 (+0.78%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 8  last cycle 20261001T04 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 13:00:00 China Standard Time   (2026-10-01T05:00:00 UTC)
+  Equity            $59,498.62   PnL +$9,169.92 (+18.22%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,959.86   Shorts collateral $9,515.87  short uPnL -$116.50
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,537.09  drawdown 0.06%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,110.01 (+0.42%) | ETH 2,707.57 (+0.90%) | SOL 119.12 (+0.74%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 8  last cycle 20261001T04 gross 42.5% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 13:10:00 China Standard Time   (2026-10-01T05:10:00 UTC)
+  Equity            $59,520.71   PnL +$9,192.01 (+18.26%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,991.69   Shorts collateral $9,515.87  short uPnL -$126.23
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,537.09  drawdown 0.03%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,175.64 (+0.50%) | ETH 2,710.56 (+1.01%) | SOL 119.19 (+0.80%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 9  last cycle 20261001T05 gross 42.8% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0554     $3,230.80    5.43%     0.0552479        -$8.87   -0.28%
+    SEI/USD     LONG     26,956.300000      0.074135     $1,998.41    3.36%       0.07316       +$26.28   +1.33%
+    NEAR/USD    LONG        366.000000        5.4515     $1,995.25    3.35%         5.389       +$22.87   +1.16%
+    SUI/USD     LONG      1,690.400000       1.17385     $1,984.28    3.33%        1.1657       +$13.78   +0.70%
+    ENA/USD     LONG      4,935.380000       0.27335     $1,349.09    2.27%         0.263       +$51.08   +3.94%
+    ARB/USD     SHORT     6,114.700000        0.2067     $1,263.91    2.12%        0.2025       -$25.68   -2.07%
+    HBAR/USD    LONG     11,839.000000      0.106225     $1,257.60    2.11%       0.10881       -$30.60   -2.38%
+    ZEC/USD     SHORT         0.869000      1,438.38     $1,249.95    2.10%      1,423.56       -$12.88   -1.04%
+    AAVE/USD    LONG          6.011000       166.155       $998.76    1.68%        159.15       +$42.11   +4.40%
+    PENDLE/USD  SHORT       363.400000         2.436       $885.24    1.49%         2.363       -$26.53   -3.09%
+    ZEN/USD     SHORT       116.150000         7.419       $861.72    1.45%         7.394        -$2.90   -0.34%
+    TUT/USD     SHORT    28,174.000000       0.02484       $699.84    1.18%       0.02429       -$15.50   -2.26%
+    AVAX/USD    LONG         62.520000       11.1195       $695.19    1.17%        10.945       +$10.91   +1.59%
+    PUMP/USD    LONG    115,077.000000     0.0058425       $672.34    1.13%       0.00586        -$2.01   -0.30%
+    XPL/USD     SHORT     6,886.000000       0.09757       $671.87    1.13%       0.09262       -$34.09   -5.34%
+    TRX/USD     SHORT     1,451.000000        0.3378       $490.15    0.82%        0.3381        +$0.44   +0.09%
+    LTC/USD     LONG          5.326000        67.675       $360.44    0.61%         66.63        +$5.57   +1.57%
+    FET/USD     LONG      1,456.600000       0.23715       $345.43    0.58%        0.2261       +$16.10   +4.89%
+    LINK/USD    LONG         23.100000       14.4985       $334.92    0.56%        14.355        +$3.31   +1.00%
+    CAKE/USD    SHORT       110.860000         2.604       $288.68    0.49%         2.602        -$0.22   -0.08%
+====================================================================================================
+[10MIN] 2026-10-01 13:20:00 China Standard Time   (2026-10-01T05:20:00 UTC)
+  Equity            $59,522.77   PnL +$9,194.08 (+18.27%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,986.52   Shorts collateral $9,515.87  short uPnL -$119.00
+  Exposure    gross 36.3%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,537.09  drawdown 0.02%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,310.33 (+0.66%) | ETH 2,714.94 (+1.17%) | SOL 119.23 (+0.84%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 9  last cycle 20261001T05 gross 42.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 13:30:00 China Standard Time   (2026-10-01T05:30:00 UTC)
+  Equity            $59,508.14   PnL +$9,179.45 (+18.24%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,969.79   Shorts collateral $9,515.87  short uPnL -$116.90
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,537.09  drawdown 0.05%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,297.68 (+0.64%) | ETH 2,714.99 (+1.17%) | SOL 119.25 (+0.85%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 9  last cycle 20261001T05 gross 42.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 13:40:00 China Standard Time   (2026-10-01T05:40:00 UTC)
+  Equity            $59,533.80   PnL +$9,205.10 (+18.29%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,008.75   Shorts collateral $9,515.87  short uPnL -$130.20
+  Exposure    gross 36.4%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,537.09  drawdown 0.01%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,293.11 (+0.64%) | ETH 2,717.11 (+1.25%) | SOL 119.45 (+1.02%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 9  last cycle 20261001T05 gross 42.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 13:50:00 China Standard Time   (2026-10-01T05:50:00 UTC)
+  Equity            $59,540.58   PnL +$9,211.88 (+18.30%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,019.44   Shorts collateral $9,515.87  short uPnL -$134.12
+  Exposure    gross 36.4%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.00%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,287.85 (+0.63%) | ETH 2,717.82 (+1.28%) | SOL 119.52 (+1.07%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 9  last cycle 20261001T05 gross 42.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 14:00:00 China Standard Time   (2026-10-01T06:00:00 UTC)
+  Equity            $59,536.02   PnL +$9,207.33 (+18.29%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,031.52   Shorts collateral $9,515.87  short uPnL -$150.75
+  Exposure    gross 36.4%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.01%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,291.49 (+0.63%) | ETH 2,717.95 (+1.28%) | SOL 119.43 (+1.00%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 9  last cycle 20261001T05 gross 42.8% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 14:10:00 China Standard Time   (2026-10-01T06:10:00 UTC)
+  Equity            $59,533.10   PnL +$9,204.40 (+18.29%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,028.44   Shorts collateral $9,515.87  short uPnL -$150.59
+  Exposure    gross 36.4%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.01%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,297.46 (+0.64%) | ETH 2,715.99 (+1.21%) | SOL 119.47 (+1.04%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 10  last cycle 20261001T06 gross 42.9% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0553     $3,224.97    5.42%     0.0552479        -$3.04   -0.09%
+    NEAR/USD    LONG        366.000000        5.5065     $2,015.38    3.39%         5.389       +$43.00   +2.18%
+    SEI/USD     LONG     26,956.300000      0.074125     $1,998.14    3.36%       0.07316       +$26.01   +1.32%
+    SUI/USD     LONG      1,690.400000       1.17335     $1,983.43    3.33%        1.1657       +$12.93   +0.66%
+    ENA/USD     LONG      4,935.380000       0.27535     $1,358.96    2.28%         0.263       +$60.95   +4.70%
+    ARB/USD     SHORT     6,114.700000        0.2073     $1,267.58    2.13%        0.2025       -$29.35   -2.37%
+    HBAR/USD    LONG     11,839.000000      0.105825     $1,252.86    2.10%       0.10881       -$35.34   -2.74%
+    ZEC/USD     SHORT         0.869000       1,434.4     $1,246.49    2.09%      1,423.56        -$9.42   -0.76%
+    AAVE/USD    LONG          6.011000       167.805     $1,008.68    1.69%        159.15       +$52.03   +5.44%
+    PENDLE/USD  SHORT       363.400000         2.484       $902.69    1.52%         2.363       -$43.97   -5.12%
+    ZEN/USD     SHORT       116.150000         7.443       $864.50    1.45%         7.394        -$5.69   -0.66%
+    TUT/USD     SHORT    28,174.000000       0.02498       $703.79    1.18%       0.02429       -$19.44   -2.84%
+    AVAX/USD    LONG         62.520000       11.1185       $695.13    1.17%        10.945       +$10.85   +1.59%
+    XPL/USD     SHORT     6,886.000000       0.09844       $677.86    1.14%       0.09262       -$40.08   -6.28%
+    PUMP/USD    LONG    115,077.000000     0.0058695       $675.44    1.13%       0.00586        +$1.09   +0.16%
+    TRX/USD     SHORT     1,451.000000        0.3376       $489.86    0.82%        0.3381        +$0.73   +0.15%
+    LTC/USD     LONG          5.326000        67.325       $358.57    0.60%         66.63        +$3.70   +1.04%
+    FET/USD     LONG      1,456.600000       0.23855       $347.47    0.58%        0.2261       +$18.13   +5.51%
+    LINK/USD    LONG         23.100000       14.4755       $334.38    0.56%        14.355        +$2.78   +0.84%
+    CAKE/USD    SHORT       110.860000         2.605       $288.79    0.49%         2.602        -$0.33   -0.12%
+====================================================================================================
+[10MIN] 2026-10-01 14:20:00 China Standard Time   (2026-10-01T06:20:00 UTC)
+  Equity            $59,526.15   PnL +$9,197.46 (+18.27%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,037.83   Shorts collateral $9,515.87  short uPnL -$166.93
+  Exposure    gross 36.5%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.02%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,324.38 (+0.67%) | ETH 2,717.01 (+1.25%) | SOL 119.44 (+1.01%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 10  last cycle 20261001T06 gross 42.9% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 14:30:00 China Standard Time   (2026-10-01T06:30:00 UTC)
+  Equity            $59,534.95   PnL +$9,206.26 (+18.29%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,054.90   Shorts collateral $9,515.87  short uPnL -$175.19
+  Exposure    gross 36.5%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.01%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,347.35 (+0.70%) | ETH 2,721.68 (+1.42%) | SOL 119.59 (+1.13%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 10  last cycle 20261001T06 gross 42.9% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 14:40:00 China Standard Time   (2026-10-01T06:40:00 UTC)
+  Equity            $59,524.23   PnL +$9,195.53 (+18.27%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,023.27   Shorts collateral $9,515.87  short uPnL -$154.29
+  Exposure    gross 36.4%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.03%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,145.89 (+0.46%) | ETH 2,713.60 (+1.12%) | SOL 119.10 (+0.73%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 10  last cycle 20261001T06 gross 42.9% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 14:50:00 China Standard Time   (2026-10-01T06:50:00 UTC)
+  Equity            $59,513.21   PnL +$9,184.51 (+18.25%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,020.95   Shorts collateral $9,515.87  short uPnL -$162.99
+  Exposure    gross 36.5%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.05%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,120.01 (+0.43%) | ETH 2,715.02 (+1.17%) | SOL 119.19 (+0.80%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 10  last cycle 20261001T06 gross 42.9% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 15:00:00 China Standard Time   (2026-10-01T07:00:00 UTC)
+  Equity            $59,511.82   PnL +$9,183.12 (+18.25%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,011.46   Shorts collateral $9,515.87  short uPnL -$154.90
+  Exposure    gross 36.4%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.05%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,121.45 (+0.43%) | ETH 2,715.20 (+1.18%) | SOL 119.25 (+0.85%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 10  last cycle 20261001T06 gross 42.9% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 15:10:00 China Standard Time   (2026-10-01T07:10:00 UTC)
+  Equity            $59,530.08   PnL +$9,201.38 (+18.28%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $12,037.68   Shorts collateral $9,515.87  short uPnL -$162.85
+  Exposure    gross 36.5%  net +4.0%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.02%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 84,196.11 (+0.52%) | ETH 2,719.60 (+1.34%) | SOL 119.34 (+0.93%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 11  last cycle 20261001T07 gross 43.1% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0556     $3,242.46    5.45%     0.0552479       -$20.54   -0.64%
+    SEI/USD     LONG     26,956.300000      0.074515     $2,008.65    3.37%       0.07316       +$36.53   +1.85%
+    NEAR/USD    LONG        366.000000        5.4805     $2,005.86    3.37%         5.389       +$33.49   +1.70%
+    SUI/USD     LONG      1,690.400000       1.17785     $1,991.04    3.34%        1.1657       +$20.54   +1.04%
+    ENA/USD     LONG      4,935.380000       0.27285     $1,346.62    2.26%         0.263       +$48.61   +3.75%
+    ARB/USD     SHORT     6,114.700000         0.206     $1,259.63    2.12%        0.2025       -$21.40   -1.73%
+    HBAR/USD    LONG     11,839.000000      0.106025     $1,255.23    2.11%       0.10881       -$32.97   -2.56%
+    ZEC/USD     SHORT         0.869000      1,444.18     $1,254.99    2.11%      1,423.56       -$17.92   -1.45%
+    AAVE/USD    LONG          6.011000       168.035     $1,010.06    1.70%        159.15       +$53.41   +5.58%
+    PENDLE/USD  SHORT       363.400000         2.489       $904.50    1.52%         2.363       -$45.79   -5.33%
+    ZEN/USD     SHORT       116.150000         7.397       $859.16    1.44%         7.394        -$0.35   -0.04%
+    TUT/USD     SHORT    28,174.000000       0.02502       $704.91    1.18%       0.02429       -$20.57   -3.01%
+    AVAX/USD    LONG         62.520000       11.1405       $696.50    1.17%        10.945       +$12.22   +1.79%
+    PUMP/USD    LONG    115,077.000000     0.0058505       $673.26    1.13%       0.00586        -$1.09   -0.16%
+    XPL/USD     SHORT     6,886.000000       0.09775       $673.11    1.13%       0.09262       -$35.33   -5.54%
+    TRX/USD     SHORT     1,451.000000        0.3377       $490.00    0.82%        0.3381        +$0.58   +0.12%
+    LTC/USD     LONG          5.326000        67.405       $359.00    0.60%         66.63        +$4.13   +1.16%
+    FET/USD     LONG      1,456.600000       0.24505       $356.94    0.60%        0.2261       +$27.60   +8.38%
+    LINK/USD    LONG         23.100000       14.4815       $334.52    0.56%        14.355        +$2.92   +0.88%
+    CAKE/USD    SHORT       110.860000         2.616       $290.01    0.49%         2.602        -$1.55   -0.54%
+====================================================================================================
+[10MIN] 2026-10-01 15:20:00 China Standard Time   (2026-10-01T07:20:00 UTC)
+  Equity            $59,480.75   PnL +$9,152.05 (+18.18%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,937.20   Shorts collateral $9,515.87  short uPnL -$111.70
+  Exposure    gross 36.3%  net +3.9%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.10%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,854.71 (+0.11%) | ETH 2,705.47 (+0.82%) | SOL 118.53 (+0.24%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 11  last cycle 20261001T07 gross 43.1% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 15:30:00 China Standard Time   (2026-10-01T07:30:00 UTC)
+  Equity            $59,439.92   PnL +$9,111.23 (+18.10%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,795.94   Shorts collateral $9,515.87  short uPnL -$11.27
+  Exposure    gross 35.9%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.17%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,364.29 (-0.47%) | ETH 2,682.14 (-0.05%) | SOL 117.59 (-0.55%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 11  last cycle 20261001T07 gross 43.1% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 15:40:00 China Standard Time   (2026-10-01T07:40:00 UTC)
+  Equity            $59,455.00   PnL +$9,126.30 (+18.13%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,839.77   Shorts collateral $9,515.87  short uPnL -$40.02
+  Exposure    gross 36.0%  net +3.8%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.14%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,515.18 (-0.29%) | ETH 2,685.15 (+0.06%) | SOL 117.75 (-0.41%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 11  last cycle 20261001T07 gross 43.1% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 15:50:00 China Standard Time   (2026-10-01T07:50:00 UTC)
+  Equity            $59,393.66   PnL +$9,064.96 (+18.01%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,768.78   Shorts collateral $9,515.87  short uPnL -$30.37
+  Exposure    gross 35.9%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.25%  max DD 0.25%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,550.62 (-0.25%) | ETH 2,682.72 (-0.03%) | SOL 117.65 (-0.51%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 11  last cycle 20261001T07 gross 43.1% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 16:00:00 China Standard Time   (2026-10-01T08:00:00 UTC)
+  Equity            $59,367.06   PnL +$9,038.36 (+17.96%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,738.71   Shorts collateral $9,515.87  short uPnL -$26.90
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.29%  max DD 0.29%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,429.93 (-0.39%) | ETH 2,677.38 (-0.23%) | SOL 117.52 (-0.62%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 11  last cycle 20261001T07 gross 43.1% orders 0   warnings +0 errors +0
+====================================================================================================
+[HOURLY] 2026-10-01 16:10:00 China Standard Time   (2026-10-01T08:10:00 UTC)
+  Equity            $59,364.00   PnL +$9,035.31 (+17.95%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,724.57   Shorts collateral $9,515.87  short uPnL -$15.81
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.30%  max DD 0.30%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,401.17 (-0.43%) | ETH 2,676.59 (-0.26%) | SOL 117.41 (-0.71%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 12  last cycle 20261001T08 gross 42.6% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0554     $3,230.80    5.44%     0.0552479        -$8.87   -0.28%
+    SEI/USD     LONG     26,956.300000      0.073115     $1,970.91    3.32%       0.07316        -$1.21   -0.06%
+    SUI/USD     LONG      1,690.400000       1.14405     $1,933.90    3.26%        1.1657       -$36.60   -1.86%
+    NEAR/USD    LONG        366.000000        5.2665     $1,927.54    3.25%         5.389       -$44.83   -2.27%
+    ENA/USD     LONG      4,935.380000       0.26255     $1,295.78    2.18%         0.263        -$2.22   -0.17%
+    HBAR/USD    LONG     11,839.000000      0.105145     $1,244.81    2.10%       0.10881       -$43.39   -3.37%
+    ZEC/USD     SHORT         0.869000      1,405.61     $1,221.48    2.06%      1,423.56       +$15.60   +1.26%
+    ARB/USD     SHORT     6,114.700000        0.1988     $1,215.60    2.05%        0.2025       +$22.62   +1.83%
+    AAVE/USD    LONG          6.011000       164.775       $990.46    1.67%        159.15       +$33.81   +3.53%
+    PENDLE/USD  SHORT       363.400000         2.429       $882.70    1.49%         2.363       -$23.98   -2.79%
+    ZEN/USD     SHORT       116.150000         7.282       $845.80    1.42%         7.394       +$13.01   +1.51%
+    TUT/USD     SHORT    28,174.000000       0.02482       $699.28    1.18%       0.02429       -$14.93   -2.18%
+    AVAX/USD    LONG         62.520000       10.9945       $687.38    1.16%        10.945        +$3.09   +0.45%
+    XPL/USD     SHORT     6,886.000000       0.09586       $660.09    1.11%       0.09262       -$22.31   -3.50%
+    PUMP/USD    LONG    115,077.000000     0.0056395       $648.98    1.09%       0.00586       -$25.37   -3.76%
+    TRX/USD     SHORT     1,451.000000        0.3376       $489.86    0.83%        0.3381        +$0.73   +0.15%
+    LTC/USD     LONG          5.326000        66.965       $356.66    0.60%         66.63        +$1.78   +0.50%
+    FET/USD     LONG      1,456.600000       0.23415       $341.06    0.57%        0.2261       +$11.73   +3.56%
+    LINK/USD    LONG         23.100000       14.1595       $327.08    0.55%        14.355        -$4.52   -1.36%
+    CAKE/USD    SHORT       110.860000         2.581       $286.13    0.48%         2.602        +$2.33   +0.81%
+====================================================================================================
+[10MIN] 2026-10-01 16:20:00 China Standard Time   (2026-10-01T08:20:00 UTC)
+  Equity            $59,358.34   PnL +$9,029.65 (+17.94%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,721.97   Shorts collateral $9,515.87  short uPnL -$18.88
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.31%  max DD 0.31%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,386.82 (-0.45%) | ETH 2,677.48 (-0.22%) | SOL 117.41 (-0.70%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 12  last cycle 20261001T08 gross 42.6% orders 0   warnings +0 errors +0
+====================================================================================================
+[10MIN] 2026-10-01 16:30:00 China Standard Time   (2026-10-01T08:30:00 UTC)
+  Equity            $59,339.76   PnL +$9,011.06 (+17.90%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,715.50   Shorts collateral $9,515.87  short uPnL -$30.99
+  Exposure    gross 35.8%  net +3.7%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.34%  max DD 0.34%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,414.01 (-0.41%) | ETH 2,680.35 (-0.12%) | SOL 117.65 (-0.51%)
+  Bot         RUNNING (pid 54160, restarts 0)   cycles 12  last cycle 20261001T08 gross 42.6% orders 0   warnings +0 errors +0
+[2026-10-01 08:32:17 UTC] Ctrl+C received: stopping the bot and writing the report ...
+====================================================================================================
+[FINAL] 2026-10-01 16:32:18 China Standard Time   (2026-10-01T08:32:18 UTC)
+  Equity            $59,326.62   PnL +$8,997.93 (+17.88%)   start $50,328.69
+  Cash (USD)        $28,623.52   locked in orders $9,515.86
+  Longs             $11,690.64   Shorts collateral $9,515.87  short uPnL -$19.27
+  Exposure    gross 35.8%  net +3.6%   positions 11 long / 9 short   pending orders 0
+  Risk        peak $59,540.58  drawdown 0.36%  max DD 0.36%  min equity $50,328.69
+  PnL detail  realized -$5.71  fees paid $22.60  fills total 25 (+0 since last, $0.00 traded)
+  Market      BTC 83,306.01 (-0.54%) | ETH 2,676.61 (-0.26%) | SOL 117.44 (-0.68%)
+  Bot         STOPPED (pid 54160, restarts 0)   cycles 12  last cycle 20261001T08 gross 42.6% orders 0   warnings +0 errors +0
+  Portfolio:
+    Asset       Side               Qty         Price         Value   Weight      Avg cost   Unreal. PnL    PnL %
+    WLFI/USD    SHORT    58,317.700000        0.0553     $3,224.97    5.44%     0.0552479        -$3.04   -0.09%
+    SEI/USD     LONG     26,956.300000      0.072915     $1,965.52    3.31%       0.07316        -$6.60   -0.33%
+    SUI/USD     LONG      1,690.400000       1.14555     $1,936.44    3.26%        1.1657       -$34.06   -1.73%
+    NEAR/USD    LONG        366.000000        5.2245     $1,912.17    3.22%         5.389       -$60.21   -3.05%
+    ENA/USD     LONG      4,935.380000       0.26075     $1,286.90    2.17%         0.263       -$11.10   -0.86%
+    HBAR/USD    LONG     11,839.000000      0.104635     $1,238.77    2.09%       0.10881       -$49.43   -3.84%
+    ZEC/USD     SHORT         0.869000      1,405.96     $1,221.78    2.06%      1,423.56       +$15.30   +1.24%
+    ARB/USD     SHORT     6,114.700000        0.1998     $1,221.72    2.06%        0.2025       +$16.51   +1.33%
+    AAVE/USD    LONG          6.011000       165.185       $992.93    1.67%        159.15       +$36.28   +3.79%
+    PENDLE/USD  SHORT       363.400000         2.435       $884.88    1.49%         2.363       -$26.16   -3.05%
+    ZEN/USD     SHORT       116.150000         7.286       $846.27    1.43%         7.394       +$12.54   +1.46%
+    TUT/USD     SHORT    28,174.000000       0.02485       $700.12    1.18%       0.02429       -$15.78   -2.31%
+    AVAX/USD    LONG         62.520000       11.0135       $688.56    1.16%        10.945        +$4.28   +0.63%
+    XPL/USD     SHORT     6,886.000000       0.09568       $658.85    1.11%       0.09262       -$21.07   -3.30%
+    PUMP/USD    LONG    115,077.000000     0.0056055       $645.06    1.09%       0.00586       -$29.29   -4.34%
+    TRX/USD     SHORT     1,451.000000        0.3378       $490.15    0.83%        0.3381        +$0.44   +0.09%
+    LTC/USD     LONG          5.326000        67.035       $357.03    0.60%         66.63        +$2.16   +0.61%
+    FET/USD     LONG      1,456.600000       0.23305       $339.46    0.57%        0.2261       +$10.12   +3.07%
+    LINK/USD    LONG         23.100000       14.1905       $327.80    0.55%        14.355        -$3.80   -1.15%
+    CAKE/USD    SHORT       110.860000         2.584       $286.46    0.48%         2.602        +$2.00   +0.69%
+[2026-10-01 08:32:20 UTC] REPORT WRITTEN: C:\Users\gunek\Downloads\Quant Hackathon - Gunek Front\trend-guard-final\overnight\runs\20260930_2104_UTC\overnight_report_20260930_2104_to_20261001_0832_UTC.txt
