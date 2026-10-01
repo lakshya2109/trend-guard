@@ -12,7 +12,7 @@ book:
   trend_share: 0.7                     # within v2: the low-vol trend sleeve
   momentum_share: 0.3                  # within v2: the long/short momentum sleeve
   allow_short: true                    # set false if /v6 shorts are disabled for the account
-  risk_multiplier: 2.0                 # x2 the book: doubles the median fortnight, score unchanged (STRATEGY.md 3c)
+  risk_multiplier: 4.0                 # aggressive: ~97% of equity invested, highest return that keeps the rank (STRATEGY.md 15)
   max_gross: 1.0                       # hard cap after the multiplier: longs + short collateral <= equity
   team:                                # Gunek-945 trend book + swyam-rd momentum book (strategy/team, unmodified)
     trend_share: 0.7

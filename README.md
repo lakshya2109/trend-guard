@@ -36,27 +36,47 @@ $100k, 0.10% fee + 5 bps slippage on every trade, contest score on daily marks. 
 protocol, data and costs as the team's `roostoo-last-supper` harness, whose published figures are
 shown for comparison.
 
-The live book runs the blend at **2x risk** (`book.risk_multiplier: 2.0`, gross capped at 1x equity),
-with the momentum sleeves' crash filter (no new shorts on coins down more than 40% in 60 days). The 1x
-rows are from before that filter:
+The live book runs the blend at **4x risk** (`book.risk_multiplier: 4.0`, gross capped at 1x equity:
+about 97% of equity invested on a median hour), with the momentum sleeves' crash filter (no new shorts
+on coins down more than 40% in 60 days). The 2.5x, 2x and 1x rows are earlier settings, kept for comparison:
 
 | 2026 (258 windows) | Score | Median fortnight | P(fortnight > +5%) | Above -1% | Positive | Worst |
 |---|---|---|---|---|---|---|
-| **trend-guard (blend, 2x risk)** | **0.204** | **+2.21%** | **28%** | 78% | 69% | -4.4% |
-| trend-guard (blend, 1x risk) | 0.178 | +0.96% | 10% | 85% | 69% | -2.3% |
+| **trend-guard (blend, 4x risk)** | **0.208** | **+2.85%** | **36%** | 75% | 67% | -8.0% |
+| trend-guard (blend, 2.5x risk) | 0.214 | +2.63% | 36% | 77% | 69% | -5.4% |
+| trend-guard (blend, 2x risk) | 0.204 | +2.21% | 28% | 78% | 69% | -4.4% |
+| trend-guard (blend, 1x risk, before the crash filter) | 0.178 | +0.96% | 10% | 85% | 69% | -2.3% |
 | Team combined 70/30 alone | 0.131 | +1.04% | 10% | 84.5% | 69% | -2.3% |
 | BTC buy and hold | -0.007 | -0.35% | | 55% | 48% | -18.3% |
 
 | All 944 windows | Score | Median fortnight | P(fortnight > +5%) | P(fortnight < -5%) | Above -1% | Worst |
 |---|---|---|---|---|---|---|
-| **trend-guard (blend, 2x risk)** | **0.095** | **+1.13%** | **21%** | 3.2% | 69% | -8.1% |
-| trend-guard (blend, 1x risk) | 0.088 | +0.53% | 8% | 0% | 78% | -4.2% |
+| **trend-guard (blend, 4x risk)** | **0.076** | **+1.28%** | **30%** | 9.6% | 67% | -12.2% |
+| trend-guard (blend, 2.5x risk) | 0.083 | +1.12% | 26% | 6.0% | 68% | -9.8% |
+| trend-guard (blend, 2x risk) | 0.095 | +1.13% | 21% | 3.2% | 69% | -8.1% |
 | Team combined 70/30 alone | 0.060 | +0.44% | | | 76% | -5.1% |
 
-The score barely depends on book size, but returns do: doubling the book doubles the median fortnight
-and the chance of a +5% fortnight while the score stays the same, at the cost of deeper bad fortnights.
-2x was chosen over 3x because at 3x the book hits the 1x gross cap and the score falls to 0.068
-(both measured before the crash filter).
+More risk buys more return and a bigger upside at the cost of deeper bad fortnights: at 4x the mean
+fortnight is +2.5% (+4.0% in 2026), a +10% fortnight comes in 14% of windows, and 9.6% of windows lose
+more than 5% (worst -12.2%). The team chose this for a two-week contest where return also screens
+teams. More aggressive designs were tested and rejected (docs/STRATEGY.md 15): full-size momentum or
+trend books raise the mean a little but the median falls and the loss tail doubles.
+
+**Competition view.** `run_backtest.py` also scores non-overlapping fortnights (no shared days) the way
+the previous edition's leaderboard did: daily Sharpe and Sortino, Calmar = total return / max drawdown,
+score = active days x normalised ratios, and an estimated rank among that edition's 52 teams
+(`backtest/benchmark.py`; their winner had Sharpe 0.19, Sortino 0.25, Calmar 0.95, 11 active days):
+
+| Non-overlapping fortnights (2.5x, before 4x) | 2024 | 2025 | 2026 | All (68) |
+|---|---|---|---|---|
+| Median fortnight | +0.06% | +1.59% | +3.34% | +1.12% |
+| Sharpe / Sortino (daily, median) | 0.01 / 0.02 | 0.12 / 0.20 | 0.20 / 0.42 | 0.08 / 0.13 |
+| Calmar, total return / max DD (median) | 0.01 | 0.42 | 1.00 | 0.29 |
+| Active days (minimum) | 15 | 15 | 15 | 14 |
+| Would have ranked 1st / top 3 among the 52 teams | 57% / 70% | 67% / 78% | 74% / 79% | 62% / 74% |
+
+The rank compares one fortnight with a field that traded a different market (most of last year's teams
+lost money), so it shows the bot is competitive, not where it will finish this year.
 
 The edge is real but moderate: 2026 contains only about 18 independent fortnights, so
 differences of this size are suggestive rather than conclusive (see docs/STRATEGY.md section 3).

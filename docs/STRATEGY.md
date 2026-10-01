@@ -225,6 +225,51 @@ kept for confirmation.
     both periods in all 3 variants (best 0.044 / 0.159 vs 0.063 / 0.204), matching the earlier
     rejection of a market-trend-dependent short share.
 
+14. **Competition scoring, non-overlapping fortnights, and the 2.5x risk level (adopted).** The previous
+    edition's leaderboard (52 teams) shows score = active days x (0.4 Sortino + 0.3 Sharpe + 0.3 Calmar),
+    ratios normalised across the field, Calmar = total return / max drawdown (not mean daily return /
+    max drawdown as in the score used above, so its values are about 14x larger). Evaluated on
+    non-overlapping fortnights against that field: the 2x book would have ranked first in 62-66% of
+    fortnights and traded on 14-15 days in every one. Variants on that basis (68 fortnights):
+
+    | Variant | Capital deployed | Median fortnight | P(> +5%) | P(< -5%) | Calmar | P(rank 1) |
+    |---|---|---|---|---|---|---|
+    | 2x (previous) | 71% | +1.2% | 18% | 2.9% | 0.29 | 66% |
+    | **2.5x** | **85%** | +1.1% | **24%** | 2.9% | 0.29 | 62% |
+    | 3x | 93% | +1.3% | 26% | 4.4% | 0.24 | 65% |
+    | 4x | 97% | +1.4% | 25% | 7.4% | 0.31 | 63% |
+    | floor: always >= 80% invested | 82% | +1.3% | 22% | 8.8% | 0.32 | 66% |
+    | momentum re-ranked every 12h | 70% | +1.2% | 19% | 1.5% | 0.33 | 62% |
+    | momentum lookbacks 1/3/7 + 3/7/14 days | 70% | +1.1% | 22% | 2.9% | 0.27 | 59% |
+    | v2 momentum 50% of v2 (from 30%) | 85% | +0.7% | 25% | 2.9% | 0.18 | 63% |
+    | short side 50% (from 40%) | 73% | +1.1% | 18% | 1.5% | 0.32 | 68% |
+
+    The rank against last year's field barely moves (59-68%): it is set by whether the fortnight is good,
+    not by the variant. 2.5x was adopted at the team's request to keep more capital working: it raises
+    P(> +5%) and keeps the ratios, at the cost of a fatter 2024-25 loss tail on all 944 windows (P(< -5%)
+    4.4% -> 7.9%, worst -8.1% -> -9.8%). The 50% short side helped 2024-25 but hurt 2026 at both 2x and
+    2.5x (also checked at 45% and 55%), so it was not adopted; faster re-ranking stays inside noise.
+    In quiet, trendless markets the trend sleeves hold little and the book stays partly in cash by design
+    (late September 2026: ~40% invested at 2x, ~50% at 2.5x).
+
+15. **Aggressive settings for return (4x adopted).** The team asked for the highest-return book. All 944
+    windows, competition scoring:
+
+    | Book | Invested | Median | Mean | P(> +5%) | P(> +10%) | P(< -5%) | Worst | P(rank 1) |
+    |---|---|---|---|---|---|---|---|---|
+    | blend 2.5x | 85% | +1.1% | +2.1% | 26% | 10% | 6.0% | -9.8% | 63% |
+    | **blend 4x** | **97%** | **+1.3%** | **+2.5%** | **30%** | **14%** | 9.6% | -12.2% | 63% |
+    | v2 only 4x | 97% | +1.2% | +2.5% | 30% | 14% | 10.0% | -11.5% | 61% |
+    | full-size momentum long/short, 6 per side | 98% | +0.7% | +2.6% | 31% | 21% | 18.6% | -16.1% | 57% |
+    | full-size momentum long/short, 3 per side | 97% | +0.2% | +2.4% | 33% | 21% | 25.0% | -17.3% | 43% |
+    | full-size momentum long-only | 75% | -0.3% | +3.1% | 36% | 25% | 37.5% | -24.8% | 25% |
+    | full-size trend long-only | 68% | -0.7% | +2.3% | 27% | 18% | 24.6% | -14.8% | 7% |
+    | 50/50 full-size trend + momentum | 84% | +0.3% | +2.9% | 31% | 18% | 16.4% | -12.7% | 54% |
+
+    No design lifts the mean fortnight much above +2.5-3%: extra aggression mostly spreads outcomes.
+    The blend at 4x has the highest median and keeps its rank against the previous field; the
+    concentrated books buy more +10% fortnights with two to four times as many -5% fortnights.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
