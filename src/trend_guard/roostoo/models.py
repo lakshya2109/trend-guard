@@ -31,7 +31,8 @@ class Ticker(BaseModel):
 
 class WalletEntry(BaseModel):
     free: float = Field(0, alias="Free")
-    lock: float = Field(0, alias="Lock")
+    lock: float = Field(0, alias="Lock")  # for USD: pending-order cash + short collateral
+    short_collateral: float = Field(0, alias="ShortCollateral")  # USD only; also inside short PositionValue
 
     model_config = {"populate_by_name": True}
 

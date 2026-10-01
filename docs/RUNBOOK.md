@@ -1,6 +1,6 @@
 # RUNBOOK
 
-Operational runbook for trend-guard during the competition window (4-17 Oct 2026). See
+Operational runbook for trend-guard during the competition window (4 Oct 12:00 UTC to 18 Oct 12:00 UTC, 2026). See
 BUILD_SPEC.md for the full spec; this is the day-to-day "how do I..." reference.
 
 ## First-time EC2 setup

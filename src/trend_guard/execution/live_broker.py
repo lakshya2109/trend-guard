@@ -30,7 +30,7 @@ from trend_guard.execution.broker import (
     ShortCloseAck,
 )
 from trend_guard.roostoo.client import RoostooClient
-from trend_guard.roostoo.models import OrderDetail, ShortCloseResult, ShortOpenResult, Ticker
+from trend_guard.roostoo.models import OrderDetail, ShortCloseResult, ShortOpenResult, Ticker, WalletEntry
 from trend_guard.roostoo.rules import TradingRule
 
 # Roostoo's raw OrderDetail.Status strings, normalised to our OrderStatusValue. Unrecognised raw
@@ -133,11 +133,19 @@ class LiveBroker:
             raise ValueError(f"no TradingRule loaded for {pair}") from None
 
     # --- valuation -----------------------------------------------------------------
+    @staticmethod
+    def _locked_usd(usd: WalletEntry | None) -> Decimal:
+        """USD locked in pending orders only. Roostoo's USD Lock also holds short collateral, which is
+        already counted in each short's PositionValue; adding it here would count it twice."""
+        if usd is None:
+            return Decimal("0")
+        return max(Decimal(str(usd.lock)) - Decimal(str(usd.short_collateral)), Decimal("0"))
+
     def get_equity(self) -> Decimal:
-        """USD free+lock + long spot holdings at ticker mid + short PositionValue."""
+        """USD free + pending-order USD + long spot holdings at ticker mid + short PositionValue."""
         balance = self.client.get_balance()
         usd = balance.get("USD")
-        cash = Decimal(str(usd.free)) + Decimal(str(usd.lock)) if usd else Decimal("0")
+        cash = Decimal(str(usd.free)) + self._locked_usd(usd) if usd else Decimal("0")
 
         tickers = self.client.get_ticker()
         longs_value = Decimal("0")
@@ -199,7 +207,7 @@ class LiveBroker:
         shorts = self.client.short_positions()
         usd = balance.get("USD")
         free_usd = Decimal(str(usd.free)) if usd else Decimal("0")
-        locked_usd = Decimal(str(usd.lock)) if usd else Decimal("0")
+        locked_usd = self._locked_usd(usd)
         prices = {p: Decimal(str(t.mid)) for p, t in tickers.items() if t.mid}
         long_qty: dict[str, Decimal] = {}
         for coin, entry in balance.items():

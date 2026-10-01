@@ -47,6 +47,24 @@ def test_precision_applied_before_sending():
     assert client.orders[0][3] == D("0.12345") and client.orders[0][4] == D("60000.12")
 
 
+class LiveShapedClient(FakeClient):
+    """Balance as the live API returns it: USD Lock = pending-order cash 1000 + short collateral 5000."""
+
+    def get_balance(self):
+        return {
+            "USD": WalletEntry(Free=50000, Lock=6000, ShortCollateral=5000),
+            "BTC": WalletEntry(Free=0.5, Lock=0),
+        }
+
+
+def test_short_collateral_is_counted_once():
+    # collateral sits in USD Lock AND inside the short's PositionValue; equity must hold it once
+    b = LiveBroker(LiveShapedClient(), RULES)
+    expected = D("50000") + D("1000") + D("0.5") * D("60001") + D("5200")
+    assert b.get_exposure().equity == expected
+    assert b.get_equity() == expected
+
+
 def test_exposure_combines_cash_longs_and_short_value():
     exp = LiveBroker(FakeClient(), RULES).get_exposure()
     assert exp.cash == D("50000")
