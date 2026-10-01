@@ -2,8 +2,8 @@
 # so a change here is a reviewed `strat:` commit, never a manual action. Evidence for each value is in
 # docs/STRATEGY.md ("Research log") and reproducible with `python backtest/sweep.py`.
 competition:
-  start_utc: "2026-10-03T16:00:00Z"    # TODO confirm with organizers (a teammate's config says 1 Oct 00:00 HKT)
-  end_utc:   "2026-10-17T15:59:59Z"
+  start_utc: "2026-10-04T12:00:00Z"    # Roostoo competition 538 (/v1/competition_list StartTS 1791115200)
+  end_utc:   "2026-10-18T12:00:00Z"    # EndTS 1792324800: 14 days, 20:00 HKT to 20:00 HKT
   risk_scale: 1.0                      # multiplies every target; 0.1 for a live dry run
 
 book:
