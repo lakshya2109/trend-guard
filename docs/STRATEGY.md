@@ -270,6 +270,73 @@ kept for confirmation.
     The blend at 4x has the highest median and keeps its rank against the previous field; the
     concentrated books buy more +10% fortnights with two to four times as many -5% fortnights.
 
+16. **ML and new data sources (none adopted).** `research/` (data: `research/fetch_extra.py`). New data
+    for all 66 coins, Jun 2023 - Sep 2026: spot taker-buy volume and trade counts, perp funding, and
+    Binance futures open interest with top-trader / account / taker long-short ratios. Harness:
+    `research/harness.py` (contest simulator, plus one continuous run from 2024 for annualised Sharpe).
+    The live 4x book there: Sharpe 1.50 / 2.09 / 2.69 (2024 / 2025 / 2026), **3.0 before costs**.
+
+    | Idea | Result |
+    |---|---|
+    | LightGBM / ridge, 30-48 cross-sectional features, monthly walk-forward, label = next-day return vs the market in units of vol (`alpha_model.py`) | rank IC +0.03-0.05 every year, but a vol-targeted market-neutral sleeve has Sharpe 0.8 before costs and -1.4 after (11x turnover a fortnight) |
+    | Same plus order-flow features | IC unchanged (0.033 vs 0.037) |
+    | Time-series LightGBM (each coin's own next 1-3 day return), long-only | Sharpe +1.3 in 2024, -1.1 / -2.0 in 2025 / 2026: learns the regime |
+    | Low-risk effect (idiosyncratic vol, the strongest rank IC: -0.08, stable) | shows in ranks, not in mean returns (high-vol coins are right-skewed); quintile spread t = -0.3 |
+    | Funding level / change as a signal | spread changes sign by year |
+    | OI-confirmed momentum (price up with open interest up) | adds +23 bp/day over momentum (Fama-MacBeth t 2.4) but +37 / +29 / -6 bp by year; as a tilt in the momentum ranking it lifts 2024 (1.50 -> 1.85) and lowers 2026 at every strength (2.69 -> 2.61 / 2.29 / 2.02). The same pattern as volume-confirmed momentum (round 7) |
+    | Patient maker execution: limit at the close, re-posted hourly up to 1-6 h, fills only if a bar trades 10 bp through it (`exec_sim.py`) | fees 14.6% -> 9.5% a year, but adverse selection (missed fills run away) cancels it: Sharpe 2.07 -> 2.04-2.10. Only a fill-on-touch assumption gains (2.33), which cannot be verified offline |
+    | Partial rebalancing toward targets (lambda 0.1-0.5) | turnover -6 to -15% only (most trading is names entering and leaving); 2026 lower |
+    | Inverse-vol weights within each momentum side | +0.01 to +0.04 Sharpe: noise |
+    | Sleeve capital split (256-cell grid, chosen on 2024-25) | best 2024-25 cells (1.80 -> 2.18) all score lower in 2026 (2.69 -> 2.1-2.5) |
+
+    Cost sensitivity, for reference: the same book at 10 / 7 / 5 bp per side has Sharpe 2.30 / 2.44 / 2.53
+    and median fortnight +1.7 / +1.9 / +2.0% (vs +1.4% at 15 bp). Whatever maker share the live bot
+    achieves within its ~4-minute limit window is upside the backtest does not count.
+
+17. **Risk dampening, capacity and execution (none adopted).** Dampening only helps the score when it is
+    selective (cuts exposure before bad days more than good ones); uniform dampening is the risk dial.
+
+    | Idea | Result |
+    |---|---|
+    | Return per unit of gross before costs, by leg (`research/` inline) | momentum longs 1.37-1.55 a year, trend longs 0.9-1.0, momentum shorts 0.44-0.50 (Sharpe 0.5): the shorts are the hedge |
+    | v2 momentum short share 0 / 0.2 / 0.3 / 0.5 (live 0.4; `short_share.py`) | less short: same return, P(fortnight < -5%) doubles (7% -> 15-18%). 0.5: Sharpe 2.07 -> 2.22 (2024 / 2025 up) but 2026 2.69 -> 2.58, as in round 14 |
+    | Market-wide leverage as a risk gauge: total OI change, mean funding, account / top-trader / taker long-short ratios, breadth, vol ratio (`market_state.py`) | rank correlation with the book's next-day return below 0.05 for every gauge, sign changing by year |
+    | Staggered sub-books (each v2 sleeve split over decisions at 00 / 06 / 12 / 18 UTC; `stagger.py`) | Sharpe 2.07 -> 2.12, turnover -13%, but 2026 2.69 -> 2.45 (the live hours were lucky in 2026) |
+    | Maker patience on real 1-minute Binance bars (598 random 2026 decision times; `minute_exec.py`) | the live policy (touch, reprice each minute, market after 4 min) costs 10-12 bp per spot trade vs 12.5-15 bp taker; waiting 10-60 min saves < 1 bp (inside the standard error). The backtest's 15 bp is conservative |
+    | Fading 1-hour jumps (round 11's lead; `jump_fade.py`) | > +10% jumps: -9.2% vs the market over 3 days in 2026 (t -3.0, 78% of events) but +2.1% in 2024: a regime (the 2025-26 listings), not a law |
+    | No new longs for 24 / 72 h after a +7 / 10 / 15% hour (`jump_filter.py`) | +7% or 72 h hurt (they block momentum entries); +10% / 24 h lifts every year slightly (2.07 -> 2.14) but its neighbours do not: treated as noise |
+
+    **Activity rule (adopted, not a strategy change):** if no fill lands by :15 inside an activity window
+    (00-03 / 12-15 UTC), the engine sends one small market order toward the book's own target, retrying
+    hourly, so every contest date is active (the rules need 8; last edition's score scaled with them).
+
+18. **One test for every candidate; two adopted (`research/paired.py`, `research/combo.py`).** Rounds
+    16-17 judged candidates by eye from yearly Sharpe, which is too noisy for books that are 98-99%
+    correlated (a +0.1 difference is about one standard error) and led to inconsistent calls. Every
+    candidate now goes through the same paired stationary block bootstrap (same resampled days for both
+    books, mean block 10 days, 2,000 reps) on the continuous daily returns from 2024. Adoption needs a
+    high P(dSharpe > 0) AND a gain in both 2024-25 and 2026. Base: trend-guard-final (Sharpe 2.12).
+
+    | Candidate | dSharpe | P(> 0) | 2024-25 | 2026 | d return / yr |
+    |---|---|---|---|---|---|
+    | anant's trend covariance (14-day, shrink 0.1, 72h EWMA) vs the 4x one | +0.04 | 86% | +0.08 | -0.03 | +0.7% |
+    | **jump guard: no new / larger longs 24h after a +10% hour** | **+0.06** | **97.5%** | **+0.02** | **+0.15** | **+2.0%** |
+    | jump guard +15% / 24h (neighbour) | +0.03 | 96% | +0.01 | +0.07 | +0.9% |
+    | **momentum: weight ~ 1/sqrt(vol) within each side** | **+0.07** | **86%** | **+0.06** | **+0.09** | -1.9% |
+    | momentum short share 0.5 | +0.13 | 89% | +0.24 | -0.09 | -0.3% |
+    | momentum OI tilt 0.25 (needs live futures data) | +0.20 | 96% | +0.30 | -0.02 | +6.3% |
+    | staggered sub-books / partial rebalancing | 0.00 / -0.01 | 51% / 43% | | | |
+    | **adopted: inverse-vol + jump guard together** | **+0.14** | **97.7%** | **+0.08** | **+0.27** | +0.2% |
+
+    The adopted pair would also have been picked on 2024-25 alone and is confirmed on 2026. Continuous
+    Sharpe by year 1.63 / 2.12 / 2.66 -> 1.66 / 2.25 / 2.93, max drawdown 28.6% -> 26.3%, P(fortnight
+    < -5%) 7.4% -> 5.9%, return unchanged. Over all 944 contest windows it has the higher Sharpe in 57%,
+    Sortino 56%, Calmar 56% and the smaller drawdown in 80%; across the 14 non-overlapping offsets its
+    median Sharpe is higher in 10 (the official report's offset 0 is one of the 4 where it is lower).
+    Nine candidates were tried, so a 97.5% result alone could be luck; the two-period requirement and the
+    mechanism (2025-26 pumps revert: `jump_fade.py`) are what support it. The jump guard never sells:
+    it only stops buying into a coin for a day after a pump.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
