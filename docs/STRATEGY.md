@@ -293,6 +293,23 @@ kept for confirmation.
     and median fortnight +1.7 / +1.9 / +2.0% (vs +1.4% at 15 bp). Whatever maker share the live bot
     achieves within its ~4-minute limit window is upside the backtest does not count.
 
+17. **Risk dampening, capacity and execution (none adopted).** Dampening only helps the score when it is
+    selective (cuts exposure before bad days more than good ones); uniform dampening is the risk dial.
+
+    | Idea | Result |
+    |---|---|
+    | Return per unit of gross before costs, by leg (`research/` inline) | momentum longs 1.37-1.55 a year, trend longs 0.9-1.0, momentum shorts 0.44-0.50 (Sharpe 0.5): the shorts are the hedge |
+    | v2 momentum short share 0 / 0.2 / 0.3 / 0.5 (live 0.4; `short_share.py`) | less short: same return, P(fortnight < -5%) doubles (7% -> 15-18%). 0.5: Sharpe 2.07 -> 2.22 (2024 / 2025 up) but 2026 2.69 -> 2.58, as in round 14 |
+    | Market-wide leverage as a risk gauge: total OI change, mean funding, account / top-trader / taker long-short ratios, breadth, vol ratio (`market_state.py`) | rank correlation with the book's next-day return below 0.05 for every gauge, sign changing by year |
+    | Staggered sub-books (each v2 sleeve split over decisions at 00 / 06 / 12 / 18 UTC; `stagger.py`) | Sharpe 2.07 -> 2.12, turnover -13%, but 2026 2.69 -> 2.45 (the live hours were lucky in 2026) |
+    | Maker patience on real 1-minute Binance bars (598 random 2026 decision times; `minute_exec.py`) | the live policy (touch, reprice each minute, market after 4 min) costs 10-12 bp per spot trade vs 12.5-15 bp taker; waiting 10-60 min saves < 1 bp (inside the standard error). The backtest's 15 bp is conservative |
+    | Fading 1-hour jumps (round 11's lead; `jump_fade.py`) | > +10% jumps: -9.2% vs the market over 3 days in 2026 (t -3.0, 78% of events) but +2.1% in 2024: a regime (the 2025-26 listings), not a law |
+    | No new longs for 24 / 72 h after a +7 / 10 / 15% hour (`jump_filter.py`) | +7% or 72 h hurt (they block momentum entries); +10% / 24 h lifts every year slightly (2.07 -> 2.14) but its neighbours do not: treated as noise |
+
+    **Activity rule (adopted, not a strategy change):** if no fill lands by :15 inside an activity window
+    (00-03 / 12-15 UTC), the engine sends one small market order toward the book's own target, retrying
+    hourly, so every contest date is active (the rules need 8; last edition's score scaled with them).
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
