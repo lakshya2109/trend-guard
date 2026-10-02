@@ -61,6 +61,16 @@ book:
     short_crash_return: -0.40          # no NEW shorts on coins down > 40% over 60 days: crashed losers bounce
     short_crash_lookback_h: 1440
 
+  crash_hedge:                          # ported from teammate branch swyam/bstocks-hedge, re-validated
+    enabled: true                      # against the cov_336 book (local research notes): every tracked
+    instruments: ["COINB/USD", "MSTRB/USD"]   # metric improves or ties except a noise-level P(rank1) dip.
+    trigger_72h: -0.06                 # needs /v6 shorts-on-stocks confirmed enabled on the account before
+                                        # this is actually live -- same precondition as the source branch.
+    trigger_24h: -0.04
+    size: 0.75
+    check_hours_utc: [0, 12]
+    reference: "BTC/USD"
+
 breaker:                               # catastrophe circuit breaker only; tighter brakes hurt the score
   dd_level: 0.10
   dd_mult: 0.5
