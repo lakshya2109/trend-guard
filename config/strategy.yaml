@@ -88,6 +88,9 @@ execution:
   requests_per_min: 30
   min_order_gap_s: 1.0
   history_hours: 2400
+  activity_windows_utc: [[0, 3], [12, 15]]   # contest needs >= 8 active days: no fill since a window opened -> one small trade
+  activity_min_frac: 0.001             # that trade is the book's largest gap to target, at least 0.1% of equity
+  activity_fallback_pair: "BTC/USD"    # only if the book holds and targets nothing at all
 
 backtest:
   first_window: "2024-02-15"

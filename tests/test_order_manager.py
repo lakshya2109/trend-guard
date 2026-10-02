@@ -222,3 +222,52 @@ def test_ambiguous_send_is_reconciled_not_resubmitted():
     ex.execute([PlannedOrder("BTC/USD", "BUY", False, False, qty=D("0.1"), notional=D("5000"))], "c1")
     assert [c[0] for c in broker.calls] == ["LIMIT"]  # exactly one send, never retried
     assert orders[0]["status"] == "UNKNOWN"
+
+
+# --- activity rule (contest: >= 8 active days; we keep every day active) ---------------------------
+from trend_guard.execution.order_manager import activity_due, activity_order  # noqa: E402
+
+WINDOWS = [[0, 3], [12, 15]]
+
+
+def test_activity_due_only_inside_a_window_without_a_fill_since_it_opened():
+    at = lambda h, m=15, day=5: datetime(2026, 10, day, h, m, tzinfo=UTC)  # noqa: E731
+    assert activity_due(at(12), None, WINDOWS)
+    assert activity_due(at(13), at(11, 59), WINDOWS)  # filled before the window opened
+    assert not activity_due(at(13), at(12, 4), WINDOWS)  # the 12:03 cycle already filled
+    assert not activity_due(at(9), None, WINDOWS)  # outside both windows
+    assert activity_due(at(2), at(15, 0, day=4), WINDOWS)  # yesterday's fill does not count
+    assert activity_due(at(15, 59), at(3, 0), WINDOWS)  # last hour of the window still retries
+
+
+def test_activity_trades_the_largest_gap_toward_target():
+    exp = exposure(cash="80000", long_qty={"BTC/USD": "0.2", "ETH/USD": "5"})  # 10% BTC, 10% ETH
+    o = activity_order({"BTC/USD": 0.12, "ETH/USD": 0.09}, exp, CFG)
+    assert o.pair == "BTC/USD" and o.action == "BUY" and o.urgent  # 2% gap beats 1%
+    assert abs(o.notional - D("2000")) < D("1")
+    o = activity_order({"BTC/USD": 0.103, "ETH/USD": 0.08}, exp, CFG)
+    assert o.pair == "ETH/USD" and o.action == "SELL" and abs(o.notional - D("2000")) < D("1")
+
+
+def test_activity_never_trades_against_the_target_and_has_a_floor():
+    exp = exposure(cash="90000", long_qty={"BTC/USD": "0.2"})  # exactly on a 10% target
+    o = activity_order({"BTC/USD": 0.10}, exp, CFG)
+    assert o.action == "BUY" and abs(o.notional - D("100")) < D("1")  # tops up by 0.1% of equity
+
+
+def test_activity_handles_shorts_and_the_flat_book():
+    exp = exposure(cash="95000", shorts={"ETH/USD": "5000"})  # 5% short, target 8%
+    o = activity_order({"ETH/USD": -0.08}, exp, CFG)
+    assert o.action == "SHORT_OPEN" and abs(o.collateral - D("3000")) < D("1")
+    o = activity_order({"ETH/USD": -0.04}, exp, CFG)
+    assert o.action == "SHORT_CLOSE" and D("19") < o.close_pct < D("21")  # 1% of 5%
+    o = activity_order({}, exposure(), CFG)
+    assert o.pair == "BTC/USD" and o.action == "BUY" and o.reason == "activity: book flat"
+
+
+def test_activity_buy_respects_cash_and_miniorder():
+    rules = {"BTC/USD": TradingRule(pair="BTC/USD", price_precision=2, amount_precision=5, mini_order=D("1"))}
+    exp = exposure(cash="400", long_qty={"BTC/USD": "1.99"})  # almost no free cash
+    assert activity_order({"BTC/USD": 1.0}, exp, CFG, rules) is None  # would need leverage: skip
+    o = activity_order({"BTC/USD": 0.5}, exposure(), CFG, rules)
+    assert o.qty * D("50000") > D("1")

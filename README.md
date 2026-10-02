@@ -126,7 +126,7 @@ flowchart LR
 | No manual trading or API calls | every order comes from `engine.Engine`; `scripts/probe_live.py` is gated and runs only through committed code; `.claude/settings.json` denies live mode to the coding assistant |
 | No accidental live orders | `main.py` refuses live mode unless `ALLOW_LIVE_ORDERS=1` and keys exist; `LiveBroker._require_live` refuses every order method independently |
 | Never blind-retry an order | `RoostooClient._post` never retries order-creating calls; ambiguous outcomes raise `OrderStateUnknownError` and are reconciled via `query_order` (`match_unknown_order`) |
-| At least 8 active days | the book rebalances daily at 00:00 and 12:00 UTC; the engine warns at 18:00 UTC if nothing traded (it never fakes trades) |
+| At least 8 active days | enforced: the book rebalances at 00:00 and 12:00 UTC, and if no fill has landed by :15 in either activity window (00-03 / 12-15 UTC) the engine sends one small MARKET order toward the book's own target (its largest gap, at least 0.1% of equity), retrying hourly. A fill in either window falls on the same date in UTC and HKT, so every contest day (all 15 dates) is active. `order_manager.activity_order`, tests in `tests/test_engine_activity.py` |
 | Trade-log integrity | every fill in `logs/fills/*.csv` carries the commit hash; every hourly decision is stored in SQLite and `logs/decisions/*.jsonl` |
 | Shorts may be disabled | `ShortsDisabledError` switches the book to long-only for the session |
 
