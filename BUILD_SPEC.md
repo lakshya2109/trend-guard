@@ -438,7 +438,7 @@ def fmt(x: Decimal) -> str:
 
 ### 4.5 Rate limiter
 
-Token bucket in `roostoo/ratelimit.py`: default 30 requests/minute total, orders at least 1.0 s apart, configurable. On repeated failures (3 consecutive), halve the rate for 10 minutes.
+Sliding window in `roostoo/ratelimit.py`: at most `requests_per_min` requests in any rolling 60 seconds (default 30; a token bucket let a full bucket plus its refill through in one minute), orders at least 1.0 s apart, configurable. On repeated failures (3 consecutive), halve the rate for 10 minutes.
 
 ### 4.6 Required tests (`tests/test_client.py`)
 
