@@ -61,11 +61,13 @@ book:
     short_crash_return: -0.40          # no NEW shorts on coins down > 40% over 60 days: crashed losers bounce
     short_crash_lookback_h: 1440
 
-  crash_hedge:                          # ported from teammate branch swyam/bstocks-hedge, re-validated
-    enabled: true                      # against the cov_336 book (local research notes): every tracked
-    instruments: ["COINB/USD", "MSTRB/USD"]   # metric improves or ties except a noise-level P(rank1) dip.
-    trigger_72h: -0.06                 # needs /v6 shorts-on-stocks confirmed enabled on the account before
-                                        # this is actually live -- same precondition as the source branch.
+  crash_hedge:                          # short COIN/MSTR tokens on a BTC crash (teammate branch swyam/bstocks-hedge)
+    enabled: false                     # OFF: the live universe excludes stock tokens (universe.py) and there is
+                                        # no stock-token bar feed, so the hedge could never trade live; its
+                                        # 2024-25 test priced the tokens with US stock hours. Enabling it needs
+                                        # the live plumbing from swyam/bstocks-hedge and /v6 stock shorts confirmed.
+    instruments: ["COINB/USD", "MSTRB/USD"]
+    trigger_72h: -0.06
     trigger_24h: -0.04
     size: 0.75
     check_hours_utc: [0, 12]
