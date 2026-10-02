@@ -228,6 +228,14 @@ def _pick(order_value: np.ndarray, ok: np.ndarray, prev: list[int], k: int, buff
     return (keep + fresh[: max(0, k - len(keep))])[:k]
 
 
+def _side_split(vol: np.ndarray, power: float) -> np.ndarray:
+    """Shares of one side's budget (sum 1): equal at power 0, else ~ 1/vol^power (calmer names get more)."""
+    if power == 0.0:
+        return np.full(len(vol), 1.0 / len(vol))
+    inv = 1.0 / np.maximum(np.nan_to_num(vol, nan=0.05), 1e-4) ** power
+    return inv / inv.sum()
+
+
 def momentum_member(
     f: Features,
     p: MomentumConfig,
@@ -305,9 +313,11 @@ def momentum_member(
             continue
         w = np.zeros(N)
         if longs:
-            w[longs] = (1 - p.short_share if shorts else 1.0) / len(longs)
+            w[longs] = (1 - p.short_share if shorts else 1.0) * _side_split(
+                vol_d[t, longs], p.vol_weight_power
+            )
         if shorts:
-            w[shorts] = -p.short_share / len(shorts)
+            w[shorts] = -p.short_share * _side_split(vol_d[t, shorts], p.vol_weight_power)
         scaled = w * _cc_scale(w, vol_d[t], p.target_vol_daily, p.gross_cap, p.avg_corr)  # resized hourly
         if crowd_on:
             # Applied AFTER sizing, like BUILD_SPEC's other overlays (w = w * crowd_mult * ...,
@@ -341,7 +351,7 @@ def momentum_sleeve(
 
 
 # ----------------------------------------------------------------------------- the book
-SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "crash_hedge")
+SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "jump_guard", "crash_hedge")
 
 
 def book_components(
@@ -407,6 +417,13 @@ def book_components(
         w = np.zeros(full_close.shape)
         w[:, pos] = v
         out[k] = w
+    if cfg.jump_guard.enabled:  # an adjustment component, so the components still sum to the book
+        total = sum(out.values())
+        out["jump_guard"] = (
+            jump_guard(full_close, total, cfg.jump_guard.threshold, cfg.jump_guard.hold_h) - total
+        )
+    else:
+        out["jump_guard"] = np.zeros(full_close.shape)
     out["crash_hedge"] = np.zeros(full_close.shape)
     h = cfg.crash_hedge
     if h.enabled and allow_short:
@@ -414,6 +431,30 @@ def book_components(
         gross = np.abs(sum(out.values())).sum(axis=1, keepdims=True)
         fix = np.where(gross > cfg.max_gross, cfg.max_gross / np.maximum(gross, 1e-12), 1.0)
         out = {k: v * fix for k, v in out.items()}
+    return out
+
+
+def jump_guard(close: pd.DataFrame, book: np.ndarray, threshold: float, hold_h: int) -> np.ndarray:
+    """The book with new or larger longs blocked for hold_h hours after a 1-hour rise above threshold.
+
+    Causal: the bar's return is known at its close, when the hour's targets are set. A blocked long keeps
+    the previous hour's (guarded) weight: never opened, never added to; reductions, closes and shorts pass.
+    """
+    lp = np.log(close.ffill(limit=3).to_numpy())
+    r1 = np.vstack([np.zeros((1, lp.shape[1])), np.nan_to_num(np.diff(lp, axis=0))])
+    jumped = r1 > np.log1p(threshold)
+    since = np.full(book.shape[1], np.iinfo(np.int64).max // 2)
+    out = np.nan_to_num(book).copy()
+    prev = np.zeros(book.shape[1])
+    for t in range(book.shape[0]):
+        since = np.where(jumped[t], 0, since + 1)
+        guarded = since <= hold_h
+        w = out[t]
+        block_open = guarded & (w > 0) & (prev <= 0)
+        block_add = guarded & (w > prev) & (prev > 0)
+        w[block_open] = 0.0
+        w[block_add] = prev[block_add]
+        prev = w
     return out
 
 

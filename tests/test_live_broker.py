@@ -60,25 +60,58 @@ class QueryClient(FakeClient):
 
 def test_canceled_limit_echoing_full_quantity_is_not_a_fill():
     # Roostoo reports FilledQuantity = Quantity on an untouched order, with FilledAverPrice 0
-    detail = {"OrderID": 3411817, "Pair": "SEI/USD", "Status": "CANCELED", "Role": "MAKER", "Side": "BUY",
-              "Type": "LIMIT", "Price": 0.07158, "Quantity": 32971.8, "FilledQuantity": 32971.8,
-              "FilledAverPrice": 0, "CommissionCoin": "SEI", "CommissionChargeValue": 0}
+    detail = {
+        "OrderID": 3411817,
+        "Pair": "SEI/USD",
+        "Status": "CANCELED",
+        "Role": "MAKER",
+        "Side": "BUY",
+        "Type": "LIMIT",
+        "Price": 0.07158,
+        "Quantity": 32971.8,
+        "FilledQuantity": 32971.8,
+        "FilledAverPrice": 0,
+        "CommissionCoin": "SEI",
+        "CommissionChargeValue": 0,
+    }
     st = LiveBroker(QueryClient(detail), RULES).query("3411817")
     assert st.filled_qty == 0 and st.avg_price == 0 and st.fee == 0
 
 
 def test_filled_limit_reports_quantity_price_and_usd_fee():
-    detail = {"OrderID": 3412171, "Pair": "SEI/USD", "Status": "FILLED", "Role": "MAKER", "Side": "BUY",
-              "Type": "LIMIT", "Price": 0.07128, "Quantity": 33549.4, "FilledQuantity": 33549.4,
-              "FilledAverPrice": 0.07128, "CommissionCoin": "USD", "CommissionChargeValue": 1.1957}
+    detail = {
+        "OrderID": 3412171,
+        "Pair": "SEI/USD",
+        "Status": "FILLED",
+        "Role": "MAKER",
+        "Side": "BUY",
+        "Type": "LIMIT",
+        "Price": 0.07128,
+        "Quantity": 33549.4,
+        "FilledQuantity": 33549.4,
+        "FilledAverPrice": 0.07128,
+        "CommissionCoin": "USD",
+        "CommissionChargeValue": 1.1957,
+    }
     st = LiveBroker(QueryClient(detail), RULES).query("3412171")
     assert st.filled_qty == D("33549.4") and st.avg_price == D("0.07128") and st.fee == D("1.1957")
 
 
 def test_fee_charged_in_base_coin_is_converted_to_usd():
-    detail = {"OrderID": 1, "Pair": "BTC/USD", "Status": "FILLED", "Role": "MAKER", "Side": "BUY",
-              "Type": "LIMIT", "Price": 84784, "Quantity": 0.01695, "FilledQuantity": 0.01695,
-              "FilledAverPrice": 84784, "CommissionCoin": "BTC", "CommissionChargeValue": 0.0000085}
+    detail = {
+        "OrderID": 1,
+        "Pair": "BTC/USD",
+        "Status": "FILLED",
+        "Role": "MAKER",
+        "Side": "BUY",
+        "Type": "LIMIT",
+        "Price": 84784,
+        "Quantity": 0.01695,
+        "FilledQuantity": 0.01695,
+        "FilledAverPrice": 84784,
+        "CommissionCoin": "BTC",
+        "CommissionChargeValue": 0.0000085,
+    }
     st = LiveBroker(QueryClient(detail), RULES).query("1")
     assert st.fee == D("0.0000085") * D("84784")
 
@@ -92,8 +125,16 @@ class MergingShortClient(FakeClient):
     def short_open(self, pair, collateral):
         total = 6114.7 + 4709.9
         merged_px = (6114.7 * 0.2026 + 4709.9 * 0.2009) / total
-        return ShortOpenResult(ID=9, Pair=pair, OrderType="MARKET", EntryPrice=merged_px, ShortQty=total,
-                               Collateral=1238.84 + 946.22, OpenFee=0.946, Status="OPEN")
+        return ShortOpenResult(
+            ID=9,
+            Pair=pair,
+            OrderType="MARKET",
+            EntryPrice=merged_px,
+            ShortQty=total,
+            Collateral=1238.84 + 946.22,
+            OpenFee=0.946,
+            Status="OPEN",
+        )
 
 
 def test_short_open_onto_existing_position_reports_only_the_added_trade():

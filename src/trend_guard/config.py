@@ -61,6 +61,9 @@ class MomentumConfig(BaseModel):
     k: int = 6  # names per side
     buffer: int = 12  # a holding is kept while ranked within this many from its end
     short_share: float = 0.4  # share of gross in the short leg when both legs exist
+    vol_weight_power: float = (
+        0.0  # within each side weight ~ 1/vol^power (0 = equal weight, 0.5 = sqrt inverse-vol)
+    )
     target_vol_daily: float = 0.015
     avg_corr: float = 0.7  # constant-correlation risk model
     gross_cap: float = 0.9
@@ -128,6 +131,15 @@ class CrashHedgeConfig(BaseModel):
     reference: str = "BTC/USD"
 
 
+class JumpGuardConfig(BaseModel):
+    """No new or larger longs in a coin for `hold_h` hours after a 1-hour rise above `threshold`
+    (research/paired.py: pumps of the 2025-26 listings mean-revert; held positions are not sold)."""
+
+    enabled: bool = False
+    threshold: float = 0.10  # simple return of one hourly bar
+    hold_h: int = 24
+
+
 class BookConfig(BaseModel):
     """Account = v2_share x (trend-guard v2 sleeves) + team_share x (teammates' book).
 
@@ -145,6 +157,7 @@ class BookConfig(BaseModel):
     trend: TrendConfig = Field(default_factory=TrendConfig)
     momentum: MomentumConfig = Field(default_factory=MomentumConfig)
     crash_hedge: CrashHedgeConfig = Field(default_factory=CrashHedgeConfig)
+    jump_guard: JumpGuardConfig = Field(default_factory=JumpGuardConfig)
 
 
 class BreakerConfig(BaseModel):

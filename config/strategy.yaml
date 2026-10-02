@@ -50,6 +50,7 @@ book:
     k: 6
     buffer: 12
     short_share: 0.4
+    vol_weight_power: 0.5              # within a side weight ~ 1/sqrt(vol), not equal (research/paired.py, STRATEGY.md 18)
     target_vol_daily: 0.015
     avg_corr: 0.7
     gross_cap: 0.9
@@ -61,6 +62,10 @@ book:
     short_crash_return: -0.40          # no NEW shorts on coins down > 40% over 60 days: crashed losers bounce
     short_crash_lookback_h: 1440
 
+  jump_guard:                          # no new / larger longs for 24h after a +10% hour: 2025-26 pumps revert
+    enabled: true                      # (research/paired.py: Sharpe +0.06, P 97.5%, better in 2024-25 and 2026)
+    threshold: 0.10
+    hold_h: 24
   crash_hedge:                          # short COIN/MSTR tokens on a BTC crash (teammate branch swyam/bstocks-hedge)
     enabled: false                     # OFF: the live universe excludes stock tokens (universe.py) and there is
                                         # no stock-token bar feed, so the hedge could never trade live; its

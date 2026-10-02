@@ -123,11 +123,13 @@ def _short_increment(ack: ShortAck, before: ShortPosition | None) -> ShortAck:
     added = ack.short_qty - old_qty
     if added <= 0:
         return ack
-    return ack.model_copy(update={
-        "short_qty": added,
-        "entry_price": (ack.short_qty * ack.entry_price - old_qty * old_px) / added,
-        "collateral": ack.collateral - Decimal(str(before.collateral)),
-    })
+    return ack.model_copy(
+        update={
+            "short_qty": added,
+            "entry_price": (ack.short_qty * ack.entry_price - old_qty * old_px) / added,
+            "collateral": ack.collateral - Decimal(str(before.collateral)),
+        }
+    )
 
 
 def _short_ack_from_result(result: ShortOpenResult) -> ShortAck:

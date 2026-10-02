@@ -107,7 +107,5 @@ def test_per_sleeve_beats_whole_book_when_only_one_sleeve_crashes():
     breaker = BreakerConfig(dd_level=0.1, dd_mult=0.5, dd_recover=0.05)
 
     eq_whole, _ = simulate(combined, close, starts, BT, EX, breaker)
-    eq_per_sleeve, _ = simulate_multi_sleeve(
-        {"a": sleeve_a, "b": sleeve_b}, close, starts, BT, EX, breaker
-    )
+    eq_per_sleeve, _ = simulate_multi_sleeve({"a": sleeve_a, "b": sleeve_b}, close, starts, BT, EX, breaker)
     assert eq_per_sleeve[0, -1] > eq_whole[0, -1]
