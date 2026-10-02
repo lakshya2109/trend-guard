@@ -110,6 +110,10 @@ class ExecutionConfig(BaseModel):
     requests_per_min: int = 30
     min_order_gap_s: float = 1.0
     history_hours: int = 2400  # hourly bars loaded per pair for the live signals (100 days)
+    # activity rule (contest: >= 8 active days): if no fill since a window opened, force one small trade
+    activity_windows_utc: list[list[int]] = Field(default_factory=lambda: [[0, 3], [12, 15]])
+    activity_min_frac: float = 0.001  # smallest activity trade, as a share of equity (~$100 on $100k)
+    activity_fallback_pair: str = "BTC/USD"  # only if the book holds and targets nothing at all
 
 
 class BacktestConfig(BaseModel):

@@ -10,7 +10,8 @@ Loop (every 60 s):
   every 5 min: clock sync
   at minute == rebalance_minute (once per hour): hourly cycle
      top up the Binance bar cache -> book targets -> x risk_scale x breaker -> plan -> execute
-  18:00 UTC: warn if nothing has traded today (the bot never fakes a trade)
+  activity rule: at minute ACTIVITY_MINUTE inside an activity window (00-03 / 12-15 UTC) with no fill
+     since the window opened, one small MARKET order toward the book's own target (every day active)
 """
 
 from __future__ import annotations
@@ -32,7 +33,13 @@ from trend_guard.clock import Clock
 from trend_guard.config import EnvConfig, StrategyConfig, SymbolsConfig, config_hash
 from trend_guard.data.binance_live import panel, update_cache
 from trend_guard.execution.broker import Broker, Exposure
-from trend_guard.execution.order_manager import OrderExecutor, PlannedOrder, plan_orders
+from trend_guard.execution.order_manager import (
+    OrderExecutor,
+    PlannedOrder,
+    activity_due,
+    activity_order,
+    plan_orders,
+)
 from trend_guard.execution.sim_broker import SimBroker
 from trend_guard.risk.breaker import Breaker
 from trend_guard.roostoo.client import RoostooClient
@@ -49,6 +56,7 @@ dlog = logging.getLogger("decisions")
 LOOP_S = 60
 CLOCK_SYNC_EVERY = timedelta(minutes=5)
 NO_FILL_WARN_HOUR = 18
+ACTIVITY_MINUTE = 15  # after the cycle at :03 and its limit orders (repriced 4 x 60 s, then MARKET)
 UNIVERSE_REFRESH_HOUR = 0  # re-read exchangeInfo once a day
 FETCH_WORKERS = 8
 
@@ -91,6 +99,7 @@ class Engine:
         self.last_clock_sync: datetime | None = None
         self.last_universe_day: str | None = None
         self.last_warn_day: str | None = None
+        self.last_activity_hour: str | None = None
         self.executor = OrderExecutor(
             broker=broker,
             exec_cfg=cfg.execution,
@@ -109,6 +118,7 @@ class Engine:
     ) -> None:
         now = self.clock.now()
         self.store.kv_set("last_fill_day", now.strftime("%Y-%m-%d"))
+        self.store.kv_set("last_fill_ts", now.isoformat())
         self.fills_dir.mkdir(parents=True, exist_ok=True)
         path = self.fills_dir / f"{now:%Y-%m-%d}.csv"
         new = not path.exists()
@@ -235,6 +245,45 @@ class Engine:
         self._execute(plans, cycle_id)
         return plans
 
+    def activity_check(self) -> PlannedOrder | None:
+        """Keep every contest day active: inside an activity window with no fill since it opened, send
+        one small MARKET order toward the book's own latest targets (see order_manager.activity_order)."""
+        now = self.clock.now()
+        raw_last = self.store.kv_get("last_fill_ts")
+        last = datetime.fromisoformat(raw_last) if raw_last else None
+        if not activity_due(now, last, self.cfg.execution.activity_windows_utc):
+            return None
+        stored = self.store.kv_get("prev_targets")
+        if stored is None:  # no cycle has run yet: an empty target would read as "sell everything"
+            log.warning("activity rule: no targets yet; waiting for the hourly cycle")
+            return None
+        targets = json.loads(stored)
+        exp = self.broker.get_exposure()
+        order = activity_order(targets, exp, self.cfg.execution, self.rules)
+        cycle_id = now.strftime("%Y%m%dT%H") + "-activity"
+        if order is None:
+            log.error("activity rule: no order possible this hour", extra={"equity": str(exp.equity)})
+            return None
+        log.warning(
+            "activity rule: no fill yet in this window, trading toward target",
+            extra={"pair": order.pair, "action": order.action, "notional": str(order.notional)},
+        )
+        self.store.record_decision(
+            cycle_id,
+            now.isoformat(),
+            "activity",
+            {
+                "cycle_id": cycle_id,
+                "commit": self.commit[:12],
+                "pair": order.pair,
+                "action": order.action,
+                "notional": str(order.notional),
+                "reason": order.reason,
+            },
+        )
+        self._execute([order], cycle_id)
+        return order
+
     def _execute(self, plans: list[PlannedOrder], cycle_id: str) -> None:
         self.executor.shorts_enabled = self.shorts_enabled
         try:
@@ -272,6 +321,10 @@ class Engine:
         if now.minute >= self.cfg.execution.rebalance_minute and self.last_cycle_hour != hour_key:
             self.last_cycle_hour = hour_key
             self.hourly_cycle()
+
+        if now.minute >= ACTIVITY_MINUTE and self.last_activity_hour != hour_key:
+            self.last_activity_hour = hour_key
+            self.activity_check()
 
         if now.hour >= NO_FILL_WARN_HOUR and self.last_warn_day != day:
             self.last_warn_day = day

@@ -224,6 +224,123 @@ def plan_orders(
     return reductions + additions
 
 
+def activity_due(now: datetime, last_fill: datetime | None, windows: list[list[int]]) -> bool:
+    """True when `now` is inside an activity window [start_h, end_h] (UTC hours, inclusive) and no
+    fill has landed since that window opened. A fill inside either default window (00-03 or 12-15 UTC)
+    falls on the same calendar date in UTC and in Hong Kong time, so each window alone makes the day
+    active whichever calendar the organisers count."""
+    for start_h, end_h in windows:
+        if start_h <= now.hour <= end_h:
+            opened = now.replace(hour=start_h, minute=0, second=0, microsecond=0)
+            return last_fill is None or last_fill < opened
+    return False
+
+
+def activity_order(
+    target_w: dict[str, float],
+    exp: Exposure,
+    exec_cfg: ExecutionConfig,
+    rules: dict[str, TradingRule] | None = None,
+) -> PlannedOrder | None:
+    """One small MARKET order that moves the book toward its own target, for days the trade rule would
+    otherwise leave without a fill (the contest needs >= 8 active days; we keep every day active).
+
+    It is the position furthest from its target (a resize the min-trade band skipped), sized at that
+    gap but at least `activity_min_frac` of equity so it clears MiniOrder. If the whole book sits exactly
+    on target it tops up the largest target by the minimum. Only if there are no targets and no holdings
+    at all does it buy the minimum of `activity_fallback_pair`. Never adds leverage: buys and short opens
+    are capped by free cash."""
+    equity = exp.equity
+    if equity <= 0:
+        return None
+    floor = Decimal(str(exec_cfg.activity_min_frac)) * equity
+    budget = exp.cash - Decimal(str(exec_cfg.cash_buffer)) * equity
+    pairs = set(target_w) | set(exp.long_qty) | set(exp.short_collateral)
+    best: tuple[Decimal, str, Decimal] | None = None  # (|gap|, pair, signed target)
+    for pair in sorted(pairs):
+        price = exp.prices.get(pair, ZERO)
+        if price <= 0:
+            continue
+        w = target_w.get(pair, 0.0)
+        tgt = Decimal(str(0.0 if w != w else w))
+        cur = (exp.long_notional(pair) - exp.short_collateral.get(pair, ZERO)) / equity
+        gap = abs(tgt - cur)
+        if tgt == 0 and cur == 0:
+            continue
+        if best is None or gap > best[0]:
+            best = (gap, pair, tgt)
+    if best is None:
+        pair = exec_cfg.activity_fallback_pair
+        price = exp.prices.get(pair, ZERO)
+        if price <= 0 or budget < floor:
+            return None
+        qty = _min_qty(pair, floor, price, rules)
+        return PlannedOrder(
+            pair, "BUY", False, True, qty=qty, notional=qty * price, reason="activity: book flat"
+        )
+    gap, pair, tgt = best
+    price = exp.prices[pair]
+    size = max(gap * equity, floor)
+    long_qty = exp.long_qty.get(pair, ZERO)
+    short_c = exp.short_collateral.get(pair, ZERO)
+    cur = (long_qty * price - short_c) / equity
+    up = tgt > cur or (gap == 0 and tgt > 0)  # on target: top up the side it already holds
+    if short_c > 0 and (up or tgt >= 0):  # reduce or close the short
+        pct = Decimal(100) if tgt >= 0 else min(Decimal(100), size / short_c * 100)
+        pct = max(pct.quantize(Decimal("0.01"), ROUND_DOWN), Decimal("0.01"))
+        return PlannedOrder(
+            pair,
+            "SHORT_CLOSE",
+            True,
+            True,
+            close_pct=pct,
+            notional=short_c * pct / 100,
+            reason="activity: reduce short toward target",
+        )
+    if long_qty > 0 and not up:  # reduce the long
+        qty = _round_qty(pair, min(long_qty, size / price), rules)
+        if not _meets_min(pair, price, qty, rules):
+            qty = long_qty  # too small to trade alone: close it
+        return PlannedOrder(
+            pair,
+            "SELL",
+            True,
+            True,
+            qty=qty,
+            notional=qty * price,
+            reason="activity: reduce long toward target",
+        )
+    if tgt < 0:  # add to / open the short
+        coll = min(size, budget).quantize(Decimal("0.01"), ROUND_DOWN)
+        if coll < MIN_SHORT_COLLATERAL:
+            return None
+        return PlannedOrder(
+            pair,
+            "SHORT_OPEN",
+            False,
+            True,
+            collateral=coll,
+            notional=coll,
+            reason="activity: add short toward target",
+        )
+    if budget < floor:
+        return None
+    qty = _min_qty(pair, min(size, budget), price, rules)
+    return PlannedOrder(
+        pair, "BUY", False, True, qty=qty, notional=qty * price, reason="activity: add long toward target"
+    )
+
+
+def _min_qty(pair: str, notional: Decimal, price: Decimal, rules: dict[str, TradingRule] | None) -> Decimal:
+    """Quantity worth about `notional`, bumped by whole precision steps until it clears MiniOrder."""
+    qty = _round_qty(pair, notional / price, rules)
+    if rules is not None and pair in rules:
+        step = Decimal(1).scaleb(-rules[pair].amount_precision)
+        while not rules[pair].meets_min(price, qty):
+            qty += step
+    return qty
+
+
 def match_unknown_order(
     pair: str, side: str, qty: Decimal, sent_ms: int, candidates: list[OrderDetail]
 ) -> OrderDetail | None:
