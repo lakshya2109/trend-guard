@@ -38,6 +38,19 @@ class TrendConfig(BaseModel):
     min_liquidity_usd: float = 2e6  # trailing 7-day mean daily quote volume
     min_age_h: int = 336
     exclude: list[str] = Field(default_factory=list)
+    # Covariance shrinkage (local research experiment, strategy/book.py's _cov_scale docstring):
+    # 0 = pure sample covariance (the original, unmodified behaviour), 1 = pure constant-
+    # correlation (the momentum sleeve's own, already-used model). The trend sleeve can hold
+    # several dozen names against only cov_hours=168 observations -- a classic small-sample
+    # regime where the raw sample covariance is noisy. Off (0.0) by default.
+    cov_shrink: float = 0.0
+    cov_shrink_rho: float = 0.7
+    # Recency-weighting for the same covariance (hours, 0 = disabled -> equal-weighted, as
+    # before). A longer cov_hours window stabilises the correlation structure but, equal-
+    # weighted, also reacts more slowly to a genuine recent rise in volatility -- this lets
+    # sizing track a fresh vol pickup within a long window instead of averaging it away, the
+    # same idea the momentum sleeve's own vol estimate already uses (ewma_lambda).
+    cov_ewma_halflife_h: float = 0.0
 
 
 class MomentumConfig(BaseModel):
@@ -60,6 +73,35 @@ class MomentumConfig(BaseModel):
     # None disables the filter. Existing shorts are not forced out.
     short_crash_return: float | None = -0.40
     short_crash_lookback_h: int = 1440
+    # Derivatives crowding filter (BUILD_SPEC.md Section 4.5/5.6.5, roostoo_hackathon_research_report.md
+    # -- never wired into v2 before this experiment, though the funding/OI download pipeline in
+    # data/binance_vision.py was already built). Off by default so every existing config/backtest is
+    # byte-for-byte unaffected unless explicitly enabled. When on: a long already extended
+    # (sc > crowd_price_extended) with crowded, rising-OI positive funding (funding_z >
+    # crowd_funding_z and oi_chg_z > crowd_oi_change_z) is a long-squeeze-down risk; a short paying
+    # deeply negative funding (funding_z < -crowd_funding_z) is a short-squeeze-up risk. Either gets
+    # its weight multiplied by crowd_mult, continuously, every hour (not just at selection) -- the
+    # same shape as the existing overlays in book_components.
+    crowd_enabled: bool = False
+    crowd_funding_z: float = 2.0
+    crowd_oi_change_z: float = 2.0
+    crowd_price_extended: float = 1.5
+    crowd_mult: float = 0.6
+    crowd_lookback_days: int = 30
+    # Cross-sectional ML filter (STRATEGY.md Section 3c, "the ML model that was not adopted" --
+    # documented as a real, walk-forward-validated result, never actually implemented: no model
+    # code exists in this repo, checked). This is a deliberately smaller reproduction (ridge, not
+    # LightGBM; ~6 rank features, not their unspecified 17) of the same idea: only take a momentum
+    # candidate the ML model also likes (predicted relative next-day return agrees in sign, and
+    # clears ml_min_pred). Off by default; strategy/ml_filter.py has the full walk-forward/embargo
+    # detail and the exact simplifications made.
+    ml_enabled: bool = False
+    ml_min_pred: float = 0.0
+    ml_refit_days: int = 30
+    ml_embargo_days: int = 2
+    ml_train_window_days: int = 180
+    ml_horizon_days: int = 1
+    ml_l2: float = 1.0
 
 
 class TeamConfig(BaseModel):

@@ -210,3 +210,142 @@ def competition_metrics(
 def non_overlapping(start_times: pd.DatetimeIndex, days: int, offset: int = 0) -> np.ndarray:
     """Positions of windows that share no day: every `days`-th daily start, beginning at `offset`."""
     return np.arange(offset, len(start_times), days)
+
+
+# --------------------------------------------------------------------------------------------------
+# Local research addition (per-sleeve drawdown breaker, not part of the committed repo): ported
+# unchanged from the trend-guard_v2 clone, where it was built and tested against the 2x-risk book.
+# Re-tested here, additively, against this branch's own 4x risk level -- a bigger book trips the
+# whole-book breaker far more often, so the per-sleeve-vs-whole-book distinction may matter more
+# here than it did at 2x (where the breaker turned out to almost never fire at all).
+# --------------------------------------------------------------------------------------------------
+
+
+@nb.njit(cache=True)
+def _simulate_multi_sleeve(
+    Ws, scale, px, act, starts, H, cost, min_w, min_frac, capital, dd_lvl, dd_mult, dd_rec
+):
+    """Like `_simulate`, but `Ws` is (n_sleeves, T, N): each sleeve gets its own drawdown-breaker
+    state instead of one whole-book breaker. The real traded book is one shared-cash position per
+    pair, exactly as in `_simulate` -- what's per-sleeve is only which drawdown state decides how
+    much of *that sleeve's* target gets traded, not a second set of real positions.
+
+    Each sleeve's own drawdown is tracked frictionlessly (compounding that sleeve's own weights,
+    divided by `scale[j]`, against realised returns, no costs) purely to decide its brake
+    multiplier -- a proxy for "is this sleeve, on its own, currently drawing down", not a claim
+    about real per-sleeve P&L in a shared-cash account, which isn't a well-defined physical
+    quantity once positions net together. `scale[j]` (that sleeve's own typical max gross
+    exposure) puts every sleeve's hypothetical drawdown on the SAME scale as the whole book's --
+    without it, a sleeve that only ever runs at, say, 20% gross can never reach the same raw
+    drawdown percentage a ~100%-gross combined book would, making dd_lvl meaningless for it.
+    """
+    n_sleeves = Ws.shape[0]
+    nwin = starts.shape[0]
+    N = Ws.shape[2]
+    equity = np.empty((nwin, H + 1))
+    turnover = np.zeros(nwin)
+    traded = np.zeros((nwin, H))
+    for k in range(nwin):
+        st = starts[k]
+        qty = np.zeros(N)
+        prev = np.zeros(N)
+        cash = capital
+        s_eq = np.full(n_sleeves, capital)
+        s_peak = np.full(n_sleeves, capital)
+        s_brake = np.ones(n_sleeves)
+        for s in range(H + 1):
+            t = st + s
+            e = cash
+            for i in range(N):
+                p = px[t, i]
+                if p > 0.0 and np.isfinite(p):
+                    e += qty[i] * p
+            equity[k, s] = e
+            for j in range(n_sleeves):
+                if s_eq[j] > s_peak[j]:
+                    s_peak[j] = s_eq[j]
+                dd = 1.0 - s_eq[j] / s_peak[j] if s_peak[j] > 0.0 else 0.0
+                if dd >= dd_lvl:
+                    s_brake[j] = dd_mult
+                elif dd <= dd_rec:
+                    s_brake[j] = 1.0
+            if s == H:
+                break
+            tgt = np.zeros(N)
+            for i in range(N):
+                acc = 0.0
+                for j in range(n_sleeves):
+                    acc += Ws[j, t, i] * s_brake[j]
+                tgt[i] = acc
+            for i in range(N):
+                p = px[t, i]
+                ok = p > 0.0 and np.isfinite(p)
+                tg = tgt[i] if ok else 0.0
+                if not np.isfinite(tg):
+                    tg = 0.0
+                cur = qty[i] * p / e if (ok and e > 0.0) else 0.0
+                changed = abs(tg - prev[i]) > 1e-9
+                prev[i] = tg
+                if not ((changed or s == 0 or act[t]) and ok and abs(tg - cur) > 1e-9):
+                    continue
+                delta = tg - cur
+                if tg != 0.0 and cur != 0.0 and abs(delta) < max(min_w, min_frac * abs(tg)):
+                    continue
+                if tg == 0.0:
+                    notional = -qty[i] * p
+                    qty[i] = 0.0
+                else:
+                    notional = delta * e
+                    qty[i] += notional / p
+                cash -= notional + abs(notional) * cost
+                turnover[k] += abs(notional) / capital
+                traded[k, s] += abs(notional) / capital
+            t1 = t + 1
+            for j in range(n_sleeves):
+                r = 0.0
+                for i in range(N):
+                    p0 = px[t, i]
+                    p1 = px[t1, i]
+                    if p0 > 0.0 and p1 > 0.0 and np.isfinite(p0) and np.isfinite(p1):
+                        r += (Ws[j, t, i] / scale[j]) * (p1 / p0 - 1.0)
+                s_eq[j] *= 1.0 + r
+    return equity, turnover, traded
+
+
+def simulate_multi_sleeve(
+    sleeve_weights: dict[str, np.ndarray],
+    close: pd.DataFrame,
+    starts: np.ndarray,
+    bt: BacktestConfig,
+    ex: ExecutionConfig,
+    breaker: BreakerConfig,
+    with_trades: bool = False,
+) -> tuple[np.ndarray, ...]:
+    """Per-sleeve-breaker analog of `simulate`. `sleeve_weights` should be `book_components(...)`'s
+    output (already capital- and gross-cap-scaled per sleeve) -- summing its values is exactly
+    `book_weights(...)`. Each sleeve's own drawdown is measured relative to its own typical gross
+    exposure (the 99th percentile of its own |weight| sum over time, floored at 1% so a sleeve
+    that's off the whole run doesn't divide by ~0), so `breaker.dd_level` means the same thing for
+    every sleeve regardless of how large a capital share it runs."""
+    names = list(sleeve_weights)
+    Ws = np.ascontiguousarray(np.stack([sleeve_weights[n] for n in names]), dtype=np.float64)
+    gross = np.abs(Ws).sum(axis=2)  # (n_sleeves, T)
+    scale = np.maximum(np.quantile(gross, 0.99, axis=1), 0.01)
+    px = close.ffill(limit=3).to_numpy(dtype=np.float64)
+    act = np.isin(close.index.hour, ex.decision_hours_utc)
+    eq, turnover, traded = _simulate_multi_sleeve(
+        Ws,
+        np.ascontiguousarray(scale, dtype=np.float64),
+        px,
+        act,
+        starts,
+        bt.window_days * 24,
+        bt.fee + bt.slippage,
+        ex.min_trade_weight,
+        ex.min_trade_frac,
+        bt.capital,
+        breaker.dd_level,
+        breaker.dd_mult,
+        breaker.dd_recover,
+    )
+    return (eq, turnover, traded) if with_trades else (eq, turnover)

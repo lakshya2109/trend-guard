@@ -27,7 +27,19 @@ book:
     max_weight: 0.5
     min_weight: 0.01                   # a position under 1% cannot earn back its 0.3% round trip
     gross_cap: 1.0
-    cov_hours: 168
+    cov_hours: 336                     # local research finding: was 168 (7 days), doubled to 14 for a more
+                                        # stable correlation structure (up to dozens of held names against
+                                        # only 168 hourly observations is a small-sample regime).
+    cov_shrink: 0.1                    # additionally shrink toward the momentum sleeve's own constant-
+                                        # correlation model (same small-sample motivation).
+    cov_shrink_rho: 0.7
+    cov_ewma_halflife_h: 72.0          # recency-weight the (now longer) window so it still reacts to a
+                                        # fresh vol pickup instead of averaging it away -- without this, the
+                                        # longer window raised return and rank but quietly cost Sharpe/
+                                        # Sortino (0.085/0.144 -> 0.080/0.140); with it, every metric is
+                                        # better than the untouched original, including both ratios
+                                        # (-> 0.096/0.162), not just return. Full comparison and the
+                                        # diagnosis: local research notes, not yet in upstream STRATEGY.md.
     rebalance_hour_utc: 12
     min_liquidity_usd: 2000000
     min_age_h: 336
