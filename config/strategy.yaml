@@ -92,7 +92,7 @@ execution:
   limit_reprice_s: 60
   limit_max_tries: 4
   ticker_poll_s: 30
-  requests_per_min: 30
+  requests_per_min: 25                 # hard cap per rolling 60 s; the exchange allows 30, the margin covers network jitter
   min_order_gap_s: 1.0
   history_hours: 2400
   activity_windows_utc: [[0, 3], [12, 15]]   # contest needs >= 8 active days: no fill since a window opened -> one small trade
