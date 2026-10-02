@@ -31,6 +31,8 @@ SLEEVE_NAMES = {
     "v2_momentum": "v2 momentum",
     "team_trend": "Gunek trend",
     "team_momentum": "swyam momentum",
+    "jump_guard": "jump guard",
+    "crash_hedge": "crash hedge",
 }
 
 
