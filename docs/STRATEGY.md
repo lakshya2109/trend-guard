@@ -270,6 +270,29 @@ kept for confirmation.
     The blend at 4x has the highest median and keeps its rank against the previous field; the
     concentrated books buy more +10% fortnights with two to four times as many -5% fortnights.
 
+16. **ML and new data sources (none adopted).** `research/` (data: `research/fetch_extra.py`). New data
+    for all 66 coins, Jun 2023 - Sep 2026: spot taker-buy volume and trade counts, perp funding, and
+    Binance futures open interest with top-trader / account / taker long-short ratios. Harness:
+    `research/harness.py` (contest simulator, plus one continuous run from 2024 for annualised Sharpe).
+    The live 4x book there: Sharpe 1.50 / 2.09 / 2.69 (2024 / 2025 / 2026), **3.0 before costs**.
+
+    | Idea | Result |
+    |---|---|
+    | LightGBM / ridge, 30-48 cross-sectional features, monthly walk-forward, label = next-day return vs the market in units of vol (`alpha_model.py`) | rank IC +0.03-0.05 every year, but a vol-targeted market-neutral sleeve has Sharpe 0.8 before costs and -1.4 after (11x turnover a fortnight) |
+    | Same plus order-flow features | IC unchanged (0.033 vs 0.037) |
+    | Time-series LightGBM (each coin's own next 1-3 day return), long-only | Sharpe +1.3 in 2024, -1.1 / -2.0 in 2025 / 2026: learns the regime |
+    | Low-risk effect (idiosyncratic vol, the strongest rank IC: -0.08, stable) | shows in ranks, not in mean returns (high-vol coins are right-skewed); quintile spread t = -0.3 |
+    | Funding level / change as a signal | spread changes sign by year |
+    | OI-confirmed momentum (price up with open interest up) | adds +23 bp/day over momentum (Fama-MacBeth t 2.4) but +37 / +29 / -6 bp by year; as a tilt in the momentum ranking it lifts 2024 (1.50 -> 1.85) and lowers 2026 at every strength (2.69 -> 2.61 / 2.29 / 2.02). The same pattern as volume-confirmed momentum (round 7) |
+    | Patient maker execution: limit at the close, re-posted hourly up to 1-6 h, fills only if a bar trades 10 bp through it (`exec_sim.py`) | fees 14.6% -> 9.5% a year, but adverse selection (missed fills run away) cancels it: Sharpe 2.07 -> 2.04-2.10. Only a fill-on-touch assumption gains (2.33), which cannot be verified offline |
+    | Partial rebalancing toward targets (lambda 0.1-0.5) | turnover -6 to -15% only (most trading is names entering and leaving); 2026 lower |
+    | Inverse-vol weights within each momentum side | +0.01 to +0.04 Sharpe: noise |
+    | Sleeve capital split (256-cell grid, chosen on 2024-25) | best 2024-25 cells (1.80 -> 2.18) all score lower in 2026 (2.69 -> 2.1-2.5) |
+
+    Cost sensitivity, for reference: the same book at 10 / 7 / 5 bp per side has Sharpe 2.30 / 2.44 / 2.53
+    and median fortnight +1.7 / +1.9 / +2.0% (vs +1.4% at 15 bp). Whatever maker share the live bot
+    achieves within its ~4-minute limit window is upside the backtest does not count.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
