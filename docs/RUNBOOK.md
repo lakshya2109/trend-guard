@@ -79,9 +79,9 @@ git show origin/trend-guard-final-v2:deploy/add_log_pane.sh > ~/tg-tools/add_log
 bash ~/tg-tools/add_log_pane.sh            # or: bash ~/tg-tools/add_log_pane.sh <session-name>
 ```
 
-It splits the bot's window, runs the viewer below the bot (restarting it if stopped), and sets a
-`client-attached` hook so every `tmux attach` shows that window with the log pane focused. Only tmux
-layout commands are used; the bot process is never signalled. In tmux: `Ctrl-b o` switches panes,
+It splits the bot's window and runs the viewer below the bot (restarting it if stopped); a plain
+`tmux attach` then shows both. Only tmux layout commands are used. Do NOT add tmux hooks: a
+`client-attached` hook crashed the tmux server on the contest box (tmux 3.2a) and stopped the bot. In tmux: `Ctrl-b o` switches panes,
 `Ctrl-b z` zooms one pane, `Ctrl-b d` detaches. Never press Ctrl-C in the bot's pane.
 
 ## Dashboard access

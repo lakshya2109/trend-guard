@@ -7,8 +7,8 @@
 #   1. finds the pane running the bot (a python process) in the session
 #   2. splits that window and runs watch_logs.py below it on the bot's logs/ directory, in a loop
 #      so the viewer comes back if it is ever stopped (the bot's checkout is not modified)
-#   3. sets a client-attached hook: every `tmux attach` lands on this window with the log pane
-#      focused, so a stray Ctrl-C hits the viewer, not the bot
+#   3. nothing else: the pane shares the bot's window, so `tmux attach` shows both (no tmux hooks;
+#      one crashed the tmux server on the contest box)
 # Safe to run twice: it does nothing if the log pane already exists.
 set -euo pipefail
 
@@ -47,9 +47,10 @@ LOG_PANE="$(tmux split-window -d -v -l 45% -t "$BOT_PANE" -c "$BOT_DIR" -P -F '#
 tmux select-pane -t "$BOT_PANE" -T "trend-guard-bot"
 tmux select-pane -t "$LOG_PANE" -T "$TITLE"  # last, so the log pane is the active one
 
-# every attach: show the bot's window and put the cursor in the log pane
+# No tmux hooks: a client-attached hook (select-window / select-pane) crashed the tmux server on the
+# contest EC2 (Amazon Linux 2023, tmux 3.2a) and took the bot with it. The log pane shares the bot's
+# window, so a plain `tmux attach` already shows it.
 WINDOW="$(tmux display-message -p -t "$BOT_PANE" '#{session_name}:#{window_index}')"
-tmux set-hook -t "$SESSION" client-attached "select-window -t $WINDOW ; select-pane -t $LOG_PANE"
 
 echo "bot pane $BOT_PANE ($BOT_DIR), log pane $LOG_PANE added to $WINDOW"
 echo "attach with: tmux attach -t $SESSION"
