@@ -5,11 +5,11 @@
 Unlike overnight/run_overnight.py it never starts, stops or restarts the bot and never trades: it only
 reads /v3/balance, /v3/ticker, /v6/short_positions, /v3/pending_count, /v3/query_order (Roostoo), the
 bot's log files, and the bot's state/live.db (opened read-only). Every 10 minutes (hh:00, :10 ...) it
-prints Gunek's snapshot; at hh:10 (7 minutes after the bot's hh:03 rebalance) it adds the portfolio
-table. PnL is measured from the contest start equity and the contest start time in
-config/strategy.yaml; peak and max drawdown come from the bot's own per-minute equity record, so they
-cover the whole contest, not just the time this window has been open. Output also goes to
-logs/monitor/<start>/ (monitor_log.txt, snapshots.jsonl).
+redraws Gunek's snapshot, portfolio table included, from the top of the pane so equity and PnL % stay
+visible (--scroll appends like run_overnight.py instead). PnL is measured from the contest start
+equity and the contest start time in config/strategy.yaml; peak and max drawdown come from the bot's
+own per-minute equity record, so they cover the whole contest, not just the time this window has been
+open. Output also goes to logs/monitor/<start>/ (monitor_log.txt, snapshots.jsonl).
 """
 
 from __future__ import annotations
@@ -70,6 +70,9 @@ def main() -> int:
     ap.add_argument("--repo", default=".", help="the bot's checkout (has .env, logs/, state/, overnight/)")
     ap.add_argument("--start-equity", type=float, default=100_000.0, help="contest starting equity")
     ap.add_argument("--db", default="state/live.db", help="the bot's state database, relative to --repo")
+    ap.add_argument(
+        "--scroll", action="store_true", help="append snapshots like run_overnight.py (no redraw)"
+    )
     a = ap.parse_args()
     repo = Path(a.repo).resolve()
     sys.path.insert(0, str(repo / "overnight"))
@@ -99,7 +102,10 @@ def main() -> int:
                 state.max_dd, state.max_dd_at = risk[1], risk[2]
             state.min_equity = min(state.min_equity, risk[3])
         s = mon.snapshot(kind, bot_status())
-        print("\n" + render_snapshot(s, with_holdings=kind in ("start", "hourly")), flush=True)
+        if a.scroll:  # Gunek's console: appended, portfolio table on the hourly snapshot only
+            print("\n" + render_snapshot(s, with_holdings=kind in ("start", "hourly")), flush=True)
+        else:  # a tmux pane: redraw from the top so Equity / PnL % stay visible, table every time
+            print("\033[2J\033[H" + render_snapshot(s, with_holdings=True), flush=True)
 
     snap("start")
     while True:
