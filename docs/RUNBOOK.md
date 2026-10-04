@@ -64,6 +64,26 @@ ssh ec2 'sudo journalctl -u trend-guard -n 200 --no-pager'
 ssh ec2 'tail -n 50 /opt/trend-guard/logs/decisions/$(date -u +%F).jsonl'
 ```
 
+## Live log view in tmux
+
+The bot writes JSONL / CSV logs only (`logs/decisions`, `logs/fills`, `logs/engine`, `logs/api`).
+`scripts/watch_logs.py` follows them read-only and prints one readable line per hourly cycle, fill,
+activity-rule trade, warning and error. To add it under a bot already running in tmux, from a normal
+SSH shell (not inside tmux), without touching the bot's checkout:
+
+```bash
+mkdir -p ~/tg-tools && cd <the bot's repo directory>
+git fetch origin trend-guard-final-v2
+git show origin/trend-guard-final-v2:scripts/watch_logs.py > ~/tg-tools/watch_logs.py
+git show origin/trend-guard-final-v2:deploy/add_log_pane.sh > ~/tg-tools/add_log_pane.sh
+bash ~/tg-tools/add_log_pane.sh            # or: bash ~/tg-tools/add_log_pane.sh <session-name>
+```
+
+It splits the bot's window, runs the viewer below the bot (restarting it if stopped), and sets a
+`client-attached` hook so every `tmux attach` shows that window with the log pane focused. Only tmux
+layout commands are used; the bot process is never signalled. In tmux: `Ctrl-b o` switches panes,
+`Ctrl-b z` zooms one pane, `Ctrl-b d` detaches. Never press Ctrl-C in the bot's pane.
+
 ## Dashboard access
 
 The Streamlit dashboard binds to `127.0.0.1:8501` on the EC2 host only -- never expose it
