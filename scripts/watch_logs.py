@@ -9,7 +9,7 @@ Follows today's files (switching at UTC midnight) and prints one line per event:
   ACTIVITY  the activity rule's forced trade, when a window had no fill
   WARN/ERR  engine warnings and errors (logs/engine/<date>.jsonl)
   api       raw exchange calls, only with --api (noisy)
-Stdlib only, so it runs with any python3 on the box.
+Stdlib only and Python 3.8+, so it runs with the system python3 on the box (3.9 on Amazon Linux 2023).
 """
 
 from __future__ import annotations
@@ -19,9 +19,10 @@ import csv
 import io
 import json
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
+UTC = timezone.utc  # noqa: UP017 -- datetime.UTC needs 3.11; the box runs this on 3.9
 COLOR = {
     "CYCLE": "\033[36m",
     "FILL": "\033[32m",
@@ -131,7 +132,7 @@ def main() -> None:
             for line in fol.lines():
                 try:
                     if name == "fills":
-                        row = dict(zip(fol.header or [], next(csv.reader(io.StringIO(line))), strict=False))
+                        row = dict(zip(fol.header or [], next(csv.reader(io.StringIO(line)))))  # noqa: B905
                         qty, px = float(row.get("qty", 0)), float(row.get("price", 0))
                         out(
                             "FILL",
