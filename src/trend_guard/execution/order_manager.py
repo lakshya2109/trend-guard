@@ -69,8 +69,11 @@ def plan_orders(
     act_all: bool,
     prev_target: dict[str, float],
     rules: dict[str, TradingRule] | None = None,
+    short_of: set[str] | None = None,
 ) -> list[PlannedOrder]:
     """Diff targets against the exchange snapshot and return orders: closes first, then additions.
+    Pairs whose addition the cash budget cut are added to `short_of`, so the caller can plan them again
+    next hour once this cycle's maker sells have paid out.
 
     The same trade rule the contest replay scores (backtest/contest.py):
       - a pair is acted on when `act_all` (decision hour / startup) or when its target moved;
@@ -206,6 +209,8 @@ def plan_orders(
         scale = max(budget, ZERO) / wanted
         scaled: list[PlannedOrder] = []
         for o in additions:
+            if short_of is not None:
+                short_of.add(o.pair)  # cut (or dropped) by the budget: not at target after this cycle
             price = exp.prices.get(o.pair, ZERO)
             if o.action == "BUY":
                 o.qty = _round_qty(o.pair, o.qty * scale, rules)

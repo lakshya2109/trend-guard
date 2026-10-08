@@ -92,6 +92,21 @@ def test_additions_never_exceed_cash_no_leverage():
     assert spend <= D("5000")
 
 
+def test_budget_cut_pairs_are_reported_and_planned_again_next_hour():
+    # bear-mode switch: maker sells of ETH do not count toward this cycle's budget, so BTC is cut
+    exp = exposure(cash="5000", long_qty={"ETH/USD": "47.5"})
+    short_of: set[str] = set()
+    plans = plan_orders({"BTC/USD": 0.95}, exp, CFG, True, {}, None, short_of)
+    assert short_of == {"BTC/USD"} and any(p.action == "BUY" for p in plans)
+    later = exposure(cash="60000", long_qty={"BTC/USD": "0.1"})  # an hour on: ETH sold, 5k of BTC bought
+    assert plan({"BTC/USD": 0.95}, later, act_all=False, prev={"BTC/USD": 0.95}) == []  # the old gap
+    retry = plan({"BTC/USD": 0.95}, later, act_all=False, prev={"BTC/USD": float("nan")})
+    assert retry[0].action == "BUY" and retry[0].reason == "add long"  # the engine's retry marker
+    full: set[str] = set()
+    plan_orders({"BTC/USD": 0.04}, exposure(), CFG, True, {}, None, full)
+    assert full == set()  # enough cash: nothing to retry
+
+
 def test_mini_order_drops_tiny_orders():
     rules = {
         "BTC/USD": TradingRule(pair="BTC/USD", price_precision=2, amount_precision=6, mini_order=D("5000"))

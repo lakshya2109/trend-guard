@@ -214,8 +214,13 @@ class Engine:
         # full rebalance when the bar that just closed is a decision bar (open time 00:00 / 12:00 UTC), the
         # same rule the backtest scores (backtest/contest.py acts on the bar's open hour)
         act_all = force_act or not prev or close.index[-1].hour in self.cfg.execution.decision_hours_utc
-        plans = plan_orders(targets, exp, self.cfg.execution, act_all, prev, self.rules)
+        # pairs the cash budget cut last hour count as changed, so they finish now (NaN never matches)
+        retry = json.loads(self.store.kv_get("budget_retry") or "[]")
+        prev_plan = {**prev, **{p: float("nan") for p in retry}}
+        short_of: set[str] = set()
+        plans = plan_orders(targets, exp, self.cfg.execution, act_all, prev_plan, self.rules, short_of)
         self.store.kv_set("prev_targets", json.dumps(targets))
+        self.store.kv_set("budget_retry", json.dumps(sorted(short_of)))
 
         payload = {
             "cycle_id": cycle_id,
@@ -324,8 +329,9 @@ class Engine:
 
         hour_key = now.strftime("%Y%m%dT%H")
         if now.minute >= self.cfg.execution.rebalance_minute and self.last_cycle_hour != hour_key:
+            first = self.last_cycle_hour is None  # first cycle since start: full rebalance to the targets
             self.last_cycle_hour = hour_key
-            self.hourly_cycle()
+            self.hourly_cycle(force_act=first)
 
         if now.minute >= ACTIVITY_MINUTE and self.last_activity_hour != hour_key:
             self.last_activity_hour = hour_key
