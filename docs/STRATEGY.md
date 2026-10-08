@@ -353,6 +353,17 @@ kept for confirmation.
     By crash episode (50 since 2024) it was best at clearing +4.5% in 34 (fast momentum 9, old bot 7), 6 of 11
     in 2026; its lower 2026 average comes from one long episode (29 Jan 2026, 42 overlapping starts).
 
+21. **Bear books that adapt to the current crash: none adopted (`research/bear_shorts.py`,
+    `research/adaptive_bear.py`).** Same regime, objective and 699 post-crash starts (220 h left). Shorting the
+    same 10 worst coins (continuation): P(> +4.5%) 20%, median -2.9%. Designs fixed before the run that hold
+    whatever works now: daily follow-the-leader on trailing 48 / 72 h return after costs over {rebound,
+    short 10 worst} or over {those, fast momentum, short BTC+ETH, cash}: 15-28%; rebound only once the
+    market's 24 h return is positive, else shorts / cash / momentum: 15-23%; 50% old book + 50% rebound: 33%.
+    The fixed rebound book stays best (42%; episode-weighted 46%, best in 27 of 50 episodes against all nine).
+    Mechanism: in a crash the trailing winner is the short book, and the selector switches into it near the
+    bottom, just before the rebound it was waiting for. On 8 Oct 19:00 UTC (bear mode on, market -9.3% over
+    5 days) the short book was +12.6% over 72 h and the rebound book -13.4%: the trap these designs fall into.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
