@@ -337,6 +337,14 @@ kept for confirmation.
     mechanism (2025-26 pumps revert: `jump_fade.py`) are what support it. The jump guard never sells:
     it only stops buying into a coin for a day after a pump.
 
+19. **Mid-contest regime switch (adopted 9 Oct, `research/fast_adapt.py`).** Contest objective after a -7%
+    start: maximise P(return over the ~230 hours left > the gap to the HK top-20 cut-off, about +4.5%); extra
+    downside no longer costs anything. Bear mode = while the liquid-coin market is down > 8% over 5 days
+    (leave above -2%), run v2 momentum alone, re-ranked every 6 h. Over 699 past starts right after such a
+    crash: P(> +4.5%) 26.6% -> 29.0%, P(> +6%) 20.2% -> 24.3%, in both 2024-25 (20.1% -> 22.8%) and 2026
+    (54.1% -> 55.6%); over all 4,006 starts 24.2% -> 26.1%. Rejected bear modes: cutting or halving longs
+    (15-21%) and going net short (23-24%): the switch fires near the bottom and misses the rebound.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
