@@ -12,7 +12,7 @@ from trend_guard.roostoo.models import Ticker
 from trend_guard.state.store import Store
 
 ROOT = Path(__file__).resolve().parents[1]
-T = datetime(2026, 10, 5, 12, 15, tzinfo=UTC)
+T = datetime(2026, 10, 5, 13, 15, tzinfo=UTC)
 
 
 def engine(tmp_path: Path) -> tuple[Engine, SimBroker, SimClock]:
@@ -47,6 +47,6 @@ def test_activity_trade_fills_and_marks_the_window_active(tmp_path):
     assert broker.longs["BTC/USD"] > 0  # filled at market on the paper broker
     assert eng.store.kv_get("last_fill_ts") is not None
     clock.advance(timedelta(hours=1))
-    assert eng.activity_check() is None  # 13:15: the window already has a fill
+    assert eng.activity_check() is None  # 14:15: the window already has a fill
     clock.advance(timedelta(hours=12))
-    assert eng.activity_check() is not None  # 01:15 next day: new window, no fill yet
+    assert eng.activity_check() is not None  # 02:15 next day: new window, no fill yet

@@ -71,7 +71,11 @@ def main(argv: list[str] | None = None) -> int:
         broker = SimBroker(PAPER_START_CASH, cfg.backtest, clock, mode="paper")
 
     store = Store(args.db or f"state/{args.mode}.db", clock)
-    engine = Engine(cfg, symbols, env, client, broker, store, clock, halt_path(), args.config)
+    # paper fills go to their own folder: logs/fills is the live trade log the organisers check
+    fills_dir = Path("logs/fills") if args.mode == "live" else Path("logs/paper/fills")
+    engine = Engine(
+        cfg, symbols, env, client, broker, store, clock, halt_path(), args.config, fills_dir=fills_dir
+    )
 
     if args.once:
         engine.startup()

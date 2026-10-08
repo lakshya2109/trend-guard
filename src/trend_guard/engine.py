@@ -211,7 +211,9 @@ class Engine:
         self.store.kv_set("breaker", json.dumps(self.breaker.state()))
         targets = {p: float(w) * mult for p, w in raw.items() if abs(w) > 1e-12}
         prev = json.loads(self.store.kv_get("prev_targets") or "{}")
-        act_all = force_act or not prev or now.hour in self.cfg.execution.decision_hours_utc
+        # full rebalance when the bar that just closed is a decision bar (open time 00:00 / 12:00 UTC), the
+        # same rule the backtest scores (backtest/contest.py acts on the bar's open hour)
+        act_all = force_act or not prev or close.index[-1].hour in self.cfg.execution.decision_hours_utc
         plans = plan_orders(targets, exp, self.cfg.execution, act_all, prev, self.rules)
         self.store.kv_set("prev_targets", json.dumps(targets))
 
