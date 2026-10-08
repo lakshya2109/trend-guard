@@ -345,6 +345,14 @@ kept for confirmation.
     (54.1% -> 55.6%); over all 4,006 starts 24.2% -> 26.1%. Rejected bear modes: cutting or halving longs
     (15-21%) and going net short (23-24%): the switch fires near the bottom and misses the rebound.
 
+20. **Bear mode = oversold rebound (adopted 9 Oct, `research/rebound.py`).** Same regime switch; in bear mode the
+    book holds the 10 liquid coins with the worst 3-day return, equal weight, gross 1, re-picked daily at 00 UTC.
+    After past crashes (699 starts, 225 h left): P(> +4.5%) 27% (old) / 29% (fast momentum) -> 42%, P(> +6%)
+    20% / 24% -> 35%, P(> +8%) 12% / 16% -> 25%; downside heavier (P(< -8%) 2% / 8% -> 15%), which no longer
+    matters for the top-20 cut. Robust to k = 5 / 10, 3- or 5-day lookback and inverse-vol weights (39-42%).
+    By crash episode (50 since 2024) it was best at clearing +4.5% in 34 (fast momentum 9, old bot 7), 6 of 11
+    in 2026; its lower 2026 average comes from one long episode (29 Jan 2026, 42 overlapping starts).
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
