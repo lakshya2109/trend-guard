@@ -56,7 +56,7 @@ def fmt_decision(d: dict) -> tuple[str, str]:
         f"{'decision hour' if d.get('act_all') else 'hourly'}  bar {str(d.get('bar', ''))[5:16]}"
     )
     if d.get("bear_mode"):
-        text += "  BEAR MODE (fast momentum only)"
+        text += "  BEAR MODE"
     if mult != 1.0:
         text += f"  BREAKER x{mult}"
     return "CYCLE", text

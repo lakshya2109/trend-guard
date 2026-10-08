@@ -351,7 +351,7 @@ def momentum_sleeve(
 
 
 # ----------------------------------------------------------------------------- the book
-SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "jump_guard", "crash_hedge")
+SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "jump_guard", "crash_hedge", "rebound")
 
 
 def bear_regime(close: pd.DataFrame, quote_volume: pd.DataFrame, p: BearModeConfig) -> np.ndarray:
@@ -370,6 +370,36 @@ def bear_regime(close: pd.DataFrame, quote_volume: pd.DataFrame, p: BearModeConf
         on = r < (p.exit if on else p.enter)
         out[t] = on
     return out
+
+
+def rebound_sleeve(close: pd.DataFrame, quote_volume: pd.DataFrame, p: BearModeConfig) -> np.ndarray:
+    """Oversold-rebound longs: once a day at rebound_hour_utc, hold the rebound_k liquid coins (>= min
+    liquidity, >= min age, not excluded) with the worst rebound_lookback_h log return, equal weight, gross 1.
+    Causal: the pick at hour t uses bars closed at or before t."""
+    px = close.ffill(limit=3)
+    T, N = close.shape
+    liq = (quote_volume.reindex_like(close).rolling(7 * H).sum() / 7 > p.min_liquidity_usd).to_numpy()
+    age = close.notna().cumsum().to_numpy()
+    lp = np.log(px.to_numpy())
+    ok = liq & (age >= p.rebound_min_age_h) & np.isfinite(lp)
+    ok[:, [i for i, c in enumerate(close.columns) if c in p.rebound_exclude]] = False
+    L = p.rebound_lookback_h
+    ret = np.full((T, N), np.nan)
+    if L < T:
+        ret[L:] = lp[L:] - lp[:-L]
+    pick_hours = close.index.hour == p.rebound_hour_utc
+    W = np.zeros((T, N))
+    cur = np.zeros(N)
+    for t in range(T):
+        if pick_hours[t]:
+            r = np.where(ok[t] & np.isfinite(ret[t]), ret[t], np.inf)
+            pick = np.argsort(r, kind="stable")[: p.rebound_k]
+            pick = pick[np.isfinite(r[pick])]
+            cur = np.zeros(N)
+            if len(pick):
+                cur[pick] = 1.0 / len(pick)
+        W[t] = cur
+    return W
 
 
 def book_components(
@@ -401,7 +431,11 @@ def book_components(
                 "momentum": base.momentum.model_copy(update={"select_every_h": bm.select_every_h}),
             }
         )
-        bear = book_components(close, quote_volume, bear_cfg, allow_short, funding_z, oi_chg_z, ml_pred)
+        if bm.book == "rebound":  # oversold longs only; every other component is flat in bear mode
+            bear = {k: np.zeros_like(v) for k, v in normal.items()}
+            bear["rebound"] = rebound_sleeve(close, quote_volume, bm)
+        else:
+            bear = book_components(close, quote_volume, bear_cfg, allow_short, funding_z, oi_chg_z, ml_pred)
         on = bear_regime(close, quote_volume, bm)[:, None]
         return {k: np.where(on, bear[k], normal[k]) for k in normal}
     for a, b, what in (
@@ -459,6 +493,7 @@ def book_components(
     else:
         out["jump_guard"] = np.zeros(full_close.shape)
     out["crash_hedge"] = np.zeros(full_close.shape)
+    out["rebound"] = np.zeros(full_close.shape)  # only the bear-mode rebound book fills this
     h = cfg.crash_hedge
     if h.enabled and allow_short:
         out["crash_hedge"] = crash_hedge(full_close, sum(out.values()), h)

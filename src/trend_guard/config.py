@@ -151,7 +151,13 @@ class BearModeConfig(BaseModel):
     enter: float = -0.08
     exit: float = -0.02
     min_liquidity_usd: float = 5e6  # coins in the market average: trailing 7-day mean daily volume
-    select_every_h: int = 6
+    select_every_h: int = 6  # momentum re-rank interval when book == "momentum"
+    book: str = "momentum"  # bear-mode book: "momentum" (v2 momentum only) or "rebound" (oversold longs)
+    rebound_k: int = 10  # rebound: hold the k liquid coins with the worst return over rebound_lookback_h
+    rebound_lookback_h: int = 72
+    rebound_hour_utc: int = 0  # re-picked once a day at this hour
+    rebound_min_age_h: int = 720
+    rebound_exclude: list[str] = Field(default_factory=lambda: ["PAXG/USD"])
 
 
 class BookConfig(BaseModel):

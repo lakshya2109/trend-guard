@@ -33,3 +33,28 @@ def test_regime_is_causal():
     full = bear_regime(close, qv, P)
     cut = bear_regime(close.iloc[:300], qv.iloc[:300], P)
     assert (full[:300] == cut).all()
+
+
+def test_rebound_holds_the_worst_performers_picked_daily_and_is_causal():
+    from trend_guard.strategy.book import rebound_sleeve
+
+    idx = pd.date_range("2026-01-01", periods=24 * 40, freq="1h", tz="UTC")
+    rng = np.random.default_rng(3)
+    drift = {"A/USD": -0.002, "B/USD": 0.0, "C/USD": 0.001, "D/USD": 0.002, "PAXG/USD": -0.01}
+    close = pd.DataFrame(
+        {c: 100 * np.exp(np.cumsum(mu + rng.normal(0, 0.001, len(idx)))) for c, mu in drift.items()},
+        index=idx,
+    )
+    qv = pd.DataFrame(1e9, index=idx, columns=close.columns)
+    p = BearModeConfig(
+        rebound_k=2, rebound_lookback_h=72, rebound_hour_utc=0, rebound_min_age_h=720, min_liquidity_usd=1.0
+    )
+    W = rebound_sleeve(close, qv, p)
+    last = W[-1]
+    assert np.isclose(last.sum(), 1.0)
+    assert last[0] == 0.5 and last[1] == 0.5  # A and B fell most; PAXG is excluded despite falling hardest
+
+    changes = np.where(np.abs(np.diff(W, axis=0)).sum(axis=1) > 0)[0] + 1
+    assert set(idx[changes].hour) <= {0}
+    cut = rebound_sleeve(close.iloc[:800], qv.iloc[:800], p)
+    assert np.allclose(W[:800], cut)  # no pick depends on a later bar

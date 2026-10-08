@@ -33,6 +33,7 @@ SLEEVE_NAMES = {
     "team_momentum": "swyam momentum",
     "jump_guard": "jump guard",
     "crash_hedge": "crash hedge",
+    "rebound": "bear-mode rebound",
 }
 
 
