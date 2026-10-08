@@ -47,7 +47,7 @@ from trend_guard.roostoo.errors import ShortsDisabledError
 from trend_guard.roostoo.models import Ticker
 from trend_guard.roostoo.rules import TradingRule, parse_trading_rules
 from trend_guard.state.store import Store
-from trend_guard.strategy.book import book_weights
+from trend_guard.strategy.book import bear_regime, book_weights
 from trend_guard.universe import binance_symbol, tradable_pairs
 
 log = logging.getLogger("engine")
@@ -226,6 +226,9 @@ class Engine:
             "weights_final": targets,
             "gross": float(np.abs(raw).sum() * mult),
             "net": float(raw.sum() * mult),
+            "bear_mode": bool(
+                self.cfg.book.bear_mode.enabled and bear_regime(close, qv, self.cfg.book.bear_mode)[-1]
+            ),
             "orders_planned": [
                 {
                     "pair": o.pair,

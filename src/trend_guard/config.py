@@ -68,6 +68,7 @@ class MomentumConfig(BaseModel):
     avg_corr: float = 0.7  # constant-correlation risk model
     gross_cap: float = 0.9
     select_hour_utc: int = 0
+    select_every_h: int = 24  # re-rank every N hours, counted from select_hour_utc (24 = once a day)
     ewma_lambda: float = 0.99
     min_liquidity_usd: float = 5e6
     min_age_h: int = 720
@@ -140,6 +141,19 @@ class JumpGuardConfig(BaseModel):
     hold_h: int = 24
 
 
+class BearModeConfig(BaseModel):
+    """Regime switch (research/fast_adapt.py, STRATEGY.md 19): while the equal-weight market of liquid coins
+    is down more than `enter` over `lookback_h` hours, run only the v2 momentum long/short sleeve re-ranked
+    every `select_every_h` hours; switch back once that return is above `exit` (hysteresis)."""
+
+    enabled: bool = False
+    lookback_h: int = 120
+    enter: float = -0.08
+    exit: float = -0.02
+    min_liquidity_usd: float = 5e6  # coins in the market average: trailing 7-day mean daily volume
+    select_every_h: int = 6
+
+
 class BookConfig(BaseModel):
     """Account = v2_share x (trend-guard v2 sleeves) + team_share x (teammates' book).
 
@@ -158,6 +172,7 @@ class BookConfig(BaseModel):
     momentum: MomentumConfig = Field(default_factory=MomentumConfig)
     crash_hedge: CrashHedgeConfig = Field(default_factory=CrashHedgeConfig)
     jump_guard: JumpGuardConfig = Field(default_factory=JumpGuardConfig)
+    bear_mode: BearModeConfig = Field(default_factory=BearModeConfig)
 
 
 class BreakerConfig(BaseModel):

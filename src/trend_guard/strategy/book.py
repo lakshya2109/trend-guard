@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from trend_guard.config import BookConfig, CrashHedgeConfig, MomentumConfig, TrendConfig
+from trend_guard.config import BearModeConfig, BookConfig, CrashHedgeConfig, MomentumConfig, TrendConfig
 
 H = 24  # hours per day
 
@@ -257,7 +257,7 @@ def momentum_member(
         & ~excluded
         & np.isfinite(f.close)
     )
-    select = f.index.hour == p.select_hour_utc
+    select = (f.index.hour - p.select_hour_utc) % p.select_every_h == 0  # 24: once a day
     # crash filter: a coin already down more than short_crash_return over the lookback is not a new short
     crashed = np.zeros((T, N), dtype=bool)
     if p.short_crash_return is not None:
@@ -354,6 +354,24 @@ def momentum_sleeve(
 SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "jump_guard", "crash_hedge")
 
 
+def bear_regime(close: pd.DataFrame, quote_volume: pd.DataFrame, p: BearModeConfig) -> np.ndarray:
+    """(T,) bool: True while the market is in bear mode. Causal: hour t uses bars closed at or before t.
+
+    Market = mean hourly log return of coins trading >= min_liquidity_usd a day (trailing 7-day mean).
+    Enter when its lookback_h return falls below `enter`, leave when it is back above `exit`.
+    """
+    px = close.ffill(limit=3)
+    liq = quote_volume.reindex_like(close).rolling(7 * H).sum() / 7 > p.min_liquidity_usd
+    cum = np.log(px).diff().where(liq).mean(axis=1).fillna(0.0).cumsum().to_numpy()
+    out = np.zeros(len(cum), dtype=bool)
+    on = False
+    for t in range(p.lookback_h, len(cum)):
+        r = np.exp(cum[t] - cum[t - p.lookback_h]) - 1.0
+        on = r < (p.exit if on else p.enter)
+        out[t] = on
+    return out
+
+
 def book_components(
     close: pd.DataFrame,
     quote_volume: pd.DataFrame,
@@ -370,6 +388,22 @@ def book_components(
       + team_share x (team trend_share x Gunek-945 trend book + team momentum_share x swyam-rd momentum book)
       + crash_hedge (short crypto-linked stock tokens against net long crypto while BTC is falling fast)
     """
+    bm = cfg.bear_mode
+    if bm.enabled:  # regime switch: the normal book, or v2 momentum alone (re-ranked faster) in bear mode
+        base = cfg.model_copy(update={"bear_mode": bm.model_copy(update={"enabled": False})})
+        normal = book_components(close, quote_volume, base, allow_short, funding_z, oi_chg_z, ml_pred)
+        bear_cfg = base.model_copy(
+            update={
+                "v2_share": 1.0,
+                "team_share": 0.0,
+                "trend_share": 0.0,
+                "momentum_share": 1.0,
+                "momentum": base.momentum.model_copy(update={"select_every_h": bm.select_every_h}),
+            }
+        )
+        bear = book_components(close, quote_volume, bear_cfg, allow_short, funding_z, oi_chg_z, ml_pred)
+        on = bear_regime(close, quote_volume, bm)[:, None]
+        return {k: np.where(on, bear[k], normal[k]) for k in normal}
     for a, b, what in (
         (cfg.v2_share, cfg.team_share, "v2/team"),
         (cfg.trend_share, cfg.momentum_share, "v2 sleeves"),
