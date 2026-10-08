@@ -372,6 +372,14 @@ kept for confirmation.
     0.10 the breaker cancelled almost all of the switch's gain. 0.20 keeps a catastrophe net for bugs and
     outages at almost no cost. A trip saved under the old level is judged again under the new one on restart.
 
+23. **Bear mode that follows the market's direction: not adopted (`research/market_timing.py`).** Inside the
+    regime, every 6 h: short while the market's trailing 24 / 72 h return is down, long while it is up (short
+    the 10 worst 3-day coins or an equal-weight liquid basket; long the rebound book or the basket). Live
+    breaker, 7% under the peak, 699 starts: P(> +4.5%) 21-27% against 42% for the rebound book. By what the
+    market did next: when it kept falling (30% of cases) the 72 h followers win (34-38% against 8%); when it
+    bounced (35%) they lose (18-29% against 72%), and sideways they whipsaw (13-21% against 39%). The direction
+    is only known after the move, and after a crash the next move was more often up.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
