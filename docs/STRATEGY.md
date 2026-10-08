@@ -33,7 +33,7 @@ about 14 daily returns. Three consequences drive the design:
 The account target is the capital-weighted sum of both sleeves, netted per pair. The two shares
 sum to 1 and each sleeve caps its own gross, so long notional plus short collateral can never
 exceed equity (asserted in code). A catastrophe breaker halves every target if the account falls
-10% below its peak (a safety net for bugs or crashes, not a trading rule; it never triggered in the
+20% below its peak (10% until 9 Oct, round 22) (a safety net for bugs or crashes, not a trading rule; it never triggered in the
 backtest).
 
 **Trade rule (identical in backtest and live, `execution/order_manager.plan_orders`):** act at the
@@ -363,6 +363,14 @@ kept for confirmation.
     Mechanism: in a crash the trailing winner is the short book, and the selector switches into it near the
     bottom, just before the rebound it was waiting for. On 8 Oct 19:00 UTC (bear mode on, market -9.3% over
     5 days) the short book was +12.6% over 72 h and the rebound book -13.4%: the trap these designs fall into.
+
+22. **Breaker level 0.10 -> 0.20 (adopted 9 Oct, `research/breaker_now.py`).** Rounds 19-21 ran with the breaker
+    off and each window starting at its own peak; live, the account starts the window ~7% under its peak, so
+    a further ~3% loss halved the book until it recovered inside 5%. Same 699 post-crash starts, 220 h left,
+    simulated from 7% under the peak, P(> +4.5%) for the rebound switch / old bot: breaker 0.10 25.5% / 24.5%,
+    0.15 35.9% / 26.3%, 0.20 41.6% / 26.3%, off 42.3% / 26.3% (5% and 9% under the peak: same order). At
+    0.10 the breaker cancelled almost all of the switch's gain. 0.20 keeps a catastrophe net for bugs and
+    outages at almost no cost. A trip saved under the old level is judged again under the new one on restart.
 
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the

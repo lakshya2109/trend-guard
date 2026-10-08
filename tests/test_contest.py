@@ -82,6 +82,23 @@ def test_breaker_state_machine():
     assert b2.peak == 100.0
 
 
+def test_breaker_trip_survives_restart_but_not_a_level_change():
+    b = Breaker(BreakerConfig(dd_level=0.10, dd_mult=0.5, dd_recover=0.05))
+    b.update(100.0)
+    assert b.update(88.0) == 0.5  # tripped at 12% under the peak
+    same = Breaker(BreakerConfig(dd_level=0.10, dd_mult=0.5, dd_recover=0.05))
+    same.load(b.state())
+    assert same.update(91.0) == 0.5  # 9%: restart keeps the trip (hysteresis)
+    looser = Breaker(BreakerConfig(dd_level=0.20, dd_mult=0.5, dd_recover=0.05))
+    looser.load(b.state())
+    assert looser.update(88.0) == 1.0  # 12% is under the new 20% level: released
+    assert looser.update(79.0) == 0.5  # 21%: trips under the new level
+    legacy = Breaker(BreakerConfig(dd_level=0.20, dd_mult=0.5, dd_recover=0.05))
+    legacy.load({"peak": 100.0, "mult": 0.5})  # state saved before levels were recorded
+    assert legacy.update(88.0) == 1.0
+    assert legacy.peak == 100.0  # the peak is never reset
+
+
 def test_competition_metrics_and_active_days():
     from backtest.contest import competition_metrics, non_overlapping
 

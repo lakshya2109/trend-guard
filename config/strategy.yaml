@@ -90,7 +90,7 @@ book:
     reference: "BTC/USD"
 
 breaker:                               # catastrophe circuit breaker only; tighter brakes hurt the score
-  dd_level: 0.10
+  dd_level: 0.20                       # 0.10 until 9 Oct: from ~7% down it halved the rebound (research/breaker_now.py)
   dd_mult: 0.5
   dd_recover: 0.05
 

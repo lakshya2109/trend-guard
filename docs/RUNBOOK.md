@@ -119,5 +119,5 @@ ssh -L 8501:localhost:8501 ubuntu@<ec2-host>
 - **Binance klines unreachable from the host**: the engine logs `bars unavailable` per pair and
   trades only the pairs it has fresh data for; `data-api.binance.vision` is tried before
   `api.binance.com`. If every pair fails, the cycle is skipped (no trades on stale data).
-- **Breaker engaged** (`breaker.mult` 0.5 in the decisions log): the account is 10% below its peak.
+- **Breaker engaged** (`breaker.mult` 0.5 in the decisions log): the account is 20% below its peak.
   It releases automatically once the drawdown recovers inside 5%.
