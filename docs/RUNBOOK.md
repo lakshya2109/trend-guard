@@ -68,7 +68,10 @@ ssh ec2 'tail -n 50 /opt/trend-guard/logs/decisions/$(date -u +%F).jsonl'
 
 The bot writes JSONL / CSV logs only (`logs/decisions`, `logs/fills`, `logs/engine`, `logs/api`).
 `scripts/watch_logs.py` follows them read-only and prints one readable line per hourly cycle, fill,
-activity-rule trade, warning and error. To add it under a bot already running in tmux, from a normal
+activity-rule trade, warning and error, and after each cycle a yellow SCORE line: contest score,
+Sortino, Sharpe and Calmar from `state/live.db` as if the contest ended now (`scripts/contest_ratios.py`,
+the same definitions as `scripts/simulate.py`). `scripts/watch_account.py` prints the same block under
+its portfolio snapshot. To add it under a bot already running in tmux, from a normal
 SSH shell (not inside tmux), without touching the bot's checkout:
 
 ```bash

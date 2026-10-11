@@ -7,6 +7,8 @@ Follows today's files (switching at UTC midnight) and prints one line per event:
   CYCLE     every hourly cycle: equity, gross / net exposure, orders planned, breaker
   FILL      every executed trade (logs/fills/<date>.csv)
   ACTIVITY  the activity rule's forced trade, when a window had no fill
+  SCORE     after each cycle: contest score, Sortino, Sharpe, Calmar from the bot's equity record
+            (state/live.db, read-only; scripts/contest_ratios.py, as if the contest ended now)
   WARN/ERR  engine warnings and errors (logs/engine/<date>.jsonl)
   api       raw exchange calls, only with --api (noisy)
 Stdlib only and Python 3.8+, so it runs with the system python3 on the box (3.9 on Amazon Linux 2023).
@@ -18,6 +20,7 @@ import argparse
 import csv
 import io
 import json
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,6 +30,7 @@ COLOR = {
     "CYCLE": "\033[36m",
     "FILL": "\033[32m",
     "ACTIVITY": "\033[35m",
+    "SCORE": "\033[1;33m",
     "WARN": "\033[33m",
     "ERR": "\033[31m",
     "INFO": "\033[37m",
@@ -119,8 +123,33 @@ def main() -> None:
     ap.add_argument("--api", action="store_true", help="also show raw API calls")
     ap.add_argument("--poll", type=float, default=1.0)
     ap.add_argument("--day", default="", help="replay one UTC day (YYYY-MM-DD) instead of following today")
+    ap.add_argument("--db", default="", help="the bot's state db (default: <logs>/../state/live.db)")
+    ap.add_argument("--start-equity", type=float, default=100_000.0, help="contest starting equity")
     a = ap.parse_args()
     base = Path(a.logs).resolve()
+    repo = base.parent
+    sys.path.append(str(repo / "scripts"))  # contest_ratios.py, also when this file is a copy elsewhere
+    try:
+        import contest_ratios as cr
+    except ImportError:
+        cr = None
+    db = Path(a.db) if a.db else repo / "state" / "live.db"
+    score_err = [""]  # last error shown, so a missing db is reported once, not every hour
+
+    def score() -> None:
+        if cr is None or a.day:
+            return
+        try:
+            start = cr.contest_start(repo / "config" / "strategy.yaml")
+            m = cr.ratios(cr.equity_record(db, start), start, a.start_equity)
+        except Exception as e:  # noqa: BLE001 -- the viewer must outlive a locked or missing db
+            if str(e) != score_err[0]:
+                score_err[0] = str(e)
+                out("INFO", "", f"score unavailable: {e}")
+            return
+        if m:
+            out("SCORE", m["as_of"].isoformat(), cr.summary_line(m))
+
     streams = {
         "decisions": Follower(base / "decisions", "jsonl", a.backlog, a.day),
         "fills": Follower(base / "fills", "csv", a.backlog * 4, a.day),
@@ -130,6 +159,7 @@ def main() -> None:
         streams["api"] = Follower(base / "api", "jsonl", a.backlog, a.day)
     print(f"watching {base}  (Ctrl-C stops this viewer only; the bot keeps running)", flush=True)
     while True:
+        cycles = 0
         for name, fol in streams.items():
             for line in fol.lines():
                 try:
@@ -148,6 +178,7 @@ def main() -> None:
                     if name == "decisions":
                         kind, text = fmt_decision(d)
                         out(kind, d.get("ts", ""), text)
+                        cycles += 1
                     elif name == "engine":
                         r = fmt_engine(d)
                         if r:
@@ -156,6 +187,8 @@ def main() -> None:
                         out("api", d.get("ts", ""), f"{d.get('msg', '')} {d.get('path', d.get('url', ''))}")
                 except (ValueError, KeyError, StopIteration):
                     out("INFO", "", line[:200])
+        if cycles:  # once per batch: after the start-up backlog, then after every hourly cycle
+            score()
         time.sleep(a.poll)
 
 

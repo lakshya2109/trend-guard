@@ -9,7 +9,8 @@ redraws Gunek's snapshot, portfolio table included, from the top of the pane so 
 visible (--scroll appends like run_overnight.py instead). PnL is measured from the contest start
 equity and the contest start time in config/strategy.yaml; peak and max drawdown come from the bot's
 own per-minute equity record, so they cover the whole contest, not just the time this window has been
-open. Output also goes to logs/monitor/<start>/ (monitor_log.txt, snapshots.jsonl).
+open. Output also goes to logs/monitor/<start>/ (monitor_log.txt, snapshots.jsonl). Under the snapshot it
+prints the contest score and ratios (scripts/contest_ratios.py, as if the contest ended now).
 """
 
 from __future__ import annotations
@@ -77,6 +78,8 @@ def main() -> int:
     repo = Path(a.repo).resolve()
     sys.path.insert(0, str(repo / "overnight"))
     sys.path.insert(0, str(repo / "src"))
+    sys.path.insert(0, str(repo / "scripts"))
+    import contest_ratios as cr
     from monitor_lib import Monitor, RunState, render_snapshot  # Gunek's reader and renderer, unmodified
 
     from trend_guard.config import load_strategy_config
@@ -102,10 +105,15 @@ def main() -> int:
                 state.max_dd, state.max_dd_at = risk[1], risk[2]
             state.min_equity = min(state.min_equity, risk[3])
         s = mon.snapshot(kind, bot_status())
+        try:  # contest score and ratios from the same equity record, as scripts/simulate.py reports them
+            m = cr.ratios(cr.equity_record(repo / a.db, start), start, a.start_equity)
+            ratios = "\n\n" + "\n".join(cr.report_lines(m)) if m else ""
+        except Exception as e:  # noqa: BLE001 -- the snapshot still shows without the ratios
+            ratios = f"\n\nCONTEST RATIOS unavailable: {e!r}"
         if a.scroll:  # Gunek's console: appended, portfolio table on the hourly snapshot only
-            print("\n" + render_snapshot(s, with_holdings=kind in ("start", "hourly")), flush=True)
+            print("\n" + render_snapshot(s, with_holdings=kind in ("start", "hourly")) + ratios, flush=True)
         else:  # a tmux pane: redraw from the top so Equity / PnL % stay visible, table every time
-            print("\033[2J\033[H" + render_snapshot(s, with_holdings=True), flush=True)
+            print("\033[2J\033[H" + render_snapshot(s, with_holdings=True) + ratios, flush=True)
 
     snap("start")
     while True:
