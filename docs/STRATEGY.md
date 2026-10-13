@@ -436,6 +436,16 @@ kept for confirmation.
     `net_hedge` component (`strategy/book.py`), applied last on the whole book and then gross-capped at 1;
     it reproduces the research run exactly (2.029 / 2.959, contest -4.02%).
 
+26. **Later bear-mode exit: not adopted (`research/bear_exit.py`).** Proposal: bear mode left at 00:00 UTC on
+    12 Oct (market 5-day return back above -2%) and the normal book then lost on 13 Oct, so stay in the
+    rebound book until the market has really recovered. From 12 Oct 00:00 to 13 Oct 17:00: normal book
+    -4.40%; exit at 0% (left 02:00) -4.77%; +2% (left 04:00) -3.51%; +4% (still in) -3.31%. The rebound book
+    lost too: 13 Oct was an altcoin drop (-4.0%) and it is 100% long altcoins, so a later exit would have
+    saved about 1 point at best, and the 0% exit did worse than the -2% one. On the continuous run every
+    later exit is worse than the -2% exit, which is already worse than no bear mode (dSharpe vs off -1.67 /
+    -1.95 / -2.04 / -2.21 for -2% / 0% / +2% / +4%, P(better) 0% in both periods; return -20% / -36% / -41%
+    / -51% a year). Bear mode stays off (round 24).
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
