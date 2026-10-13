@@ -82,6 +82,18 @@ def test_breaker_state_machine():
     assert b2.peak == 100.0
 
 
+def test_breaker_ignores_one_bad_reading_when_confirmation_is_on():
+    b = Breaker(BreakerConfig(dd_level=0.20, dd_mult=0.5, dd_recover=0.05, confirm_cycles=2))
+    b.update(100_000.0)
+    assert b.update(74_840.0) == 1.0  # 8 Oct: one reading without the closed shorts' collateral
+    assert b.update(93_000.0) == 1.0  # next hour: back to the true equity, never tripped
+    assert b.update(79_000.0) == 1.0  # a real fall: first reading past the level...
+    assert b.update(78_000.0) == 0.5  # ...confirmed an hour later: tripped
+    restored = Breaker(BreakerConfig(dd_level=0.20, dd_mult=0.5, dd_recover=0.05, confirm_cycles=2))
+    restored.load(b.state())
+    assert restored.mult == 0.5 and restored.low == 2
+
+
 def test_breaker_trip_survives_restart_but_not_a_level_change():
     b = Breaker(BreakerConfig(dd_level=0.10, dd_mult=0.5, dd_recover=0.05))
     b.update(100.0)

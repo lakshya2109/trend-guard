@@ -380,6 +380,37 @@ kept for confirmation.
     bounced (35%) they lose (18-29% against 72%), and sideways they whipsaw (13-21% against 39%). The direction
     is only known after the move, and after a crash the next move was more often up.
 
+24. **Bear mode switched off (13 Oct, `research/bear_mode_check.py`, `research/factor_regime.py`).**
+    Contest so far (4-13 Oct): the average liquid coin -8.2%, BTC -2.6%, 16% of coins up. In the replay
+    (`scripts/simulate.py`, -2.7%; live -4.7%) the bear-mode rebound book made about +11% (gross, 9-11 Oct)
+    and every normal sleeve lost (v2 trend -3.9%, v2 momentum -4.4%, team book -3.9%): a short-term
+    reversal regime, the one that hurts momentum and trend. It cannot be timed: the trailing 7 / 14 / 28-day
+    return spread between reversal and momentum books predicts the next 5 days' spread with correlation
+    -0.03 to +0.08 and a 49-55% sign hit rate.
+
+    Rounds 19-20 judged bear mode on P(+4.5% within 225 h of a crash) and the median, both of which reward
+    variance. On the continuous run from 2024 it is clearly harmful: Sharpe 0.68 / 1.25 (2025 / 2026) with it,
+    2.25 / 2.65 without, P(better without) 99.7% in the paired bootstrap and in both periods, max drawdown
+    56% vs 25%; on the 26% of days it was on it cost 0.69% a day (t -2.4). After past crashes the mean
+    225 h return is +1.67% with it vs +1.96% without (the medians, +2.72% vs +1.04%, hid a 19% vs 2%
+    chance of losing more than 8%). Every other crash override is also worse than letting the normal book
+    trade through (dSharpe: fast momentum -0.58, normal book at half size -0.15, cash -0.56; all worse in
+    both periods): its trend sleeve already goes to cash and its momentum sleeve already shorts the losers.
+
+    With ~114 h left, from 6% under the peak, after the market fell > 5% in 9 days: P(> +2.5%) 39% with bear
+    mode, 25% without, 13% at half size; P(< -3%) 25% / 12% / 1%. Bear mode buys a chance at a big rebound
+    with a doubled bad tail and a lower mean. Switched off (the team asked for a steadier book). Also: the
+    breaker now trips only after two hourly readings past its level (`confirm_cycles`), since a lone reading
+    of $74,840 on 8 Oct (closed-short collateral briefly missing from the exchange balance) was enough to
+    trip it at 0.20.
+
+    Outside sources checked (none adopted): open-source crypto momentum / reversal backtests (e.g.
+    github.com/prams2104/crypto-momentum-backtest: 1-day reversal alpha t 4.6 out of sample, destroyed by
+    138% daily turnover; github.com/Owusuk/crypto-stat-arb: market-neutral alpha t 1.64 -> 0.52 out of
+    sample) agree with rounds 5-6 and 16; "Cryptocurrency momentum has (not) its moments" (Financial
+    Markets and Portfolio Management, 2025) agrees with round 5 that volatility scaling does not rescue
+    crypto momentum the way it does equity momentum.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;

@@ -188,6 +188,7 @@ class BreakerConfig(BaseModel):
     dd_level: float = 0.10
     dd_mult: float = 0.5
     dd_recover: float = 0.05
+    confirm_cycles: int = 1  # consecutive updates past dd_level needed to trip (a lone bad reading does not)
 
 
 class ExecutionConfig(BaseModel):

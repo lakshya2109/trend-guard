@@ -28,4 +28,6 @@ $12 in fees). From `4218eaf` the windows are 01:00-03:59 / 13:00-15:59 UTC.
 ## Strategy changes during the contest
 
 Every change is a `strat:` commit with its reason; the bot logs its commit on every fill (`commit` column) and
-at each startup. `docs/STRATEGY.md` rounds 19-20 record the bear-mode regime switch adopted on 9 Oct.
+at each startup. `docs/STRATEGY.md` rounds 19-20 record the bear-mode regime switch adopted on 9 Oct
+(live from about 21:00 UTC on 8 Oct, rebound book 8-12 Oct); round 24 records why it was switched off on
+13 Oct.

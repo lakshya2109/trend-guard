@@ -63,7 +63,7 @@ book:
     short_crash_lookback_h: 1440
 
   bear_mode:                           # regime switch: in a falling market (below) run the rebound book
-    enabled: true                      # (STRATEGY.md 19-20)
+    enabled: false                     # off from 13 Oct (STRATEGY.md 24): continuous Sharpe 1.25 -> 2.65 in 2026 without it
     lookback_h: 120                    # market = mean return of liquid coins over the last 5 days
     enter: -0.08                       # bear mode below -8% ...
     exit: -0.02                        # ... back to the normal book above -2%
@@ -93,6 +93,7 @@ breaker:                               # catastrophe circuit breaker only; tight
   dd_level: 0.20                       # 0.10 until 9 Oct: from ~7% down it halved the rebound (research/breaker_now.py)
   dd_mult: 0.5
   dd_recover: 0.05
+  confirm_cycles: 2                    # trip only after 2 hourly readings past dd_level (8 Oct: a false $74.8k reading)
 
 execution:
   rebalance_minute: 3

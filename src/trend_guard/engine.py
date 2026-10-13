@@ -135,7 +135,7 @@ class Engine:
             extra={
                 "commit": self.commit,
                 "config_hash": config_hash(self.config_path),
-                "mode": self.env.bot_mode,
+                "mode": "paper" if isinstance(self.broker, SimBroker) else "live",  # the broker, not BOT_MODE
                 "risk_scale": self.cfg.competition.risk_scale,
                 "shorts_enabled": self.shorts_enabled,
             },
