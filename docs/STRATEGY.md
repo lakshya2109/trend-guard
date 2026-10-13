@@ -446,6 +446,15 @@ kept for confirmation.
     -1.95 / -2.04 / -2.21 for -2% / 0% / +2% / +4%, P(better) 0% in both periods; return -20% / -36% / -41%
     / -51% a year). Bear mode stays off (round 24).
 
+27. **Idle cash into BTC + ETH: not adopted (`research/cash_fill.py`).** The book leaves part of equity in
+    cash when the trend sleeve finds few uptrends and volatility is high (~20% after the October crash):
+    that is the sleeve going to cash by design. Filling the unused gross with BTC / ETH 50/50 (netted with
+    the hedge's own BTC / ETH shorts, gross capped at 1): Sharpe 2.03 / 2.96 -> 2.25 / 2.13 (2024-25 / 2026),
+    P(better) 34%, median window score 0.092 -> 0.072, max drawdown 16.1% -> 17.5%; over the 114 h left
+    from starts like now P(> +2.5%) 22.8% -> 24.5%, P(> +5%) 10.5% -> 12.1%, P(< -5%) 3.1% -> 4.9%. A
+    symmetric bet on the market that also undoes much of the net hedge (net now 14% -> 32%). Half the
+    cash: in between on every column.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
