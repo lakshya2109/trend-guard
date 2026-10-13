@@ -411,6 +411,31 @@ kept for confirmation.
     Markets and Portfolio Management, 2025) agrees with round 5 that volatility scaling does not rescue
     crypto momentum the way it does equity momentum.
 
+25. **Net hedge: short the 10 most liquid coins against half the book's net long (adopted 13 Oct,
+    `research/steady_book.py`, `research/hedge_check.py`).** The live book swings with the altcoin market
+    because it is ~100% invested and ~47% net long on average (60% in the contest). Steadier versions, same
+    costs and trade rule, continuous run from 2024 and all 944 windows:
+
+    | Book | Sharpe 24-25 / 2026 | Return / yr | Day vol | Max DD | Score (median) | Contest replay | P(+2.5% in 114 h) |
+    |---|---|---|---|---|---|---|---|
+    | live 4x | 1.95 / 2.65 | +95% | 1.6% | 24.6% | 0.090 | -6.3% | 25% |
+    | 2x (risk dial) | 2.10 / 2.66 | +42% | 0.8% | 11.7% | 0.095 | -3.2% | 13% |
+    | hedge 25% of net, all liquid coins | 2.16 / 2.77 | +84% | 1.4% | 17.3% | 0.097 | -5.5% | 23% |
+    | **hedge 50% of net, 10 most liquid** | **2.03 / 2.96** | +77% | 1.3% | **16.1%** | 0.092 | **-4.0%** | 23% |
+    | hedge 50% of net, all liquid coins | 2.03 / 2.82 | +74% | 1.3% | 16.6% | 0.096 | -4.5% | 23% |
+    | hedge 75% / 100% of net | worse | | | | | | |
+    | hedge with BTC + ETH | worse in both periods (this crash was in altcoins, not BTC) | | | | | | |
+    | momentum sleeve alone | 2.04 / 1.28 | +84% | 1.8% | 30.4% | 0.080 | -4.4% | 25% |
+
+    Paired bootstrap vs live (the round-18 test): 10 most liquid at 50% dSharpe +0.14, P 67% (2024-25 +0.08,
+    2026 +0.31); all coins 25% +0.18, P 83%; 50% +0.10, P 62%; 75% -0.09. Better in both periods but far
+    from the 97% of rounds 18's adoptions: the Sharpe gain is not proven. What it does reliably is cut the
+    worst drawdown by a third and the daily swing by a fifth for a fifth of the return, with the same chance
+    of catching up in the contest's last days. The 10-coin basket was chosen over the all-coin one for
+    execution (about 14 short positions instead of 30, in the tightest spreads). Implemented as the
+    `net_hedge` component (`strategy/book.py`), applied last on the whole book and then gross-capped at 1;
+    it reproduces the research run exactly (2.029 / 2.959, contest -4.02%).
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;

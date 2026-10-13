@@ -73,7 +73,14 @@ book:
     rebound_k: 10                      # bounce; research/rebound.py: after crashes P(> +4.5%) 27% -> 42%,
     rebound_lookback_h: 72             # best in 34 of 50 crash episodes), re-picked daily at 00 UTC
     rebound_hour_utc: 0
-  jump_guard:                          # no new / larger longs for 24h after a +10% hour: 2025-26 pumps revert
+  net_hedge:                           # short the 10 most liquid coins against half the book's net long (STRATEGY.md 25:
+    enabled: true                      # max drawdown 24.6% -> 16.1%, Sharpe 1.95 / 2.65 -> 2.03 / 2.96, P 67%: not proven)
+    frac: 0.5
+    n_coins: 10
+    min_liquidity_usd: 5000000
+    min_age_h: 720
+    exclude: ["PAXG/USD"]
+  jump_guard:                         # no new / larger longs for 24h after a +10% hour: 2025-26 pumps revert
     enabled: true                      # (research/paired.py: Sharpe +0.06, P 97.5%, better in 2024-25 and 2026)
     threshold: 0.10
     hold_h: 24

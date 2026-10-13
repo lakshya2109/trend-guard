@@ -27,7 +27,14 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from trend_guard.config import BearModeConfig, BookConfig, CrashHedgeConfig, MomentumConfig, TrendConfig
+from trend_guard.config import (
+    BearModeConfig,
+    BookConfig,
+    CrashHedgeConfig,
+    MomentumConfig,
+    NetHedgeConfig,
+    TrendConfig,
+)
 
 H = 24  # hours per day
 
@@ -351,7 +358,16 @@ def momentum_sleeve(
 
 
 # ----------------------------------------------------------------------------- the book
-SLEEVES = ("v2_trend", "v2_momentum", "team_trend", "team_momentum", "jump_guard", "crash_hedge", "rebound")
+SLEEVES = (
+    "v2_trend",
+    "v2_momentum",
+    "team_trend",
+    "team_momentum",
+    "jump_guard",
+    "crash_hedge",
+    "rebound",
+    "net_hedge",
+)
 
 
 def bear_regime(close: pd.DataFrame, quote_volume: pd.DataFrame, p: BearModeConfig) -> np.ndarray:
@@ -500,7 +516,34 @@ def book_components(
         gross = np.abs(sum(out.values())).sum(axis=1, keepdims=True)
         fix = np.where(gross > cfg.max_gross, cfg.max_gross / np.maximum(gross, 1e-12), 1.0)
         out = {k: v * fix for k, v in out.items()}
+    out["net_hedge"] = np.zeros(full_close.shape)
+    if cfg.net_hedge.enabled and allow_short:  # last, on the whole book; then the gross cap again
+        hedge = net_hedge(close, quote_volume, sum(out.values())[:, pos], cfg.net_hedge)
+        out["net_hedge"][:, pos] = hedge
+        gross = np.abs(sum(out.values())).sum(axis=1, keepdims=True)
+        fix = np.where(gross > cfg.max_gross, cfg.max_gross / np.maximum(gross, 1e-12), 1.0)
+        out = {k: v * fix for k, v in out.items()}
     return out
+
+
+def net_hedge(
+    close: pd.DataFrame, quote_volume: pd.DataFrame, book: np.ndarray, p: NetHedgeConfig
+) -> np.ndarray:
+    """Short p.frac of the book's net exposure (sum of its weights) as an equal-weight basket of the p.n_coins
+    most liquid coins (>= min liquidity, >= min age, not excluded). Netted per pair with the book by the
+    caller. Causal: hour t uses bars closed at or before t and the book's own hour-t weights."""
+    px = close.ffill(limit=3)
+    dv = (quote_volume.reindex_like(close).rolling(7 * H).sum() / 7).to_numpy()
+    age = close.notna().cumsum().to_numpy()
+    ok = (np.nan_to_num(dv) > p.min_liquidity_usd) & (age >= p.min_age_h) & np.isfinite(px.to_numpy())
+    ok[:, [i for i, c in enumerate(close.columns) if c in p.exclude]] = False
+    rank_by = np.where(ok, np.nan_to_num(dv), -np.inf)
+    top = np.argsort(-rank_by, axis=1, kind="stable")[:, : p.n_coins]
+    basket = np.zeros(close.shape)
+    np.put_along_axis(basket, top, np.take_along_axis(ok, top, axis=1).astype(float), axis=1)
+    basket /= np.maximum(basket.sum(axis=1, keepdims=True), 1.0)
+    net = np.nansum(book, axis=1, keepdims=True)
+    return -p.frac * net * basket
 
 
 def jump_guard(close: pd.DataFrame, book: np.ndarray, threshold: float, hold_h: int) -> np.ndarray:

@@ -160,6 +160,18 @@ class BearModeConfig(BaseModel):
     rebound_exclude: list[str] = Field(default_factory=lambda: ["PAXG/USD"])
 
 
+class NetHedgeConfig(BaseModel):
+    """Short a basket of the most liquid coins against part of the book's net exposure, so a fall in the
+    whole altcoin market moves the account less (STRATEGY.md round 25)."""
+
+    enabled: bool = False
+    frac: float = 0.5  # share of the book's net exposure (longs minus shorts) hedged
+    n_coins: int = 10  # basket: the n most liquid coins by trailing 7-day quote volume, equal weight
+    min_liquidity_usd: float = 5_000_000  # basket members trade at least this much a day
+    min_age_h: int = 720  # and have at least 30 days of history
+    exclude: list[str] = Field(default_factory=lambda: ["PAXG/USD"])  # tokenized gold is not crypto beta
+
+
 class BookConfig(BaseModel):
     """Account = v2_share x (trend-guard v2 sleeves) + team_share x (teammates' book).
 
@@ -179,6 +191,7 @@ class BookConfig(BaseModel):
     crash_hedge: CrashHedgeConfig = Field(default_factory=CrashHedgeConfig)
     jump_guard: JumpGuardConfig = Field(default_factory=JumpGuardConfig)
     bear_mode: BearModeConfig = Field(default_factory=BearModeConfig)
+    net_hedge: NetHedgeConfig = Field(default_factory=NetHedgeConfig)
 
 
 class BreakerConfig(BaseModel):

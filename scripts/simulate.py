@@ -34,6 +34,7 @@ SLEEVE_NAMES = {
     "jump_guard": "jump guard",
     "crash_hedge": "crash hedge",
     "rebound": "bear-mode rebound",
+    "net_hedge": "net hedge",
 }
 
 
