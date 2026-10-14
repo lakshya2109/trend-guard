@@ -6,8 +6,10 @@ competition:
   end_utc:   "2026-10-18T12:00:00Z"    # EndTS 1792324800: 14 days, 20:00 HKT to 20:00 HKT
   risk_scale: 1.0                      # multiplies every target; 0.1 for a live dry run
   # Qualification-first terminal mode (15 Oct): today's HK #20 is $97,255. Lock above it with
-  # a ~$745 buffer. Two minute snapshots avoid flattening on one transient exchange valuation.
-  profit_lock_equity: 98000
+  # a ~$1,245 buffer: the cutoff tends to rise in the same rally the rebound needs, and at 98,000 a
+  # 1% higher cutoff left the lock below it (STRATEGY.md 29). Two minute snapshots avoid flattening
+  # on one transient exchange valuation.
+  profit_lock_equity: 98500
   profit_lock_confirm_cycles: 2
 
 book:

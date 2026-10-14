@@ -469,6 +469,13 @@ kept for confirmation.
     minute equity readings. It must not be described as fool-proof, higher-Sharpe, or suitable after
     the contest.
 
+29. **Profit lock $98,000 -> $98,500 (15 Oct).** Independent re-run of round 28 (1,408 starts after a
+    nine-day fall below -5%, 90 h left, from $94,839, live breaker): P(finish >= today's HK #20) for the
+    catch-up branch 59.4% at $98,000, 56.5% at $98,500, 53.7% at $99,000; against a cutoff that ends
+    1% higher, 31.9% / 55.1% / 51.4%. The fixed book without the switch: 19.6% / 13.2%. The cutoff
+    is likely to rise in exactly the rally the rebound needs, so $98,500 gives up 3 points on a static
+    cutoff to keep the bet alive if it moves.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
