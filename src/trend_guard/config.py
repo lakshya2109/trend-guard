@@ -20,6 +20,11 @@ class CompetitionConfig(BaseModel):
     start_utc: str
     end_utc: str
     risk_scale: float = 1.0
+    # Optional terminal-tournament lock. Once live equity reaches this absolute USD level for
+    # `profit_lock_confirm_cycles` consecutive minute snapshots, flatten the account and stay in cash.
+    # None disables it. This is deliberately account-level rather than part of the research book.
+    profit_lock_equity: float | None = Field(default=None, gt=0)
+    profit_lock_confirm_cycles: int = Field(default=2, ge=1)
 
 
 class TrendConfig(BaseModel):

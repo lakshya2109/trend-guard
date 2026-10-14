@@ -5,6 +5,10 @@ competition:
   start_utc: "2026-10-04T12:00:00Z"    # Roostoo competition 538 (/v1/competition_list StartTS 1791115200)
   end_utc:   "2026-10-18T12:00:00Z"    # EndTS 1792324800: 14 days, 20:00 HKT to 20:00 HKT
   risk_scale: 1.0                      # multiplies every target; 0.1 for a live dry run
+  # Qualification-first terminal mode (15 Oct): today's HK #20 is $97,255. Lock above it with
+  # a ~$745 buffer. Two minute snapshots avoid flattening on one transient exchange valuation.
+  profit_lock_equity: 98000
+  profit_lock_confirm_cycles: 2
 
 book:
   v2_share: 0.7                        # trend-guard v2 sleeves (below) get 70% of the account...
@@ -62,11 +66,11 @@ book:
     short_crash_return: -0.40          # no NEW shorts on coins down > 40% over 60 days: crashed losers bounce
     short_crash_lookback_h: 1440
 
-  bear_mode:                           # regime switch: in a falling market (below) run the rebound book
-    enabled: false                     # off from 13 Oct (STRATEGY.md 24): continuous Sharpe 1.25 -> 2.65 in 2026 without it
-    lookback_h: 120                    # market = mean return of liquid coins over the last 5 days
-    enter: -0.08                       # bear mode below -8% ...
-    exit: -0.02                        # ... back to the normal book above -2%
+  bear_mode:                           # terminal catch-up: in a broad 9-day crash run the rebound book
+    enabled: true                      # deliberately raises P(cross current HK #20), with a much worse loss tail
+    lookback_h: 216                    # market = mean return of liquid coins over the last 9 days
+    enter: -0.05                       # enter after a broad decline below -5% ...
+    exit: 0.00                         # ... stay until that 9-day market return fully recovers
     min_liquidity_usd: 5000000
     select_every_h: 6
     book: rebound                      # bear-mode book: hold the 10 coins that fell most over 3 days (oversold

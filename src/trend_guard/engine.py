@@ -197,6 +197,59 @@ class Engine:
             now.replace(second=0, microsecond=0).isoformat(), exp.equity, exp.cash, longs, shorts, peak, dd
         )
 
+    def _profit_lock_active(self, exp: Exposure) -> bool:
+        """Latch the terminal profit lock after consecutive equity readings above its target."""
+        target = self.cfg.competition.profit_lock_equity
+        if target is None:
+            return False
+        if self.store.kv_get("profit_lock") == "1":
+            return True
+        count = int(self.store.kv_get("profit_lock_high_count") or 0)
+        count = count + 1 if exp.equity >= Decimal(str(target)) else 0
+        self.store.kv_set("profit_lock_high_count", count)
+        if count < self.cfg.competition.profit_lock_confirm_cycles:
+            return False
+        self.store.kv_set("profit_lock", "1")
+        log.warning(
+            "terminal profit lock engaged",
+            extra={"equity": str(exp.equity), "target_equity": target, "confirmations": count},
+        )
+        return True
+
+    def _flatten_for_profit_lock(self, exp: Exposure) -> list[PlannedOrder]:
+        """Cancel resting orders and urgently flatten every live position after the lock latches."""
+        self.executor.cancel_all_working()
+        plans = plan_orders({}, exp, self.cfg.execution, True, {}, self.rules)
+        for plan in plans:
+            plan.urgent = True
+            plan.reason = "terminal profit lock"
+        self.store.kv_set("prev_targets", "{}")
+        self.store.kv_set("budget_retry", "[]")
+        if not plans:
+            return []
+        cycle_id = self.clock.now().strftime("%Y%m%dT%H%M") + "-profit-lock"
+        payload = {
+            "cycle_id": cycle_id,
+            "commit": self.commit[:12],
+            "equity": float(exp.equity),
+            "target_equity": self.cfg.competition.profit_lock_equity,
+            "orders_planned": [
+                {
+                    "pair": order.pair,
+                    "action": order.action,
+                    "qty": str(order.qty),
+                    "close_pct": str(order.close_pct),
+                    "notional": str(order.notional),
+                    "reason": order.reason,
+                }
+                for order in plans
+            ],
+        }
+        self.store.record_decision(cycle_id, self.clock.now().isoformat(), "profit_lock", payload)
+        dlog.warning("terminal profit lock", extra=payload)
+        self._execute(plans, cycle_id)
+        return plans
+
     # --- hourly cycle --------------------------------------------------------------------------
     def hourly_cycle(self, force_act: bool = False) -> list[PlannedOrder]:
         now = self.clock.now()
@@ -258,6 +311,8 @@ class Engine:
     def activity_check(self) -> PlannedOrder | None:
         """Keep every contest day active: inside an activity window with no fill since it opened, send
         one small MARKET order toward the book's own latest targets (see order_manager.activity_order)."""
+        if self.store.kv_get("profit_lock") == "1":
+            return None
         now = self.clock.now()
         raw_last = self.store.kv_get("last_fill_ts")
         last = datetime.fromisoformat(raw_last) if raw_last else None
@@ -316,7 +371,11 @@ class Engine:
         tickers: dict[str, Ticker] = self.client.get_ticker()
         if isinstance(self.broker, SimBroker):
             self.broker.mark_to_market(tickers)
-        self._snapshot(self.broker.get_exposure())
+        exp = self.broker.get_exposure()
+        self._snapshot(exp)
+        if self._profit_lock_active(exp):
+            self._flatten_for_profit_lock(exp)
+            return
         self.executor.service()
 
         if self.last_clock_sync is None or now - self.last_clock_sync >= CLOCK_SYNC_EVERY:

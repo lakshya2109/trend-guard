@@ -50,3 +50,28 @@ def test_activity_trade_fills_and_marks_the_window_active(tmp_path):
     assert eng.activity_check() is None  # 14:15: the window already has a fill
     clock.advance(timedelta(hours=12))
     assert eng.activity_check() is not None  # 02:15 next day: new window, no fill yet
+
+
+def test_profit_lock_requires_confirmation_and_persists(tmp_path):
+    eng, broker, _ = engine(tmp_path)
+    exp = broker.get_exposure()
+
+    assert not eng._profit_lock_active(exp)
+    assert eng._profit_lock_active(exp)
+    assert eng.store.kv_get("profit_lock") == "1"
+    assert eng._profit_lock_active(exp)
+
+
+def test_profit_lock_flattens_and_disables_activity_trade(tmp_path):
+    eng, broker, _ = engine(tmp_path)
+    broker.place_market("BTC/USD", "BUY", D("1"))
+    exp = broker.get_exposure()
+    eng.cfg.competition.profit_lock_equity = float(exp.equity) - 1
+
+    assert not eng._profit_lock_active(exp)
+    assert eng._profit_lock_active(exp)
+    plans = eng._flatten_for_profit_lock(exp)
+
+    assert plans and all(order.urgent for order in plans)
+    assert broker.longs == {}
+    assert eng.activity_check() is None

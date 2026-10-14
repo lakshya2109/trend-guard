@@ -455,6 +455,20 @@ kept for confirmation.
     symmetric bet on the market that also undoes much of the net hedge (net now 14% -> 32%). Half the
     cash: in between on every column.
 
+28. **Terminal top-20 catch-up branch (`swyam/terminal-catch-up`, 15 Oct; intentionally not a
+    long-run improvement).** The public snapshot put the account at $94,839 and HK #20 at $97,255,
+    a static +2.55% hurdle with 93 hours left. The objective was changed from Sharpe/mean return to
+    the probability of crossing that terminal hurdle. On 1,408 six-hour historical starts after a
+    liquid-alt nine-day fall below 5%, the current fixed-hedge book cleared +2.55% in 20.2% of
+    paths (26.1% when an automatic +3.3% profit lock was added). A ten-coin oversold-rebound book
+    activated by the same nine-day crash condition and locked to cash at +3.3% cleared it in 58.4%;
+    neighbouring 7-day, 9-day (-4%/-6%), 10-day and exit-threshold variants scored 52.6-61.4%.
+    The cost is extreme: P(next 93 h < -3%) rises from 8.7% to about 25% and the 10th-percentile
+    result falls from -2.8% to about -11%. The branch therefore enables the rebound only as a
+    qualification-first tournament gamble and persistently flattens at $98,000 after two consecutive
+    minute equity readings. It must not be described as fool-proof, higher-Sharpe, or suitable after
+    the contest.
+
 **Overfitting check.** `backtest/sweep.py` replays the 36-variant grid and computes the
 probability of backtest overfitting (CSCV, 16 partitions): 74%. Among these close variants the
 in-sample winner is not reliably the out-of-sample winner, so the exact pick carries no weight;
