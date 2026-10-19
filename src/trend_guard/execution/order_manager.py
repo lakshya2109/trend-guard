@@ -231,7 +231,7 @@ def plan_orders(
 
 def activity_due(now: datetime, last_fill: datetime | None, windows: list[list[int]]) -> bool:
     """True when `now` is inside an activity window [start_h, end_h] (UTC hours, inclusive) and no
-    fill has landed since that window opened. A fill inside either default window (00-03 or 12-15 UTC)
+    fill has landed since that window opened. A fill inside either configured window (01-03 or 13-15 UTC)
     falls on the same calendar date in UTC and in Hong Kong time, so each window alone makes the day
     active whichever calendar the organisers count."""
     for start_h, end_h in windows:

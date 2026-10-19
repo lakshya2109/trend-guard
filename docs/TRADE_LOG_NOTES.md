@@ -28,6 +28,16 @@ $12 in fees). From `4218eaf` the windows are 01:00-03:59 / 13:00-15:59 UTC.
 ## Strategy changes during the contest
 
 Every change is a `strat:` commit with its reason; the bot logs its commit on every fill (`commit` column) and
-at each startup. `docs/STRATEGY.md` rounds 19-20 record the bear-mode regime switch adopted on 9 Oct
-(live from about 21:00 UTC on 8 Oct, rebound book 8-12 Oct); round 24 records why it was switched off on
-13 Oct.
+at each startup. Match a fill's `commit` to this timeline (times are the commit timestamps, HKT):
+
+| When | Commit | What the bot did |
+|---|---|---|
+| about 21:00 UTC on 8 Oct, through 12 Oct | rounds 19-20 | bear mode on: rebound book while the 5-day market return was below -8% |
+| 14 Oct 02:32 | `a1aba05` | bear mode off. Breaker trips only after two hourly readings past 20% drawdown (round 24) |
+| 14 Oct 02:55 | `8c1b191` | net hedge on: short the 10 most liquid coins against half the net long (round 25) |
+| 15 Oct 00:55 | `6aed9ff` | terminal catch-up: bear mode on again, now a 9-day market return below -5%, rebound book until that return is back to 0%, and a profit lock at $98,000 (round 28) |
+| 15 Oct 01:47 | `c99b894` | profit lock raised to $98,500, still after two minute readings (round 29). This is the submitted commit |
+
+Fills after `6aed9ff` can be the rebound book even though round 24 had switched bear mode off. The
+decision log names the regime (`bear_mode` in `logs/decisions/*.jsonl`). A `profit_lock` decision means
+the bot flattened and then held cash.

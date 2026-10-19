@@ -8,6 +8,14 @@ Parameters live in [`config/strategy.yaml`](../config/strategy.yaml); the code i
 [`src/trend_guard/strategy/book.py`](../src/trend_guard/strategy/book.py). Every number below is
 reproducible with `python backtest/run_backtest.py` and `python backtest/sweep.py`.
 
+**Submitted configuration.** Section 2 is the original sleeve design. The file on this commit also
+includes the later adoptions: inverse-vol momentum weights and the jump guard (round 18), breaker
+level 0.20 (round 22) with two confirming readings (round 24), the net hedge (round 25), and the
+terminal catch-up plus the $98,500 profit lock (rounds 28-29). Bear mode was on from 8 Oct, off from
+13 Oct (round 24), and on again from 15 Oct as that catch-up, with a 9-day / -5% entry and a 0% exit.
+Read those rounds for the live bot. Bear mode went off in `a1aba05` (14 Oct 02:32 HKT) and back on
+in `6aed9ff` (15 Oct 00:55 HKT) with the 9-day / -5% entry. The tables in sections 3-3c are earlier settings.
+
 ## 1. What the contest rewards
 
 After a top-20-by-return screen, teams are ranked on `0.4 Sortino + 0.3 Sharpe + 0.3 Calmar` over

@@ -10,7 +10,7 @@ Loop (every 60 s):
   every 5 min: clock sync
   at minute == rebalance_minute (once per hour): hourly cycle
      top up the Binance bar cache -> book targets -> x risk_scale x breaker -> plan -> execute
-  activity rule: at minute ACTIVITY_MINUTE inside an activity window (00-03 / 12-15 UTC) with no fill
+  activity rule: at minute ACTIVITY_MINUTE inside an activity window (01-03 / 13-15 UTC) with no fill
      since the window opened, one small MARKET order toward the book's own target (every day active)
 """
 
