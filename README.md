@@ -1,79 +1,75 @@
 # trend-guard
 
-**A low-volatility trend book plus a long/short momentum book, built for the Roostoo contest score.**
+Autonomous spot and 1x-short trading bot for the Roostoo HK vs AU vs IN Quant Trading Hackathon (4–18 Oct 2026). It runs unattended on EC2 and trades the Roostoo mock exchange only through `python -m trend_guard.main --mode live`. `main` is the deployed `trend-guard-final-v2` history. The last change to strategy parameters is `c99b894`. Every number the bot uses is in [`config/strategy.yaml`](config/strategy.yaml). The research log is [`docs/STRATEGY.md`](docs/STRATEGY.md). How to match fills to those commits is [`docs/TRADE_LOG_NOTES.md`](docs/TRADE_LOG_NOTES.md).
 
-An autonomous trading bot for the Roostoo HK vs AU vs IN Quant Trading Hackathon (Oct 2026). It
-runs unattended on EC2, trades the Roostoo mock exchange through its REST API (spot and `/v6`
-shorts), and ties every trade to a logged decision and a git commit.
+## 1. How the portfolio is curated
 
-**Submitted commit:** `c99b894` on branch `trend-guard-final-v2`. The live service runs
-`python -m trend_guard.main --mode live --config config/strategy.yaml` (`deploy/trend-guard.service`).
-Every parameter below is that file. The research log for each change is [`docs/STRATEGY.md`](docs/STRATEGY.md);
-how to read the fill log against the exchange is [`docs/TRADE_LOG_NOTES.md`](docs/TRADE_LOG_NOTES.md).
+One account, $100,000. Target weights are summed per pair and then capped so long notional plus short collateral never exceeds equity. There is no leverage.
 
-## What this commit trades
+In the normal regime the account is three books:
 
-In the normal regime the account is the three-book blend in section 1, scaled by `risk_multiplier: 4.0`
-and capped so long notional plus short collateral never exceeds equity. On top of that blend the live
-file also runs:
-
-| Piece | Live setting | Where |
-|---|---|---|
-| Jump guard | no new or larger long for 24h after a coin rises more than 10% in one hour | `book.jump_guard`, round 18 |
-| Momentum crash filter | no new short on a coin already down more than 40% over 60 days | `book.momentum.short_crash_return` |
-| Momentum weights | within each side, weight proportional to 1/sqrt(volatility), not equal weight | `vol_weight_power: 0.5`, round 18 |
-| Net hedge | short the 10 most liquid coins, equal weight, sized to half the book's net long, then gross-capped again | `book.net_hedge`, round 25 |
-| Catch-up regime | while the average liquid coin is down more than 5% over 9 days, replace the whole book with the 10 coins that fell most over 3 days (equal weight, fully invested). Leave when that 9-day return is back to 0% or higher | `book.bear_mode`, rounds 28-29 |
-| Profit lock | after two minute equity readings at or above $98,500, cancel resting orders, flatten, and stay in cash | `competition.profit_lock_equity`, round 29 |
-| Breaker | halve every target only after two hourly readings 20% below the peak; release inside a 5% drawdown | `breaker`, rounds 22 and 24 |
-
-The catch-up regime is a qualification bet for the last days of the contest. Round 28 records the cost:
-a much fatter loss tail than the hedged blend. It is not a claim of a higher long-run Sharpe. While it
-is on, the net hedge is flat, because the rebound book replaces every other sleeve.
-
-The systemd unit is the only live order path. `scripts/probe_live.py` and `overnight/flatten_account.py`
-can place orders, but both require a human to run them, and neither is started by the service. No
-`docs/PROBES.md` was produced.
-
-## 1. Overview
-
-One account, three books, with target weights summed per pair:
-
-| Book | Share of account | What it does | Author |
+| Book | Share of account | What it holds | Code |
 |---|---|---|---|
-| **trend-guard v2** | 70% | Two sleeves, each an **ensemble of four parameter sets**. **Trend (70% of v2):** long-only on liquid crypto (including PAXG gold) that is in a clear 1-8 week uptrend, scaled to a low 0.4%/day volatility and rebalanced daily at 12:00 UTC. **Momentum (30% of v2):** long the 6 strongest and short the 6 weakest coins on 3-30 day risk-adjusted momentum, resized hourly to 1.5%/day volatility. | lakshya2109 (`strategy/book.py`) |
-| **Trend book** | 21% | Long-only trend on 7/14/30-day horizons, 0.4%/day vol target, volatility trailing stops | Gunek-945 (`strategy/team/`, vendored unmodified) |
-| **Momentum book** | 9% | Long/short cross-sectional momentum, 3/7/14-day lookbacks, 1.5%/day vol target | swyam-rd (`strategy/team/`, vendored unmodified) |
+| trend-guard v2, trend sleeve | 49% | Long-only liquid crypto, including PAXG, that is in a 1–8 week uptrend. Ensemble of four parameter sets. Scaled to 0.4%/day volatility. Rebalanced daily at 12:00 UTC. | `strategy/book.py` |
+| trend-guard v2, momentum sleeve | 21% | Long the 6 strongest and short the 6 weakest liquid coins on 3–30 day risk-adjusted momentum. Ensemble of four parameter sets. Resized hourly to 1.5%/day volatility. Weights inside each side are proportional to 1/sqrt(volatility). | `strategy/book.py` |
+| Teammate trend book | 21% | Long-only trend on 7/14/30-day horizons, 0.4%/day vol target, volatility trailing stops. | `strategy/team/` (Gunek-945, vendored unmodified) |
+| Teammate momentum book | 9% | Long/short cross-sectional momentum, 3/7/14-day lookbacks, 1.5%/day vol target. | `strategy/team/` (swyam-rd, vendored unmodified) |
 
-The two teammates' books enter together, in their own 70/30 split, as 30% of the account.
-Averaging independently built books cancels part of each one's selection noise, which is the same
-reason v2's own sleeves are ensembles (docs/STRATEGY.md). Execution is maker-first, and positions
-are resized only when the change can pay for its own trading cost.
+The two teammate books are themselves a 70/30 trend/momentum split, and that pair is 30% of the account. v2 is the other 70%, split 70/30 between its own trend and momentum sleeves. The whole blend is then multiplied by `risk_multiplier: 4.0` and gross-capped at 1, so on a typical hour almost all equity is invested.
 
-## 2. Why this design
+On top of that blend the live file also runs:
 
-The composite `0.4 Sortino + 0.3 Sharpe + 0.3 Calmar` over about 14 daily returns barely depends on
-book size, punishes a single bad day, and is quickly eaten by fees. So the book diversifies two
-return streams that do not lose on the same days, runs at modest volatility, and trades little.
-The full research log (what was tried, what failed and why) is in
-[`docs/STRATEGY.md`](docs/STRATEGY.md).
+| Rule | What it does |
+|---|---|
+| Jump guard | No new or larger long for 24 hours after a coin rises more than 10% in one hour. |
+| Momentum crash filter | No new short on a coin already down more than 40% over 60 days. |
+| Net hedge | Short the 10 most liquid coins, equal weight, sized to half the book's net long, then gross-capped again. |
+| Catch-up regime | While the average liquid coin is down more than 5% over 9 days, replace the whole book with the 10 coins that fell most over 3 days, equal weight, fully invested. Leave when that 9-day return is back to 0% or higher. While this is on, the net hedge is flat. |
+| Profit lock | After two minute equity readings at or above $98,500, cancel resting orders, flatten, and stay in cash. |
+| Breaker | Halve every target only after two hourly readings 20% below the peak. Release once the drawdown is back inside 5%. |
 
-## 3. Results
+## 2. Why this strategy
 
-Every 14-day window starting daily at 12:00 UTC from Feb 2024 to Sep 2026, each starting flat in
-$100k, 0.10% fee + 5 bps slippage on every trade, contest score on daily marks. This is the same
-protocol, data and costs as the team's `roostoo-last-supper` harness, whose published figures are
-shown for comparison.
+After a top-20-by-return screen, teams are ranked on `0.4 Sortino + 0.3 Sharpe + 0.3 Calmar` over about 14 daily returns. Three facts drove the original book:
 
-The tables below are the **4x blend before the 13-15 Oct contest changes** (net hedge, then the
-terminal catch-up and profit lock). They use `book.risk_multiplier: 4.0`, gross capped at 1x equity
-(about 97% of equity invested on a median hour), and the momentum crash filter (no new shorts on coins
-down more than 40% in 60 days). The 2.5x, 2x and 1x rows are earlier settings, kept for comparison.
-Rounds 25 and 28-29 give the hedge and catch-up figures; those are not re-fit into the table.
+1. The ratios barely depend on position size, so size sets the return, not the score. Return is still the first screen, which is why the live book is run at 4x rather than at the low-volatility research setting.
+2. One bad day dominates a two-week window, so the account averages several books that do not fail on the same names.
+3. The taker fee is 0.10% per fill. A book that turns over a few times a fortnight can give the whole median return back to fees, so positions are resized only when the change is large enough to pay for itself, and each sleeve is an ensemble rather than a single fragile parameter set.
+
+The normal book is that design. The catch-up regime is not. On 15 Oct the objective was changed from the long-run score to the chance of crossing the Hong Kong top-20 cutoff, with about four days left. Round 28 of [`docs/STRATEGY.md`](docs/STRATEGY.md) records the cost: a much fatter loss tail. The profit lock exists so a move through the cutoff is kept rather than given back. That terminal mode should be read as a qualification bet, not as a claim of a higher long-run Sharpe.
+
+## 3. Implementation
+
+Every hour at HH:03 UTC, after the Binance candle has closed, the engine:
+
+1. Tops up the hourly Binance bar cache.
+2. Calls `book_weights` in `src/trend_guard/strategy/book.py` for target weights.
+3. Multiplies by the breaker and by `competition.risk_scale`.
+4. Turns targets into orders in `execution/order_manager.plan_orders`.
+5. Sends closes first, then limit orders at the touch. Limits are repriced every 60 seconds and sent as market orders after four tries.
+6. Opens and closes shorts at market through Roostoo `/v6`.
+
+`plan_orders` acts on the 00:00 and 12:00 UTC decision bars, or when a target has changed. A resize smaller than the larger of 1% of equity and 25% of the target is skipped, unless it opens or closes a position. Sign flips close at market and reopen on the other side in the same cycle. Between decisions, quantities are held.
+
+The only process the systemd unit starts is `python -m trend_guard.main --mode live --config config/strategy.yaml` (`deploy/trend-guard.service`). `scripts/probe_live.py` and `overnight/flatten_account.py` can place orders, but a person has to run them, and neither is part of the service. No `docs/PROBES.md` was produced.
+
+If no fill has landed since an activity window opened (01:00–03:59 and 13:00–15:59 UTC), the engine sends one small market order toward the book's own largest gap, at least 0.1% of equity. That is how the bot stays active on days the trade rule would otherwise hold. Until `4218eaf` those windows opened at 00:00 and 12:00 UTC, before the decision trades, so the rule fired early on 5–8 Oct.
+
+## 4. How the code reflects the idea
+
+The strategy is a pure function of the price panel. `book_weights` has no network, disk, or clock reads. The backtest and the live engine call that same function, then the same `plan_orders`. A parameter change is a commit that edits `config/strategy.yaml`; the engine does not have a second copy of the thresholds.
+
+Sleeve shares are asserted to sum to at most 1, and gross is capped again after the 4x multiplier and after the net hedge. The catch-up path in `book_components` replaces every sleeve with the rebound book while the 9-day regime is on, which is why the hedge weight is zero in that regime. The profit lock is not a target weight. Once two minute snapshots clear $98,500, `engine._flatten_for_profit_lock` cancels resting orders and submits a flatten, then later cycles return before any new risk is taken.
+
+## 5. Backtesting
+
+The design was chosen on every 14-day window starting daily at 12:00 UTC from February 2024 to September 2026, each window starting flat in $100,000. The contest replay charges 0.10% fee plus 5 bps of slippage on every trade and does not assume a maker fill. Reproduce with `python scripts/download_history.py && python backtest/run_backtest.py`. A single fortnight with a full trade list is `python scripts/simulate.py --start ... --end ...`, which also checks that deleting the second half of the prices does not change the first half of the targets.
+
+The tables below are the 4x blend before the 13–15 Oct contest changes (net hedge, then the terminal catch-up and profit lock). They are the evidence for the normal book. They are not a backtest of the catch-up rule.
 
 | 2026 (258 windows) | Score | Median fortnight | P(fortnight > +5%) | Above -1% | Positive | Worst |
 |---|---|---|---|---|---|---|
-| **trend-guard (blend, 4x risk)** | **0.208** | **+2.85%** | **36%** | 75% | 67% | -8.0% |
+| trend-guard (blend, 4x risk) | 0.208 | +2.85% | 36% | 75% | 67% | -8.0% |
 | trend-guard (blend, 2.5x risk) | 0.214 | +2.63% | 36% | 77% | 69% | -5.4% |
 | trend-guard (blend, 2x risk) | 0.204 | +2.21% | 28% | 78% | 69% | -4.4% |
 | trend-guard (blend, 1x risk, before the crash filter) | 0.178 | +0.96% | 10% | 85% | 69% | -2.3% |
@@ -82,114 +78,42 @@ Rounds 25 and 28-29 give the hedge and catch-up figures; those are not re-fit in
 
 | All 944 windows | Score | Median fortnight | P(fortnight > +5%) | P(fortnight < -5%) | Above -1% | Worst |
 |---|---|---|---|---|---|---|
-| **trend-guard (blend, 4x risk)** | **0.076** | **+1.28%** | **30%** | 9.6% | 67% | -12.2% |
+| trend-guard (blend, 4x risk) | 0.076 | +1.28% | 30% | 9.6% | 67% | -12.2% |
 | trend-guard (blend, 2.5x risk) | 0.083 | +1.12% | 26% | 6.0% | 68% | -9.8% |
 | trend-guard (blend, 2x risk) | 0.095 | +1.13% | 21% | 3.2% | 69% | -8.1% |
 | Team combined 70/30 alone | 0.060 | +0.44% | | | 76% | -5.1% |
 
-More risk buys more return and a bigger upside at the cost of deeper bad fortnights: at 4x the mean
-fortnight is +2.5% (+4.0% in 2026), a +10% fortnight comes in 14% of windows, and 9.6% of windows lose
-more than 5% (worst -12.2%). The team chose this for a two-week contest where return also screens
-teams. More aggressive designs were tested and rejected (docs/STRATEGY.md 15): full-size momentum or
-trend books raise the mean a little but the median falls and the loss tail doubles.
+Round 25 gives the net hedge on the continuous run from 2024: Sharpe 2.03 / 2.96 (2024–25 / 2026), about 1.3% daily volatility, max drawdown 16.1%, against 1.95 / 2.65, 1.6% daily volatility, and 24.6% for the 4x blend without the hedge. The paired test put the chance the Sharpe gain is real at 67%, so the hedge was adopted for the smaller drawdown, not because the score was proven higher. Round 28 gives the catch-up: on 1,408 comparable historical starts it cleared a static +2.55% hurdle about 58% of the time, against about 20% for the hedged book, and the chance of losing more than 3% over the next 93 hours rose from about 9% to about 25%.
 
-**Competition view.** `run_backtest.py` also scores non-overlapping fortnights (no shared days) the way
-the previous edition's leaderboard did: daily Sharpe and Sortino, Calmar = total return / max drawdown,
-score = active days x normalised ratios, and an estimated rank among that edition's 52 teams
-(`backtest/benchmark.py`; their winner had Sharpe 0.19, Sortino 0.25, Calmar 0.95, 11 active days):
+## 6. Maker and taker fees
 
-| Non-overlapping fortnights (2.5x, before 4x) | 2024 | 2025 | 2026 | All (68) |
-|---|---|---|---|---|
-| Median fortnight | +0.06% | +1.59% | +3.34% | +1.12% |
-| Sharpe / Sortino (daily, median) | 0.01 / 0.02 | 0.12 / 0.20 | 0.20 / 0.42 | 0.08 / 0.13 |
-| Calmar, total return / max DD (median) | 0.01 | 0.42 | 1.00 | 0.29 |
-| Active days (minimum) | 15 | 15 | 15 | 14 |
-| Would have ranked 1st / top 3 among the 52 teams | 57% / 70% | 67% / 78% | 74% / 79% | 62% / 74% |
+The contest charges 0.10% on a taker (market) order and 0.05% on a maker (limit) order. The live bot tries to pay the maker rate. Spot orders are limits at the touch, repriced once a minute, and only become market orders after four minutes. Shorts have no limit endpoint on `/v6`, so short opens and closes pay the taker rate. The fee stored on each fill is the commission Roostoo returns (`CommissionChargeValue`, converted to USD when it is charged in the coin), together with the maker or taker role on that response. The bot does not assume a fee rate after the fact.
 
-The rank compares one fortnight with a field that traded a different market (most of last year's teams
-lost money), so it shows the bot is competitive, not where it will finish this year.
+The backtest is harsher than that live policy. `backtest` in `config/strategy.yaml` charges 0.10% plus 5 bps of slippage on every trade, which is 0.15% per side, and does not credit a maker fill. A smaller trade is skipped when it cannot cover a round trip (`min_trade_weight: 0.01`, `min_trade_frac: 0.25`). Research round 17 found that waiting longer than the four-minute limit window saved less than 1 bp on real 1-minute bars, so the live escalation is left as it is.
 
-The edge is real but moderate: 2026 contains only about 18 independent fortnights, so
-differences of this size are suggestive rather than conclusive (see docs/STRATEGY.md section 3).
-The blend improves on both of its parts in every period. Reproduce with
-`python scripts/download_history.py && python backtest/run_backtest.py`.
+## 7. Risk management
 
-## 4. Architecture
+- Before the 4x dial, the trend sleeve targets 0.4%/day and the momentum sleeve 1.5%/day. With the dial and the net hedge, round 25 shows about 1.3% daily volatility.
+- A single trend name is capped at 50% of its sleeve. Momentum gross is capped at 0.9 of its capital. Account gross is capped at 1 after the dial and again after the hedge.
+- Names need $2M/day and 14 days of history to enter the trend sleeve, and $5M/day and 30 days to enter the momentum sleeve. Stablecoins, tokenized stocks, and pairs with no Binance feed are never traded.
+- The breaker halves targets only after two hourly readings 20% below the peak. The level was 10% until 9 Oct, and one reading was enough until 13 Oct. A single bad equity print on 8 Oct was why the second confirmation was added. Tighter brakes were tested and lowered the score by selling dips.
+- The profit lock flattens the account after two minute readings at or above $98,500 and then holds cash.
+- A `HALT` file at `/etc/trend-guard/HALT` cancels resting orders and leaves the process idle.
+- Order posts that time out are not retried. The client raises `OrderStateUnknownError` and the engine reconciles through `query_order`.
 
-```mermaid
-flowchart LR
-    RX[Roostoo exchangeInfo] --> U[universe: tradable crypto pairs]
-    U --> C[Binance 1h klines, incremental cache]
-    C --> B[strategy/book.py: trend + momentum ensembles]
-    B --> K[x risk_scale x breaker]
-    K --> P[plan_orders: contest trade rule, no-leverage budget]
-    P --> E[maker-first executor: reprice, escalate, reconcile]
-    E --> L[LiveBroker: Roostoo v3 spot + v6 shorts]
-    P --> S[SimBroker: paper mode]
-    L --> DB[(SQLite: orders, equity, decisions)]
-    DB --> D[Streamlit dashboard, read-only]
-    C --> R[backtest/contest.py: every 14-day window]
-    B --> R
-```
-
-| Path | Role |
-|---|---|
-| `src/trend_guard/strategy/book.py` | the strategy: pure functions of the price panel, shared by backtest and live |
-| `src/trend_guard/strategy/team/`, `team_book.py` | teammates' books (vendored unmodified, credited in each file) and their adapter |
-| `src/trend_guard/execution/order_manager.py` | targets to orders (the contest trade rule), maker-first executor, ambiguous-order reconciliation |
-| `src/trend_guard/execution/{broker,live_broker,sim_broker}.py` | one Broker protocol, live Roostoo and simulated implementations |
-| `src/trend_guard/roostoo/` | signed REST client (HMAC tested against the documented vector), precision rules, rate limiter |
-| `src/trend_guard/data/binance_live.py` | Binance klines with host fallback and an incremental parquet cache |
-| `src/trend_guard/risk/breaker.py` | catastrophe circuit breaker |
-| `src/trend_guard/engine.py`, `main.py` | 60 s loop, hourly cycle, CLI |
-| `backtest/contest.py`, `run_backtest.py`, `sweep.py`, `pbo.py` | contest replay, reports, the design search and its overfitting check |
-| `backtest/session.py`, `scripts/simulate.py` | a simulated session over any dates with a full trade log and a leakage check |
-| `monitor/dashboard.py` | read-only Streamlit dashboard |
-| `deploy/` | systemd units, EC2 setup, logrotate |
-
-## 5. Rule compliance
+## 8. Rule compliance
 
 | Competition rule | Where it is enforced |
 |---|---|
-| No leverage | `book_weights` asserts sleeve shares sum to <= 1 and each sleeve caps its gross; `plan_orders` spends only free cash plus immediate proceeds, minus a cash buffer |
-| Spot and 1x shorts only | longs via `/v3/place_order`; shorts only via `/v6/short_open` sized by collateral (loss capped at collateral by the exchange) |
-| No HFT, market making or arbitrage | decisions only on closed hourly Binance bars; one directional order per pair per cycle; no quotes on both sides |
-| No manual trading or API calls | every order comes from `engine.Engine`; `scripts/probe_live.py` is gated and runs only through committed code; `.claude/settings.json` denies live mode to the coding assistant |
-| No accidental live orders | `main.py` refuses live mode unless `ALLOW_LIVE_ORDERS=1` and keys exist; `LiveBroker._require_live` refuses every order method independently |
-| Never blind-retry an order | `RoostooClient._post` never retries order-creating calls; ambiguous outcomes raise `OrderStateUnknownError` and are reconciled via `query_order` (`match_unknown_order`) |
-| At least 8 active days | enforced: the book rebalances at 00:00 and 12:00 UTC, and if no fill has landed since an activity window opened (01:00-03:59 and 13:00-15:59 UTC) the engine sends one small MARKET order toward the book's own target (its largest gap, at least 0.1% of equity), retrying hourly. Until commit `4218eaf` the windows opened at 00:00 / 12:00, before the decision trades, so the rule fired early on 5-8 Oct (`docs/TRADE_LOG_NOTES.md`). A fill in either current window falls on the same date in UTC and HKT. `order_manager.activity_order`, tests in `tests/test_engine_activity.py` |
-| Trade-log integrity | every fill in `logs/fills/*.csv` carries the commit hash; every hourly decision is stored in SQLite and `logs/decisions/*.jsonl` |
-| Shorts may be disabled | `ShortsDisabledError` switches the book to long-only for the session |
+| No leverage | Sleeve shares sum to at most 1. `plan_orders` spends only free cash plus immediate proceeds, minus a cash buffer. Gross is capped at 1. |
+| Spot and 1x shorts only | Longs via `/v3/place_order`. Shorts only via `/v6/short_open`, sized by collateral. |
+| No HFT, market making, or arbitrage | Decisions on closed hourly bars. One directional order per pair per cycle. No quotes on both sides. |
+| No manual trading in the live service | Every order from the service comes from `engine.Engine`. |
+| No accidental live orders | `main.py` refuses live mode unless `ALLOW_LIVE_ORDERS=1` and keys exist. |
+| At least 8 active days | Activity rule in section 3. |
+| Trade-log integrity | Each fill record stores the commit hash. Each hourly decision is stored in SQLite and `logs/decisions`. `docs/TRADE_LOG_NOTES.md` explains the paper-mode rows on 4 Oct and the later strategy commits. Those log files are on the contest machine; they are gitignored so keys and account history are not in the repository. |
 
-## 6. Risk management
-
-- Sleeve volatility targets, before the 4x dial: 0.4%/day for the trend sleeve and 1.5%/day for the
-  momentum sleeve. With the dial and the net hedge, the continuous run in round 25 has about 1.3%
-  daily volatility (1.6% for the 4x blend without the hedge).
-- Caps: 50% per trend name; momentum gross at most 0.9x of its capital; account gross at most 1x
-  after the dial and again after the net hedge.
-- Liquidity and history filters: at least $2M/day and 14 days (trend), $5M/day and 30 days
-  (momentum); stablecoins, tokenized stocks and pairs without a Binance feed are never traded.
-- A catastrophe breaker halves every target after two hourly readings 20% below the peak (the level
-  was 10% until 9 Oct, and a single bad reading was enough until 13 Oct). Tighter drawdown brakes
-  were tested and lowered the score by selling dips before rebounds.
-- The profit lock flattens the account after two minute readings at or above $98,500 and then holds cash.
-- A HALT file (`/etc/trend-guard/HALT`) cancels resting orders and idles the bot.
-
-## 7. Execution
-
-Every hour at HH:03 UTC (after the Binance candle closes), the bot:
-1. tops up the Binance bar cache;
-2. computes the book's targets;
-3. applies the contest trade rule;
-4. places orders: closes first, then maker limits at the touch, repriced every 60 s and sent at
-   market after 4 tries.
-
-Shorts open and close at market via `/v6`. Quantities and prices follow each pair's precision and
-MiniOrder. Role and commission come from every exchange response. The exchange is the source of
-truth: positions are re-read every cycle.
-
-## 8. How to run
+## 9. How to run
 
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
@@ -199,53 +123,20 @@ cp .env.example .env                                        # keys are only need
 pytest -q && ruff check .
 python scripts/download_history.py                          # hourly bars for every Roostoo crypto pair
 python backtest/run_backtest.py                             # contest replay -> reports/<ts>/summary.md
-python backtest/sweep.py                                    # the 36-variant design search + PBO
-python scripts/simulate.py --start "2026-09-01 12:00" --end "2026-09-15 12:00"  # one simulated session
-python -m trend_guard.main --mode paper --once              # one hourly cycle on live prices, simulated fills
-python -m trend_guard.main --mode paper                     # run paper trading
-ALLOW_LIVE_ORDERS=1 python -m trend_guard.main --mode live  # real orders (operated by a human)
-streamlit run monitor/dashboard.py --server.address 127.0.0.1
+python scripts/simulate.py --start "2026-09-01 12:00" --end "2026-09-15 12:00"
+python -m trend_guard.main --mode paper --once              # one cycle, simulated fills
 ```
 
-### Simulated session
+Deployment, the HALT switch, and log viewing are in [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
 
-`scripts/simulate.py --start <UTC> --end <UTC> [--capital 100000] [--out file.txt]` replays the live
-book over any dates, starting flat in cash. It prints the return, the contest score and its three
-ratios, drawdowns, exposure, fees, turnover, active trading days, daily returns and P&L per pair, and
-writes all of that plus every trade (time, pair, BUY/SELL/SHORT/COVER, open/add/reduce/close/flip,
-quantity, price, notional, fee, weight before and after, and which sleeves drove it) to
-`sim_<start>_<end>.txt` in the current directory. There is no data leakage: no bar after `--end` is
-loaded, history is limited to what the live bot loads, and every run recomputes the targets with the
-second half of the session deleted and checks the first half is identical (it exits non-zero if not).
-Execution is the contest simulator's, trade for trade (`tests/test_session.py`). The backtest's windows
-act on the 13:00 close, the session on the exact `--start`, so the two differ slightly for the same day.
+## 10. Limitations
 
-## 9. Deployment
-
-On EC2 (Ubuntu, UTC, chrony), the bot runs as a systemd service with `Restart=always`. Secrets
-live in `/etc/trend-guard/env` (mode 600), the repo is cloned with a read-only deploy key, and
-every deploy is a tagged commit. See [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
-
-## 10. Logs and audit trail
-
-| Artifact | Contents |
-|---|---|
-| `logs/api/*.jsonl` | every request: path, params (never secrets), success, error |
-| `logs/decisions/*.jsonl` + `decisions` table | every hourly cycle: targets, gross/net, multiplier, planned orders, commit |
-| `logs/fills/*.csv` | every fill with role, fee, reason and commit hash |
-| `orders`, `equity` tables | every order and its status (including `UNKNOWN`), equity every minute |
-
-## 11. Limitations
-
-See [`docs/STRATEGY.md`](docs/STRATEGY.md) section 5. The short version:
-- The edge over the team book is moderate and statistically weak on 2026 alone.
-- In sharp selloffs the book is positive less than half the time.
-- Backtest fills assume the hourly close plus 5 bps.
-- The universe carries survivorship bias.
+- Over 14 days the market path dominates. In 2026 windows where BTC fell more than 5%, the book was positive less than half the time.
+- The backtest fills at the hourly close plus 5 bps. Live limit fills can be better than that, and fast markets can be worse.
+- The universe is today's Roostoo listings, so coins delisted before 2026 are missing.
+- The catch-up regime raises the chance of a large gain and the chance of a large loss. It is not the book described by the tables in section 5.
+- 2026 contains only about 18 independent fortnights, so small score gaps are weak evidence.
 
 ## Credits
 
-The trend book in `src/trend_guard/strategy/team/trend_signal.py` and `trend_portfolio.py` was written by
-Gunek-945 ([roostoo-trend-book](https://github.com/Gunek-945/roostoo-trend-book)); the momentum book in
-`src/trend_guard/strategy/team/momentum_model.py` was written by swyam-rd (roostoo-last-supper). Both are
-included unmodified with their authors' attribution headers.
+The trend book in `src/trend_guard/strategy/team/trend_signal.py` and `trend_portfolio.py` was written by Gunek-945 ([roostoo-trend-book](https://github.com/Gunek-945/roostoo-trend-book)). The momentum book in `src/trend_guard/strategy/team/momentum_model.py` was written by swyam-rd. Both are included unmodified, with their authors' attribution headers.
